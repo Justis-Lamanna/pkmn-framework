@@ -2,11 +2,7 @@ package com.github.lucbui.file;
 
 import com.github.lucbui.bytes.HexReader;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**

@@ -1,10 +1,7 @@
 package com.github.lucbui.bytes;
 
-import com.github.lucbui.file.HexFieldIterator;
-
 import java.nio.ByteBuffer;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 

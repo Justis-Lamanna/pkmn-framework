@@ -1,9 +1,6 @@
 package com.github.lucbui.framework;
 
 import com.github.lucbui.bytes.HexReader;
-import com.github.lucbui.bytes.UnsignedByte;
-import com.github.lucbui.bytes.UnsignedShort;
-import com.github.lucbui.bytes.UnsignedWord;
 import com.github.lucbui.file.FileHexField;
 import com.github.lucbui.file.HexField;
 import com.github.lucbui.file.HexFieldIterator;

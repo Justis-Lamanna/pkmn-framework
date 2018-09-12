@@ -8,16 +8,13 @@ import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.UnsignedByte;
 import com.github.lucbui.bytes.UnsignedShort;
 import com.github.lucbui.bytes.UnsignedWord;
-import com.github.lucbui.file.GBAPointer;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
-import com.github.lucbui.framework.PkmnFramework;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

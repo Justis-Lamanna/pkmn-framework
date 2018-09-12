@@ -4,11 +4,7 @@ import com.github.lucbui.annotations.AfterConstruct;
 import com.github.lucbui.annotations.DataStructure;
 import com.github.lucbui.annotations.StructField;
 import com.github.lucbui.annotations.StructFieldType;
-import com.github.lucbui.bytes.UnsignedByte;
-import com.github.lucbui.bytes.UnsignedShort;
 import com.github.lucbui.bytes.UnsignedWord;
-import com.github.lucbui.file.GBAPointer;
-import com.github.lucbui.file.Pointer;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**

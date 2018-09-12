@@ -1,16 +1,11 @@
 package com.github.lucbui.file;
 
-import com.github.lucbui.bytes.HexReader;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * A hex field derived from a file.
