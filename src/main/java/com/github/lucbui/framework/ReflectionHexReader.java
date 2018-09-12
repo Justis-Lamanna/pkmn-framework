@@ -1,5 +1,6 @@
 package com.github.lucbui.framework;
 
+import com.github.lucbui.annotations.AfterConstruct;
 import com.github.lucbui.annotations.DataStructure;
 import com.github.lucbui.annotations.StructField;
 import com.github.lucbui.bytes.HexReader;
@@ -11,14 +12,24 @@ import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
 import com.github.lucbui.framework.PkmnFramework;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * A hex reader that reads values via annotations.
+ * Using reflection, an arbitrary object can be read via its annotations. An object read in this way *MUST* have
+ * an {@code @DataStructure} annotation at the class definition level. Fields can then be specified using the {@code @StructField}
+ * annotation. See documentation of both classes for more information.
+ * @param <T>
+ */
 public class ReflectionHexReader<T> implements HexReader<T> {
 
     //A cache of readers, registered for reusing.
@@ -35,18 +46,49 @@ public class ReflectionHexReader<T> implements HexReader<T> {
         this.clazz = clazz;
     }
 
+    /**
+     * Reflexively and recursively build an object from its annotations.
+     * Processing occurs like so:
+     * 1. An instance of the class is created by invoking the empty constructor. If the class does not have one,
+     * an IllegalArgumentException is thrown.
+     * 2. All fields marked with a StructField annotation are retrieved, in this class as well as its superclasses. Fields
+     * may be public, package-protected, or private. Note that this code deliberately sets a Field's accessibility to true
+     * for writing, before setting is back to whatever it was.
+     * 3. For each field, the best HexReader is found, by:
+     * a. If the StructField contains a runAs parameter, use that.
+     * b. Otherwise, use the class of the field itself.
+     * c. If a reader is not registered that directly matches the provided class, it searches through
+     * the readers that are registered. If there is one, and only one, that is a subclass of the provided type,
+     * that one is selected. If there are none, or more than one, an IllegalArgumentException is thrown.
+     * 4. After all fields are written, all methods annotated with {@code @AfterConstruct} *that are in the created class*
+     * are called. Methods should have no parameters, or else an IllegalArgumentException will be thrown. Methods may be of any
+     * @param iterator The iterator to translate from.
+     * @return
+     */
     @Override
     public T translate(HexFieldIterator iterator) {
         try {
             T object = clazz.newInstance();
+            //Fill in fields.
             List<Field> fields = FieldUtils.getFieldsListWithAnnotation(clazz, StructField.class);
             for(Field field : fields){
                 StructField annotation = field.getAnnotation(StructField.class);
                 int offset = annotation.value();
-                HexReader<?> reader = getHexReaderFor(field.getType());
-                Object obj = iterator.get(offset, reader);
-                field.set(object, obj);
+                Class<?> classToRead = annotation.readAs() == Void.class ? field.getType() : annotation.readAs();
+                HexReader<?> reader = getHexReaderFor(classToRead);
+                Object parsedObject = iterator.get(offset, reader);
+                FieldUtils.writeField(field, object, parsedObject, true);
             }
+            //Invoke all AfterConstruct methods.
+            MethodUtils
+                    .getMethodsListWithAnnotation(clazz, AfterConstruct.class, false, true)
+                    .forEach(m -> {
+                        try {
+                            MethodUtils.invokeMethod(object, true, m.getName());
+                        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                            throw new IllegalArgumentException("Error invoking method " + m.getName(), e);
+                        }
+                    });
             return object;
         } catch (InstantiationException | IllegalAccessException e) {
             throw new IllegalArgumentException("Error building object of type " + clazz.getName(), e);

@@ -17,4 +17,10 @@ public @interface StructField {
      * @return
      */
     int value();
+
+    /**
+     * The class to read this as.
+     * @return
+     */
+    Class<?> readAs() default Void.class;
 }

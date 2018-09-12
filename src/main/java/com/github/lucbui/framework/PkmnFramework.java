@@ -50,6 +50,18 @@ public class PkmnFramework {
         return b;
     }
 
+    /**
+     * Create a framework from a generic HexField object.
+     * @param hexField The hexfield to use.
+     * @return A builder, to chain more configuration details.
+     */
+    public static PkmnFramework.Builder init(HexField hexField){
+        Objects.requireNonNull(hexField, "Hex Field must be specified.");
+        Builder b = new Builder();
+        b.hexField = hexField;
+        return b;
+    }
+
     private static void verifyFieldsPresent(){
         if(hexField == null){
             throw new IllegalStateException("PkmnFramework has not been initialized! Use .init() and .start() to initialize.");
@@ -92,6 +104,7 @@ public class PkmnFramework {
 
     public static class Builder {
         private File path;
+        private HexField hexField;
 
         Map<Class<?>, HexReader<?>> readers;
 
@@ -116,7 +129,11 @@ public class PkmnFramework {
         }
 
         public void start() throws IOException {
-            PkmnFramework.hexField = new FileHexField(path);
+            if(hexField == null) {
+                PkmnFramework.hexField = new FileHexField(path);
+            } else {
+                PkmnFramework.hexField = hexField;
+            }
             ReflectionHexReader.READERS.putAll(this.readers);
         }
     }

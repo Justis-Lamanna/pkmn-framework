@@ -1,5 +1,6 @@
 package com.github.lucbui.structures;
 
+import com.github.lucbui.annotations.AfterConstruct;
 import com.github.lucbui.annotations.DataStructure;
 import com.github.lucbui.annotations.StructField;
 import com.github.lucbui.bytes.UnsignedByte;
@@ -15,11 +16,16 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 @DataStructure
 public class SampleStructure {
 
-    @StructField(0)
-    public Pointer pointer;
+    @StructField(value=0, readAs=Pointer.class)
+    private Pointer pointer;
 
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
+    }
+
+    @AfterConstruct
+    private void test(){
+        System.out.println("Hello World!");
     }
 }
