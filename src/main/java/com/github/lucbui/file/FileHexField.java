@@ -1,5 +1,7 @@
 package com.github.lucbui.file;
 
+import com.github.lucbui.bytes.HexReader;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;

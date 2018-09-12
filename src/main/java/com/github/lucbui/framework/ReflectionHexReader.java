@@ -3,6 +3,7 @@ package com.github.lucbui.framework;
 import com.github.lucbui.annotations.AfterConstruct;
 import com.github.lucbui.annotations.DataStructure;
 import com.github.lucbui.annotations.StructField;
+import com.github.lucbui.annotations.StructFieldType;
 import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.UnsignedByte;
 import com.github.lucbui.bytes.UnsignedShort;
@@ -74,10 +75,21 @@ public class ReflectionHexReader<T> implements HexReader<T> {
             for(Field field : fields){
                 StructField annotation = field.getAnnotation(StructField.class);
                 int offset = annotation.value();
-                Class<?> classToRead = annotation.readAs() == Void.class ? field.getType() : annotation.readAs();
-                HexReader<?> reader = getHexReaderFor(classToRead);
-                Object parsedObject = iterator.get(offset, reader);
-                FieldUtils.writeField(field, object, parsedObject, true);
+                if(annotation.fieldType() == StructFieldType.NESTED) {
+                    Class<?> classToRead = annotation.readAs() == Void.class ? field.getType() : annotation.readAs();
+                    HexReader<?> reader = getHexReaderFor(classToRead);
+                    Object parsedObject = iterator.get(offset, reader);
+                    FieldUtils.writeField(field, object, parsedObject, true);
+                } else if(annotation.fieldType() == StructFieldType.POINTER) {
+                    HexReader<?> ptrReader = getHexReaderFor(Pointer.class);
+                    Pointer ptr = (Pointer)iterator.get(offset, ptrReader);
+                    Class<?> classToRead = annotation.readAs() == Void.class ? field.getType() : annotation.readAs();
+                    HexReader<?> reader = getHexReaderFor(classToRead);
+                    Object parsedObject = iterator.getAbsolute(ptr.getLocation(), reader);
+                    FieldUtils.writeField(field, object, parsedObject, true);
+                } else {
+                    throw new IllegalArgumentException("Illegal fieldType read: " + annotation.fieldType());
+                }
             }
             //Invoke all AfterConstruct methods.
             MethodUtils

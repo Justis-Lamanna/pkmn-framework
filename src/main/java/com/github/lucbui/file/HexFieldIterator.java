@@ -22,7 +22,7 @@ public interface HexFieldIterator {
      * Copy this HexFieldIterator, state and all
      * @return
      */
-    HexFieldIterator copy() throws IOException;
+    HexFieldIterator copy();
 
     /**
      * Get the byte distance bytes away from the current position.
@@ -131,11 +131,7 @@ public interface HexFieldIterator {
      * @return The read and parsed object.
      */
     default <T> T get(HexReader<T> hexReader){
-        try {
-            return hexReader.translate(this.copy());
-        } catch (IOException e) {
-            throw new IllegalStateException("Error copying iterator", e);
-        }
+        return hexReader.translate(this.copy());
     }
 
     /**
@@ -145,12 +141,21 @@ public interface HexFieldIterator {
      * @return The read and parsed object.
      */
     default <T> T get(int distance, HexReader<T> hexReader){
-        try {
-            HexFieldIterator copy = this.copy();
-            copy.advanceRelative(distance);
-            return hexReader.translate(copy);
-        } catch (IOException e) {
-            throw new IllegalStateException("Error copying iterator", e);
-        }
+        HexFieldIterator copy = this.copy();
+        copy.advanceRelative(distance);
+        return hexReader.translate(copy);
+    }
+
+    /**
+     * Read an object from an absolute position
+     * @param pointer Pointer to read from
+     * @param reader The reader to use.
+     * @param <T> The object to retrieve.
+     * @return
+     */
+    default <T> T getAbsolute(long pointer, HexReader<T> reader){
+        HexFieldIterator copy = this.copy();
+        copy.advanceTo(pointer);
+        return reader.translate(copy);
     }
 }

@@ -23,4 +23,13 @@ public @interface StructField {
      * @return
      */
     Class<?> readAs() default Void.class;
+
+    /**
+     * The type of StructField: Nested, or Pointer.
+     * Default is Nested. A Pointer fieldType indicates that a pointer should be read at the specified {@code value}, and
+     * the contained object begins parsing at that pointer. A Nested fieldType indicates that the object should be read
+     * immediately from the specified {@code value}.
+     * @return
+     */
+    StructFieldType fieldType() default StructFieldType.NESTED;
 }
