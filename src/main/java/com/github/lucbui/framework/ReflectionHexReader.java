@@ -60,11 +60,11 @@ public class ReflectionHexReader<T> implements HexReader<T> {
      * that one is selected. If there are none, or more than one, an IllegalArgumentException is thrown.
      * 4. After all fields are written, all methods annotated with {@code @AfterConstruct} *that are in the created class*
      * are called. Methods should have no parameters, or else an IllegalArgumentException will be thrown. Methods may be of any
-     * @param iterator The iterator to translate from.
+     * @param iterator The iterator to read from.
      * @return
      */
     @Override
-    public T translate(HexFieldIterator iterator) {
+    public T read(HexFieldIterator iterator) {
         try {
             T object = clazz.newInstance();
             //Fill in fields.
@@ -128,7 +128,9 @@ public class ReflectionHexReader<T> implements HexReader<T> {
         if(ReflectionHexReader.READERS.containsKey(type)){
             return ReflectionHexReader.READERS.get(type);
         }
-        Map<Class<?>, HexReader<?>> readers = ReflectionHexReader.READERS.keySet().stream().filter(type::isAssignableFrom).collect(Collectors.toMap(Function.identity(), ReflectionHexReader.READERS::get));
+        Map<Class<?>, HexReader<?>> readers = ReflectionHexReader.READERS.keySet().stream()
+                .filter(type::isAssignableFrom)
+                .collect(Collectors.toMap(Function.identity(), ReflectionHexReader.READERS::get));
         if(readers.isEmpty()){
             return null;
         } else if(readers.size() > 1){

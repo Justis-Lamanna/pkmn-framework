@@ -10,8 +10,8 @@ public interface HexReader<T> {
 
     /**
      * Translates a sequence of bytes into an object.
-     * @param iterator The iterator to translate from.
+     * @param iterator The iterator to read from.
      * @return The created object.
      */
-    T translate(HexFieldIterator iterator);
+    T read(HexFieldIterator iterator);
 }

@@ -7,6 +7,7 @@ import com.github.lucbui.file.HexFieldIterator;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -74,7 +75,7 @@ public class PkmnFramework {
      */
     public static <T> T read(long pointer, HexReader<T> reader){
         verifyFieldsPresent();
-        return reader.translate(hexField.iterator(pointer));
+        return reader.read(hexField.iterator(pointer));
     }
 
     /**
@@ -86,7 +87,7 @@ public class PkmnFramework {
      */
     public static <T> T read(long pointer, Class<T> clazz){
         verifyFieldsPresent();
-        return clazz.cast(ReflectionHexReader.getHexReaderFor(clazz).translate(hexField.iterator(pointer)));
+        return clazz.cast(ReflectionHexReader.getHexReaderFor(clazz).read(hexField.iterator(pointer)));
     }
 
     /**
@@ -127,7 +128,7 @@ public class PkmnFramework {
 
         public void start() throws IOException {
             if(hexField == null) {
-                PkmnFramework.hexField = new FileHexField(path);
+                PkmnFramework.hexField = new FileHexField(path, StandardOpenOption.READ, StandardOpenOption.WRITE);
             } else {
                 PkmnFramework.hexField = hexField;
             }

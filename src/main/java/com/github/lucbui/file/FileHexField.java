@@ -61,18 +61,6 @@ public class FileHexField implements HexField {
             return new FileHexField.Iterator(this.hex, this.currentPosition);
         }
 
-
-        /*
-        In this particular instance, we swap the default behavior: Instead of using getRelative(distance) in a loop
-        to retrieve bytes for getRelative(distance, numberOfBytes), I use getRelative(distance, numberOfBytes) and retrieve
-        the only one for getRelative(distance).
-         */
-
-        @Override
-        public byte getRelative(long distance) {
-            return getRelative(distance, 1).array()[0];
-        }
-
         @Override
         public ByteBuffer getRelative(long distance, int numberOfBytes) {
             try {
@@ -89,8 +77,12 @@ public class FileHexField implements HexField {
         }
 
         @Override
-        public ByteBuffer get(int numberOfBytes) {
-            return getRelative(0, numberOfBytes);
+        public void writeRelative(long distance, ByteBuffer bytes){
+            try {
+                int write = hex.fileChannel.write(bytes, currentPosition + distance);
+            } catch (IOException e) {
+                throw new IllegalStateException("Error writing from iterator", e);
+            }
         }
 
         @Override

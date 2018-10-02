@@ -1,9 +1,9 @@
 package com.github.lucbui.file;
 
 import com.github.lucbui.bytes.HexReader;
+import com.github.lucbui.bytes.HexWriter;
 
 import java.nio.ByteBuffer;
-import java.util.stream.Stream;
 
 /**
  * A custom iterator, modified to better handle fields of data.
@@ -21,16 +21,6 @@ public interface HexFieldIterator {
     HexFieldIterator copy();
 
     /**
-     * Get the byte distance bytes away from the current position.
-     * A positive distance should indicate moving forward past the iterator. A negative distance
-     * should indicate moving backwards, away from the iterator. A distance of zero should return the current
-     * byte.
-     * @param distance The relative number of bytes away to read from.
-     * @return The read byte.
-     */
-    byte getRelative(long distance);
-
-    /**
      * Get a number of bytes relativeIndex away from the current position.
      * This advances the specified number of bytes forward, and then reads the specified number of bytes all at once.
      *
@@ -38,23 +28,107 @@ public interface HexFieldIterator {
      * should indicate moving backwards, away from the iterator. A distance of zero should return the current
      * byte.
      *
-     * By default, this function as a for-loop, calling getRelative starting at {@code distance} (inclusively) and ending at
-     * {@code distance + numberOfBytes}, exclusively.
      * @param distance The number of bytes away where reading should begin.
      * @param numberOfBytes The number of bytes to read.
      * @return The read bytes.
      */
-    default ByteBuffer getRelative(long distance, int numberOfBytes){
-        if(numberOfBytes < 0){
-            throw new IllegalArgumentException("Number of bytes < 0 (" + numberOfBytes + ")");
-        } else {
-            ByteBuffer bb = ByteBuffer.allocate(numberOfBytes);
-            Stream.iterate(distance, i -> i + 1)
-                    .limit(distance + numberOfBytes)
-                    .map(this::getRelative)
-                    .forEach(bb::put);
-            return bb;
-        }
+    ByteBuffer getRelative(long distance, int numberOfBytes);
+
+    /**
+     * Write some bytes relativeIndex away from the current position
+     * This advances the specified number of bytes forward, and writes the bytes in the bytebuffer all at once.
+     *
+     * A positive distance should indicate moving forward past the iterator. A negative distance
+     * should indicate moving backwards, away from the iterator.
+     * @param distance The number of bytes away where writing should begin.
+     * @param bytes The bytes to write.
+     */
+    void writeRelative(long distance, ByteBuffer bytes);
+
+    /**
+     * Get a number of bytes, starting at the current position.
+     * @param numberOfBytes The number of bytes to read.
+     * @return The read bytes.
+     */
+    default ByteBuffer get(int numberOfBytes){
+        return getRelative(0, numberOfBytes);
+    }
+
+    /**
+     * Writes bytes, starting at the current position.
+     * @param bytes The bytes to write.
+     */
+    default void write(ByteBuffer bytes){writeRelative(0, bytes);}
+
+    /**
+     * Get a parsed byte structure.
+     * @param hexReader The reader which parses the bytes into an object.
+     * @param <T> The object to convert the read bytes into.
+     * @return The read and parsed object.
+     */
+    default <T> T get(HexReader<T> hexReader){
+        return hexReader.read(this.copy());
+    }
+
+    /**
+     * Write a byte structure.
+     * @param object The object to write.
+     * @param hexWriter The writer which parses the object into bytes.
+     * @param <T> The object to convert into bytes.
+     */
+    default <T> void write(T object, HexWriter<T> hexWriter){
+        hexWriter.write(object, this.copy());
+    }
+
+    /**
+     * Get a parsed byte structure.
+     * @param hexReader The reader which parses the bytes into an object.
+     * @param <T> The object to convert the read bytes into.
+     * @return The read and parsed object.
+     */
+    default <T> T get(int distance, HexReader<T> hexReader){
+        HexFieldIterator copy = this.copy();
+        copy.advanceRelative(distance);
+        return hexReader.read(copy);
+    }
+
+    /**
+     * Write a byte structure.
+     * @param object The object to write.
+     * @param distance The relative distance away the object should be read from.
+     * @param hexWriter The writer which parses the bytes into an object.
+     * @param <T> The object to convert into bytes.
+     */
+    default <T> void write(T object, int distance, HexWriter<T> hexWriter){
+        HexFieldIterator copy = this.copy();
+        copy.advanceRelative(distance);
+        hexWriter.write(object, copy);
+    }
+
+    /**
+     * Read an object from an absolute position
+     * @param pointer Pointer to read from
+     * @param reader The reader to use.
+     * @param <T> The object to retrieve.
+     * @return
+     */
+    default <T> T getAbsolute(long pointer, HexReader<T> reader){
+        HexFieldIterator copy = this.copy();
+        copy.advanceTo(pointer);
+        return reader.read(copy);
+    }
+
+    /**
+     * Write an object to an absolute position
+     * @param pointer The pointer to write to
+     * @param writer The writer to use.
+     * @param object The object to write.
+     * @param <T> The object to write.
+     */
+    default <T> void writeAbsolute(T object, long pointer, HexWriter<T> writer){
+        HexFieldIterator copy = this.copy();
+        copy.advanceTo(pointer);
+        writer.write(object, copy);
     }
 
     /**
@@ -71,87 +145,4 @@ public interface HexFieldIterator {
      * @param pointer The pointer to move to.
      */
     void advanceTo(long pointer);
-
-    /**
-     * Get the current byte.
-     * Shortcut for {@code getRelative(0)}
-     * @return The current byte.
-     */
-    default byte get(){
-        return getRelative(0);
-    }
-
-    /**
-     * Get a number of bytes, starting at the current position.
-     * @param numberOfBytes The number of bytes to read.
-     * @return The read bytes.
-     */
-    default ByteBuffer get(int numberOfBytes){
-        return getRelative(0, numberOfBytes);
-    }
-
-    /**
-     * Get the next byte.
-     * @return The next byte.
-     */
-    default byte getNext(){
-        return getRelative(1);
-    }
-
-    /**
-     * Get the previous byte.
-     * @return The previous byte.
-     */
-    default byte getPrevious(){
-        return getRelative(-1);
-    }
-
-    /**
-     * Advance forward one byte.
-     */
-    default void advance(){
-        advanceRelative(1);
-    }
-
-    /**
-     * Advance back one byte.
-     */
-    default void advanceBack(){
-        advanceRelative(-1);
-    }
-
-    /**
-     * Get a parsed byte structure.
-     * @param hexReader The reader which parses the bytes into an object.
-     * @param <T> The object to convert the read bytes into.
-     * @return The read and parsed object.
-     */
-    default <T> T get(HexReader<T> hexReader){
-        return hexReader.translate(this.copy());
-    }
-
-    /**
-     * Get a parsed byte structure.
-     * @param hexReader The reader which parses the bytes into an object.
-     * @param <T> The object to convert the read bytes into.
-     * @return The read and parsed object.
-     */
-    default <T> T get(int distance, HexReader<T> hexReader){
-        HexFieldIterator copy = this.copy();
-        copy.advanceRelative(distance);
-        return hexReader.translate(copy);
-    }
-
-    /**
-     * Read an object from an absolute position
-     * @param pointer Pointer to read from
-     * @param reader The reader to use.
-     * @param <T> The object to retrieve.
-     * @return
-     */
-    default <T> T getAbsolute(long pointer, HexReader<T> reader){
-        HexFieldIterator copy = this.copy();
-        copy.advanceTo(pointer);
-        return reader.translate(copy);
-    }
 }

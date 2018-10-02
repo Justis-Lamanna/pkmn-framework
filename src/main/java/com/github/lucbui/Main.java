@@ -5,6 +5,7 @@ import com.github.lucbui.framework.PkmnFramework;
 import com.github.lucbui.structures.SampleStructure;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public class Main {
 
@@ -13,6 +14,7 @@ public class Main {
                 .init("C:\\Users\\laman\\IdeaProjects\\pkmnframework\\src\\main\\resources\\test.hex")
                 .addReader(GBAPointer.class, GBAPointer.HEX_READER)
                 .start();
-        System.out.println(PkmnFramework.read(0, SampleStructure.class));
+        ByteBuffer bb = ByteBuffer.wrap(new byte[]{0, 0, 0, 0});
+        PkmnFramework.getIterator(4).writeRelative(0, bb);
     }
 }
