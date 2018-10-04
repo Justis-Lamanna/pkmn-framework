@@ -21,6 +21,17 @@ public interface HexFieldIterator {
     HexFieldIterator copy();
 
     /**
+     * Create a copy of this HexFieldIterator, moving it to the specified pointer.
+     * @param pointer The position to start at.
+     * @return
+     */
+    default HexFieldIterator copy(long pointer){
+        HexFieldIterator copy = this.copy();
+        copy.advanceTo(pointer);
+        return copy;
+    }
+
+    /**
      * Get a number of bytes relativeIndex away from the current position.
      * This advances the specified number of bytes forward, and then reads the specified number of bytes all at once.
      *
@@ -60,50 +71,6 @@ public interface HexFieldIterator {
      */
     default void write(ByteBuffer bytes){writeRelative(0, bytes);}
 
-    /**
-     * Get a parsed byte structure.
-     * @param hexReader The reader which parses the bytes into an object.
-     * @param <T> The object to convert the read bytes into.
-     * @return The read and parsed object.
-     */
-    default <T> T get(HexReader<T> hexReader){
-        return hexReader.read(this.copy());
-    }
-
-    /**
-     * Write a byte structure.
-     * @param object The object to write.
-     * @param hexWriter The writer which parses the object into bytes.
-     * @param <T> The object to convert into bytes.
-     */
-    default <T> void write(T object, HexWriter<T> hexWriter){
-        hexWriter.write(object, this.copy());
-    }
-
-    /**
-     * Get a parsed byte structure.
-     * @param hexReader The reader which parses the bytes into an object.
-     * @param <T> The object to convert the read bytes into.
-     * @return The read and parsed object.
-     */
-    default <T> T get(int distance, HexReader<T> hexReader){
-        HexFieldIterator copy = this.copy();
-        copy.advanceRelative(distance);
-        return hexReader.read(copy);
-    }
-
-    /**
-     * Write a byte structure.
-     * @param object The object to write.
-     * @param distance The relative distance away the object should be read from.
-     * @param hexWriter The writer which parses the bytes into an object.
-     * @param <T> The object to convert into bytes.
-     */
-    default <T> void write(T object, int distance, HexWriter<T> hexWriter){
-        HexFieldIterator copy = this.copy();
-        copy.advanceRelative(distance);
-        hexWriter.write(object, copy);
-    }
 
     /**
      * Read an object from an absolute position

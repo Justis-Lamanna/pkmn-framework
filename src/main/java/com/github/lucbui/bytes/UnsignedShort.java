@@ -40,7 +40,7 @@ public class UnsignedShort implements ByteObject<UnsignedShort>, Comparable<Unsi
         if(bytes.capacity() < 2){
             throw new IndexOutOfBoundsException("ByteBuffer capacity < 2");
         }
-        int value = ByteUtils.byteToUnsignedByte(bytes.get(1)) * 0x100 + ByteUtils.byteToUnsignedByte(bytes.get(0));
+        int value = HexUtils.byteToUnsignedByte(bytes.get(1)) * 0x100 + HexUtils.byteToUnsignedByte(bytes.get(0));
         return shorts.computeIfAbsent(value, UnsignedShort::new);
     }
 
@@ -51,7 +51,7 @@ public class UnsignedShort implements ByteObject<UnsignedShort>, Comparable<Unsi
      * @throws IllegalArgumentException Provided value is not between 0 and 0xFFFF, inclusively.
      */
     public static UnsignedShort valueOf(int value){
-        ByteUtils.assertRange(value, 0, 0xFFFF);
+        HexUtils.assertRange(value, 0, 0xFFFF);
         return shorts.computeIfAbsent(value, UnsignedShort::new);
     }
 

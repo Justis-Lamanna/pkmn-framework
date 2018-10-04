@@ -34,7 +34,7 @@ public class UnsignedWord implements ByteObject<UnsignedWord>,Comparable<Unsigne
         if(bytes.capacity() < 4){
             throw new IndexOutOfBoundsException("ByteBuffer capacity < 4");
         }
-        long value = ByteUtils.byteToUnsignedByte(bytes.get(3)) * 0x1000000L + ByteUtils.byteToUnsignedByte(bytes.get(2)) * 0x10000 + ByteUtils.byteToUnsignedByte(bytes.get(1)) * 0x100 + ByteUtils.byteToUnsignedByte(bytes.get(0));
+        long value = HexUtils.byteToUnsignedByte(bytes.get(3)) * 0x1000000L + HexUtils.byteToUnsignedByte(bytes.get(2)) * 0x10000 + HexUtils.byteToUnsignedByte(bytes.get(1)) * 0x100 + HexUtils.byteToUnsignedByte(bytes.get(0));
         return words.computeIfAbsent(value, UnsignedWord::new);
     }
 
@@ -45,7 +45,7 @@ public class UnsignedWord implements ByteObject<UnsignedWord>,Comparable<Unsigne
      * @throws IllegalArgumentException Provided value is not between 0 and 0xFFFFFFFF, inclusively.
      */
     public static UnsignedWord valueOf(long value){
-        ByteUtils.assertRange(value, 0, 0xFFFFFFFFL);
+        HexUtils.assertRange(value, 0, 0xFFFFFFFFL);
         return words.computeIfAbsent(value, UnsignedWord::new);
     }
 

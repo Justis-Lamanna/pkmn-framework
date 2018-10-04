@@ -4,10 +4,7 @@ import com.github.lucbui.annotations.AfterConstruct;
 import com.github.lucbui.annotations.DataStructure;
 import com.github.lucbui.annotations.StructField;
 import com.github.lucbui.annotations.StructFieldType;
-import com.github.lucbui.bytes.HexReader;
-import com.github.lucbui.bytes.UnsignedByte;
-import com.github.lucbui.bytes.UnsignedShort;
-import com.github.lucbui.bytes.UnsignedWord;
+import com.github.lucbui.bytes.*;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -75,11 +72,11 @@ public class ReflectionHexReader<T> implements HexReader<T> {
                 if(annotation.fieldType() == StructFieldType.NESTED) {
                     Class<?> classToRead = annotation.readAs() == Void.class ? field.getType() : annotation.readAs();
                     HexReader<?> reader = getHexReaderFor(classToRead);
-                    Object parsedObject = iterator.get(offset, reader);
+                    Object parsedObject = reader.read(iterator.copy(offset));
                     FieldUtils.writeField(field, object, parsedObject, true);
                 } else if(annotation.fieldType() == StructFieldType.POINTER) {
                     HexReader<?> ptrReader = getHexReaderFor(Pointer.class);
-                    Pointer ptr = (Pointer)iterator.get(offset, ptrReader);
+                    Pointer ptr = (Pointer) ptrReader.read(iterator.copy(offset));
                     Class<?> classToRead = annotation.readAs() == Void.class ? field.getType() : annotation.readAs();
                     HexReader<?> reader = getHexReaderFor(classToRead);
                     Object parsedObject = iterator.getAbsolute(ptr.getLocation(), reader);

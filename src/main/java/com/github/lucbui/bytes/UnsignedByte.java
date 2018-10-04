@@ -40,7 +40,7 @@ public class UnsignedByte implements ByteObject<UnsignedByte>, Comparable<Unsign
         if(value.capacity() < 1){
             throw new IndexOutOfBoundsException("ByteBuffer capacity < 1");
         }
-        return bytes.computeIfAbsent(ByteUtils.byteToUnsignedByte(value.get()), UnsignedByte::new);
+        return bytes.computeIfAbsent(HexUtils.byteToUnsignedByte(value.get()), UnsignedByte::new);
     }
 
     /**
@@ -50,7 +50,7 @@ public class UnsignedByte implements ByteObject<UnsignedByte>, Comparable<Unsign
      * @throws IllegalArgumentException Provided value is not between 0 and 255, inclusively.
      */
     public static UnsignedByte valueOf(int value){
-        ByteUtils.assertRange(value, 0, 0xFF);
+        HexUtils.assertRange(value, 0, 0xFF);
         return bytes.computeIfAbsent(value, UnsignedByte::new);
     }
 

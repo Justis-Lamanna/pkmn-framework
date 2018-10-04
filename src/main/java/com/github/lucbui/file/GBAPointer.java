@@ -1,9 +1,10 @@
 package com.github.lucbui.file;
 
-import com.github.lucbui.bytes.ByteUtils;
+import com.github.lucbui.bytes.HexUtils;
 import com.github.lucbui.bytes.HexReader;
 
 import java.nio.ByteBuffer;
+import java.util.Comparator;
 import java.util.Objects;
 
 /**
@@ -18,6 +19,9 @@ public class GBAPointer implements Pointer, Comparable<GBAPointer> {
 
     private final Type type;
     private final long position;
+
+    private static final Comparator<GBAPointer> COMPARATOR =
+            Comparator.comparing(GBAPointer::getType).thenComparingLong(GBAPointer::getLocation);
 
     private GBAPointer(Type type, long position){
         this.type = type;
@@ -52,8 +56,8 @@ public class GBAPointer implements Pointer, Comparable<GBAPointer> {
         if(bytes.capacity() < 4){
             throw new IndexOutOfBoundsException("Bytebuffer capacity < 4");
         }
-        Type type = Type.getTypeForPrefix(ByteUtils.byteToUnsignedByte(bytes.get(3)));
-        long value = ByteUtils.byteToUnsignedByte(bytes.get(2)) * 0x10000L + ByteUtils.byteToUnsignedByte(bytes.get(1)) * 0x100 + ByteUtils.byteToUnsignedByte(bytes.get(0));
+        Type type = Type.getTypeForPrefix(HexUtils.byteToUnsignedByte(bytes.get(3)));
+        long value = HexUtils.byteToUnsignedByte(bytes.get(2)) * 0x10000L + HexUtils.byteToUnsignedByte(bytes.get(1)) * 0x100 + HexUtils.byteToUnsignedByte(bytes.get(0));
         return valueOf(type, value);
     }
 
@@ -94,14 +98,7 @@ public class GBAPointer implements Pointer, Comparable<GBAPointer> {
 
     @Override
     public int compareTo(GBAPointer o) {
-        if(o == null){
-            throw new NullPointerException("Null provided");
-        }
-        int typeDifference = this.type.ordinal() - o.type.ordinal();
-        if(typeDifference == 0){
-            return (int)Math.signum(this.position - o.position);
-        }
-        return typeDifference;
+        return COMPARATOR.compare(this, o);
     }
 
     @Override
