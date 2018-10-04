@@ -30,12 +30,21 @@ public class HexUtils {
 
     /**
      * Converts a byte to its unsigned version (as an integer)
-     * @param bite The bite to convert
-     * @return The unsigned version of this bite.
+     * @param bite The byte to convert
+     * @return The unsigned version of this byte.
      */
     public static int byteToUnsignedByte(byte bite){
         //We mask the first eight bites, and clear out the sign bit.
         return bite & 0xFF;
+    }
+
+    /**
+     * Convert unsigned byte to its byte version
+     * @param unsignedByte The byte to convert.
+     * @return The signed version of this byte.
+     */
+    public static byte unsignedByteToByte(int unsignedByte){
+        return (byte)unsignedByte;
     }
 
     /**
