@@ -1,5 +1,7 @@
 package com.github.lucbui.bytes;
 
+import com.github.lucbui.file.HexFieldIterator;
+
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +19,11 @@ public class UnsignedByte implements ByteObject<UnsignedByte>, Comparable<Unsign
      * Dedicated HexReader for UnsignedByte
      */
     public static final HexReader<UnsignedByte> HEX_READER = iterator -> UnsignedByte.valueOf(iterator.get(1));
+
+    /**
+     * Dedicated HexWriter for UnsignedByte
+     */
+    public static final HexWriter<UnsignedByte> HEX_WRITER = (object, iterator) -> iterator.write(object.toBytes());
 
     //The value inside this byte.
     int value;
@@ -60,6 +67,14 @@ public class UnsignedByte implements ByteObject<UnsignedByte>, Comparable<Unsign
      */
     public int getValue() {
         return value;
+    }
+
+    /**
+     * Convert this UnsignedByte to a byte representation.
+     * @return
+     */
+    public ByteBuffer toBytes(){
+        return HexUtils.toByteBuffer(value);
     }
 
     @Override

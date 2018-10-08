@@ -1,6 +1,7 @@
 package com.github.lucbui.framework;
 
 import com.github.lucbui.bytes.HexReader;
+import com.github.lucbui.bytes.HexWriter;
 import com.github.lucbui.file.FileHexField;
 import com.github.lucbui.file.HexField;
 import com.github.lucbui.file.HexFieldIterator;
@@ -79,6 +80,18 @@ public class PkmnFramework {
     }
 
     /**
+     * Write an object to a pointer.
+     * @param pointer The pointer to write to.
+     * @param writer The writer to use.
+     * @param object The object to write.
+     * @param <T> The object to write.
+     */
+    public static <T> void write(long pointer, HexWriter<T> writer, T object){
+        verifyFieldsPresent();
+        writer.write(object, hexField.iterator(pointer));
+    }
+
+    /**
      * Read an object reflectively from a pointer.
      * @param pointer The pointer to read.
      * @param clazz The reader to use.
@@ -105,6 +118,7 @@ public class PkmnFramework {
         private HexField hexField;
 
         Map<Class<?>, HexReader<?>> readers;
+        Map<Class<?>, HexWriter<?>> writers;
 
         private Builder(){
             this.readers = new HashMap<>();
@@ -123,6 +137,22 @@ public class PkmnFramework {
             Objects.requireNonNull(clazz);
             Objects.requireNonNull(reader);
             readers.put(clazz, reader);
+            return this;
+        }
+
+        /**
+         * Adds a writer to the class hex parser.
+         * If ReflectionHexReader encounters a type listed in this writer, it will call the associated HexWriter
+         * to parse it, rather than use reflection to do so.
+         * @param clazz The class to associate with.
+         * @param writer The writer to use.
+         * @param <T> The type created by the writer.
+         * @return This Builder for additional chaining
+         */
+        public <T> Builder addWriter(Class<T> clazz, HexWriter<T> writer){
+            Objects.requireNonNull(clazz);
+            Objects.requireNonNull(writer);
+            writers.put(clazz, writer);
             return this;
         }
 

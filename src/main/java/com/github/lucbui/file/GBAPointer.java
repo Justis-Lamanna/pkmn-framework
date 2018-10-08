@@ -2,6 +2,7 @@ package com.github.lucbui.file;
 
 import com.github.lucbui.bytes.HexUtils;
 import com.github.lucbui.bytes.HexReader;
+import com.github.lucbui.bytes.HexWriter;
 
 import java.nio.ByteBuffer;
 import java.util.Comparator;
@@ -16,6 +17,8 @@ import java.util.Objects;
 public class GBAPointer implements Pointer, Comparable<GBAPointer> {
 
     public static final HexReader<GBAPointer> HEX_READER = iterator -> GBAPointer.valueOf(iterator.get(4));
+
+    public static final HexWriter<GBAPointer> HEX_WRITER = (object, iterator) -> iterator.write(object.toBytes());
 
     private final Type type;
     private final long position;
@@ -86,6 +89,10 @@ public class GBAPointer implements Pointer, Comparable<GBAPointer> {
     @Override
     public long getLocation() {
         return position;
+    }
+
+    public ByteBuffer toBytes(){
+        return HexUtils.toByteBuffer(position, position >> 8, position >> 16, type.getPrefix());
     }
 
     @Override

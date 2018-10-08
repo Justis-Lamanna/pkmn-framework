@@ -18,6 +18,11 @@ public class UnsignedShort implements ByteObject<UnsignedShort>, Comparable<Unsi
      */
     public static final HexReader<UnsignedShort> HEX_READER = iterator -> UnsignedShort.valueOf(iterator.get(2));
 
+    /**
+     * Dedicated HexWriter for UnsignedShort
+     */
+    public static final HexWriter<UnsignedShort> HEX_WRITER = (object, iterator) -> iterator.write(object.toBytes());
+
     //The value inside this short.
     int value;
 
@@ -68,6 +73,11 @@ public class UnsignedShort implements ByteObject<UnsignedShort>, Comparable<Unsi
 
     public int getValue() {
         return value;
+    }
+
+    public ByteBuffer toBytes() {
+        //We can do this, because casting to a byte chops off everything except the 8 LSBs
+        return HexUtils.toByteBuffer(value, value >>> 8);
     }
 
     @Override

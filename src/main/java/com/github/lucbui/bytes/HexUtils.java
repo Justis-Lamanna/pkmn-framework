@@ -59,4 +59,17 @@ public class HexUtils {
         }
         return ByteBuffer.wrap(bites);
     }
+
+    /**
+     * Easy method for creating ByteBuffers
+     * @param bitesAsLongs
+     * @return
+     */
+    public static ByteBuffer toByteBuffer(long... bitesAsLongs){
+        byte[] bites = new byte[bitesAsLongs.length];
+        for(int idx = 0; idx < bitesAsLongs.length; idx++){
+            bites[idx] = (byte)bitesAsLongs[idx];
+        }
+        return ByteBuffer.wrap(bites);
+    }
 }

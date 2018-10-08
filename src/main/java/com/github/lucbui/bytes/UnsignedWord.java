@@ -12,6 +12,11 @@ public class UnsignedWord implements ByteObject<UnsignedWord>,Comparable<Unsigne
      */
     public static final HexReader<UnsignedWord> HEX_READER = iterator -> UnsignedWord.valueOf(iterator.get(4));
 
+    /**
+     * Dedicated HexWriter for UnsignedWord
+     */
+    public static final HexWriter<UnsignedWord> HEX_WRITER = (object, iterator) -> iterator.write(object.toBytes());
+
     //The value inside this short.
     long value;
 
@@ -69,6 +74,14 @@ public class UnsignedWord implements ByteObject<UnsignedWord>,Comparable<Unsigne
     public static UnsignedWord valueOf(UnsignedShort uShort){
         Objects.requireNonNull(uShort);
         return words.computeIfAbsent((long) uShort.value, UnsignedWord::new);
+    }
+
+    public long getValue(){
+        return value;
+    }
+
+    public ByteBuffer toBytes(){
+        return HexUtils.toByteBuffer(value, value >>> 8, value >>> 16, value >>> 24);
     }
 
     @Override
