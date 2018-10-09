@@ -30,9 +30,25 @@ public class ReflectionHexReader<T> implements HexReader<T> {
     //A cache of readers, registered for reusing.
     static Map<Class<?>, HexReader<?>> READERS = new HashMap<>();
     static {
+        resetReaders();
+    }
+
+    /**
+     * Reset Readers to the default.
+     */
+    public static void resetReaders(){
+        READERS.clear();
         READERS.put(UnsignedByte.class, UnsignedByte.HEX_READER);
         READERS.put(UnsignedShort.class, UnsignedShort.HEX_READER);
         READERS.put(UnsignedWord.class, UnsignedWord.HEX_READER);
+    }
+
+    /**
+     * Register a number of readers.
+     * @param readers The readers to add.
+     */
+    public static void addReaders(Map<Class<?>, HexReader<?>> readers){
+        READERS.putAll(readers);
     }
 
     private final Class<T> clazz;
@@ -72,11 +88,11 @@ public class ReflectionHexReader<T> implements HexReader<T> {
                 if(annotation.fieldType() == StructFieldType.NESTED) {
                     Class<?> classToRead = annotation.readAs() == Void.class ? field.getType() : annotation.readAs();
                     HexReader<?> reader = getHexReaderFor(classToRead);
-                    Object parsedObject = reader.read(iterator.copy(offset));
+                    Object parsedObject = reader.read(iterator.copyRelative(offset));
                     FieldUtils.writeField(field, object, parsedObject, true);
                 } else if(annotation.fieldType() == StructFieldType.POINTER) {
                     HexReader<?> ptrReader = getHexReaderFor(Pointer.class);
-                    Pointer ptr = (Pointer) ptrReader.read(iterator.copy(offset));
+                    Pointer ptr = (Pointer) ptrReader.read(iterator.copyRelative(offset));
                     Class<?> classToRead = annotation.readAs() == Void.class ? field.getType() : annotation.readAs();
                     HexReader<?> reader = getHexReaderFor(classToRead);
                     Object parsedObject = iterator.getAbsolute(ptr.getLocation(), reader);

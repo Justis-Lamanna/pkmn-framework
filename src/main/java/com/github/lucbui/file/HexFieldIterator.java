@@ -31,6 +31,12 @@ public interface HexFieldIterator {
         return copy;
     }
 
+    default HexFieldIterator copyRelative(long relative){
+        HexFieldIterator copy = this.copy();
+        copy.advanceRelative(relative);
+        return copy;
+    }
+
     /**
      * Get a number of bytes relativeIndex away from the current position.
      * This advances the specified number of bytes forward, and then reads the specified number of bytes all at once.

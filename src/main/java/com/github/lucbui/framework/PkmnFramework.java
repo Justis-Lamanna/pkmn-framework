@@ -104,6 +104,16 @@ public class PkmnFramework {
     }
 
     /**
+     * Write an object reflectively from a pointer.
+     * @param pointer The pointer to read.
+     * @param <T> The object to write
+     */
+    public static <T> void write(long pointer, T object) {
+        verifyFieldsPresent();
+        ReflectionHexWriter.getHexWriterFor(object.getClass()).writeObject(object, hexField.iterator(pointer));
+    }
+
+    /**
      * Create an iterator to maneuver the hex field.
      * @param position The position to start the iterator at.
      * @return An iterator.
@@ -122,6 +132,7 @@ public class PkmnFramework {
 
         private Builder(){
             this.readers = new HashMap<>();
+            this.writers = new HashMap<>();
         }
 
         /**
@@ -156,13 +167,33 @@ public class PkmnFramework {
             return this;
         }
 
+        /**
+         * Adds a reader and a writer to the class hex parser.
+         * @param clazz The class to associate with.
+         * @param reader The reader to use.
+         * @param writer The writer to use.
+         * @param <T> The type created by the parsers.
+         * @return This Builder for additional chaining.
+         */
+        public <T> Builder addReaderWriter(Class<T> clazz, HexReader<T> reader, HexWriter<T> writer){
+            Objects.requireNonNull(clazz);
+            Objects.requireNonNull(reader);
+            Objects.requireNonNull(writer);
+            readers.put(clazz, reader);
+            writers.put(clazz, writer);
+            return this;
+        }
+
         public void start() throws IOException {
             if(hexField == null) {
                 PkmnFramework.hexField = new FileHexField(path, StandardOpenOption.READ, StandardOpenOption.WRITE);
             } else {
                 PkmnFramework.hexField = hexField;
             }
-            ReflectionHexReader.READERS.putAll(this.readers);
+            ReflectionHexReader.resetReaders();
+            ReflectionHexReader.addReaders(this.readers);
+            ReflectionHexWriter.resetWriters();
+            ReflectionHexWriter.addWriters(this.writers);
         }
     }
 }

@@ -15,10 +15,10 @@ public class Main {
     public static void main(String... args) throws IOException {
         PkmnFramework
                 .init("C:\\Users\\laman\\IdeaProjects\\pkmnframework\\src\\main\\resources\\test.hex")
-                .addReader(GBAPointer.class, GBAPointer.HEX_READER)
+                .addReaderWriter(GBAPointer.class, GBAPointer.HEX_READER, GBAPointer.HEX_WRITER)
                 .start();
-        //System.out.println(PkmnFramework.read(0, SampleStructure.class));
-        PkmnFramework.write(0, GBAPointer.HEX_WRITER, GBAPointer.valueOf(GBAPointer.Type.ROM, 0x800000));
-        //System.out.println(Arrays.toString(UnsignedShort.valueOf(1000).toBytes().array()));
+        //System.out.println(PkmnFramework.read(0x40, SampleStructure.class));
+        PkmnFramework.write(0x30, PkmnFramework.read(0x40, SampleStructure.class));
+        //PkmnFramework.write(0, GBAPointer.HEX_WRITER, GBAPointer.valueOf(GBAPointer.Type.ROM, 0x800000));
     }
 }

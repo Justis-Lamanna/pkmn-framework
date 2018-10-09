@@ -5,6 +5,7 @@ import com.github.lucbui.annotations.DataStructure;
 import com.github.lucbui.annotations.StructField;
 import com.github.lucbui.annotations.StructFieldType;
 import com.github.lucbui.bytes.UnsignedWord;
+import com.github.lucbui.file.GBAPointer;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
@@ -13,8 +14,20 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 @DataStructure
 public class SampleStructure {
 
-    @StructField(value=0, fieldType = StructFieldType.POINTER)
-    private UnsignedWord word;
+    @StructField(0)
+    private GBAPointer ptr1;
+
+    @StructField(4)
+    private GBAPointer prt2;
+
+    public SampleStructure(){
+
+    }
+
+    public SampleStructure(GBAPointer ptr1, GBAPointer prt2) {
+        this.ptr1 = ptr1;
+        this.prt2 = prt2;
+    }
 
     @Override
     public String toString() {
