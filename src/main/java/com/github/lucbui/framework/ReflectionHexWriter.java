@@ -48,7 +48,7 @@ public class ReflectionHexWriter<T> implements HexWriter<T> {
     }
 
     @Override
-    public void write(Object object, HexFieldIterator iterator) {
+    public void write(T object, HexFieldIterator iterator) {
         try {
             List<Field> fields = FieldUtils.getFieldsListWithAnnotation(clazz, StructField.class);
             for (Field field : fields) {
