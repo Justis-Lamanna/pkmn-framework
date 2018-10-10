@@ -110,7 +110,21 @@ public class PkmnFramework {
      */
     public static <T> void write(long pointer, T object, RepointStrategy repointStrategy) {
         verifyFieldsPresent();
+        if(repointStrategy == null){
+            repointStrategy = RepointStrategy.DISABLE_REPOINT;
+        }
         ReflectionHexReaderWriter.getHexWriterFor(object.getClass(), repointStrategy).writeObject(object, hexField.iterator(pointer));
+    }
+
+    /**
+     * Write an object reflectively from a pointer.
+     * RepointStrategy.DISABLE_REPOINT is the default repointing behavior. If a StructField of type POINTER is encountered,
+     * an exception is thrown.
+     * @param pointer The pointer to read.
+     * @param <T> The object to write
+     */
+    public static <T> void write(long pointer, T object) {
+        write(pointer, object, RepointStrategy.DISABLE_REPOINT);
     }
 
     /**
