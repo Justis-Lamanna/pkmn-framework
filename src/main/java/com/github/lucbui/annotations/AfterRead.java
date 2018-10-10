@@ -6,9 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a method to be invoked after it is constructed by a ReflectionHexReader
+ * Marks a method to be invoked after it is constructed by a ReflectionHexReaderWriter
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface AfterConstruct {
+public @interface AfterRead {
 }

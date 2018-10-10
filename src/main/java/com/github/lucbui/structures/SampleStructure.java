@@ -1,17 +1,16 @@
 package com.github.lucbui.structures;
 
-import com.github.lucbui.annotations.AfterConstruct;
+import com.github.lucbui.annotations.AfterRead;
+import com.github.lucbui.annotations.BeforeWrite;
 import com.github.lucbui.annotations.DataStructure;
 import com.github.lucbui.annotations.StructField;
-import com.github.lucbui.annotations.StructFieldType;
-import com.github.lucbui.bytes.UnsignedWord;
 import com.github.lucbui.file.GBAPointer;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * A sample data structure, to practice working with the @DataStructure annotation.
  */
-@DataStructure
+@DataStructure(size = 8)
 public class SampleStructure {
 
     @StructField(0)
@@ -34,8 +33,13 @@ public class SampleStructure {
         return ToStringBuilder.reflectionToString(this);
     }
 
-    @AfterConstruct
+    @AfterRead
     private void test(){
         System.out.println("Hello World!");
+    }
+
+    @BeforeWrite
+    private void test2(){
+        System.out.println("Goodbye World!");
     }
 }

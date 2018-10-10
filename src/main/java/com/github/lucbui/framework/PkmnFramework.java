@@ -100,7 +100,7 @@ public class PkmnFramework {
      */
     public static <T> T read(long pointer, Class<T> clazz){
         verifyFieldsPresent();
-        return clazz.cast(ReflectionHexReader.getHexReaderFor(clazz).read(hexField.iterator(pointer)));
+        return clazz.cast(ReflectionHexReaderWriter.getHexReaderFor(clazz).read(hexField.iterator(pointer)));
     }
 
     /**
@@ -108,9 +108,9 @@ public class PkmnFramework {
      * @param pointer The pointer to read.
      * @param <T> The object to write
      */
-    public static <T> void write(long pointer, T object) {
+    public static <T> void write(long pointer, T object, RepointStrategy repointStrategy) {
         verifyFieldsPresent();
-        ReflectionHexWriter.getHexWriterFor(object.getClass()).writeObject(object, hexField.iterator(pointer));
+        ReflectionHexReaderWriter.getHexWriterFor(object.getClass(), repointStrategy).writeObject(object, hexField.iterator(pointer));
     }
 
     /**
@@ -137,7 +137,7 @@ public class PkmnFramework {
 
         /**
          * Adds a reader to the class hex parser.
-         * If ReflectionHexReader encounters a type listed in this reader, it will call the associated HexReader
+         * If ReflectionHexReaderWriter encounters a type listed in this reader, it will call the associated HexReader
          * to parse it, rather than use reflection to do so.
          * @param clazz The class to associate with.
          * @param reader The reader to use.
@@ -153,7 +153,7 @@ public class PkmnFramework {
 
         /**
          * Adds a writer to the class hex parser.
-         * If ReflectionHexReader encounters a type listed in this writer, it will call the associated HexWriter
+         * If ReflectionHexReaderWriter encounters a type listed in this writer, it will call the associated HexWriter
          * to parse it, rather than use reflection to do so.
          * @param clazz The class to associate with.
          * @param writer The writer to use.
@@ -190,10 +190,10 @@ public class PkmnFramework {
             } else {
                 PkmnFramework.hexField = hexField;
             }
-            ReflectionHexReader.resetReaders();
-            ReflectionHexReader.addReaders(this.readers);
-            ReflectionHexWriter.resetWriters();
-            ReflectionHexWriter.addWriters(this.writers);
+            ReflectionHexReaderWriter.resetReaders();
+            ReflectionHexReaderWriter.addReaders(this.readers);
+            ReflectionHexReaderWriter.resetWriters();
+            ReflectionHexReaderWriter.addWriters(this.writers);
         }
     }
 }
