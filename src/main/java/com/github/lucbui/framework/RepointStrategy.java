@@ -2,6 +2,7 @@ package com.github.lucbui.framework;
 
 import com.github.lucbui.file.Pointer;
 
+import java.util.Optional;
 import java.util.OptionalInt;
 
 /**
@@ -18,28 +19,19 @@ public interface RepointStrategy {
     };
 
     /**
-     * A repoint strategy where the data is written to the same place as it was.
-     * If the data pointed to stays the same size, no repoint logic may be necessary, and it can simply be
-     * written to the same place it was read.
-     */
-    public static final RepointStrategy IDENTITY_REPOINT = metadata -> metadata.getOldPointer().getLocation();
-
-    /**
      * Determine where and how to repoint data, if it needs to be repointed.
      * @param metadata Object describing the state of the object to repoint.
      * @return The position to repoint to.
      */
-    long repoint(RepointMetadata metadata);
+    Pointer repoint(RepointMetadata metadata);
 
     /**
      * An object describing the state needed for repointing.
      */
     class RepointMetadata{
-        private Pointer oldPointer;
         private int size;
 
-        RepointMetadata(Pointer oldPointer, int size){
-            this.oldPointer = oldPointer;
+        RepointMetadata(int size){
             this.size = size;
         }
 
@@ -50,10 +42,6 @@ public interface RepointStrategy {
          */
         public OptionalInt getSize(){
             return this.size <= 0 ? OptionalInt.empty() : OptionalInt.of(this.size);
-        }
-
-        public Pointer getOldPointer(){
-            return oldPointer;
         }
     }
 }

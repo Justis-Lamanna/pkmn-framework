@@ -74,7 +74,7 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
 
     private ReflectionHexReaderWriter(Class<T> clazz){
         this.clazz = clazz;
-        this.repointStrategy = null;
+        this.repointStrategy = RepointStrategy.DISABLE_REPOINT;
     }
 
     private ReflectionHexReaderWriter(Class<T> clazz, RepointStrategy strategy){
@@ -193,7 +193,9 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
                 });
 
         try {
-            List<Field> fields = FieldUtils.getFieldsListWithAnnotation(clazz, StructField.class);
+            //Get all StructFields that aren't read only.
+            List<Field> fields = FieldUtils.getFieldsListWithAnnotation(clazz, StructField.class).stream()
+                    .filter(i -> !i.getAnnotation(StructField.class).readOnly()).collect(Collectors.toList());
             for (Field field : fields) {
                 StructField annotation = field.getAnnotation(StructField.class);
                 int offset = annotation.value();
@@ -202,7 +204,15 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
                     HexWriter<?> writer = getHexWriterFor(classToWrite, repointStrategy);
                     writer.writeObject(FieldUtils.readField(field, object, true), iterator.copyRelative(offset));
                 } else if (annotation.fieldType() == StructFieldType.POINTER) {
-                    throw new NotImplementedException("Cannot supported Pointer writing yet");
+                    //Create the repoint metadata, so the user can repoint properly.
+                    RepointStrategy.RepointMetadata metadata = createRepointMetadata(iterator, offset);
+                    Pointer repointOffset = repointStrategy.repoint(metadata);
+                    //Write the new pointers in place.
+                    HexWriter<?> newPointerWriter = getHexWriterFor(Pointer.class, null);
+                    newPointerWriter.writeObject(repointOffset, iterator.copyRelative(offset));
+                    //Write the new objects in place.
+                    HexWriter<?> newObjectWriter = getHexWriterFor(field.getType(), repointStrategy);
+                    newObjectWriter.writeObject(FieldUtils.readField(field, object, true), iterator.copy(repointOffset.getLocation()));
                 } else {
                     throw new IllegalArgumentException("Illegal fieldType read: " + annotation.fieldType());
                 }
@@ -210,6 +220,10 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
         } catch (IllegalAccessException ex){
             throw new IllegalArgumentException("Error writing object of type " + clazz.getName(), ex);
         }
+    }
+
+    private RepointStrategy.RepointMetadata createRepointMetadata(HexFieldIterator iterator, int offset) {
+        return new RepointStrategy.RepointMetadata( 0);
     }
 
     public static HexWriter<?> getHexWriterFor(Class<?> type, RepointStrategy repointStrategy) {

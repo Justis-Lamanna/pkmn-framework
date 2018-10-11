@@ -32,4 +32,10 @@ public @interface StructField {
      * @return
      */
     StructFieldType fieldType() default StructFieldType.NESTED;
+
+    /**
+     * If true, this field is read-only.
+     * @return
+     */
+    boolean readOnly() default false;
 }
