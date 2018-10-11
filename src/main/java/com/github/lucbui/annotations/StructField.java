@@ -1,5 +1,9 @@
 package com.github.lucbui.annotations;
 
+import com.github.lucbui.bytes.UnsignedWord;
+import com.github.lucbui.file.GBAPointer;
+import com.github.lucbui.file.Pointer;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -19,23 +23,20 @@ public @interface StructField {
     int value();
 
     /**
-     * The class to read this as.
-     * @return
-     */
-    Class<?> readAs() default Void.class;
-
-    /**
-     * The type of StructField: Nested, or Pointer.
-     * Default is Nested. A Pointer fieldType indicates that a pointer should be read at the specified {@code value}, and
-     * the contained object begins parsing at that pointer. A Nested fieldType indicates that the object should be read
-     * immediately from the specified {@code value}.
-     * @return
-     */
-    StructFieldType fieldType() default StructFieldType.NESTED;
-
-    /**
      * If true, this field is read-only.
      * @return
      */
     boolean readOnly() default false;
+
+    /**
+     * The type of pointer. Only used for PointerObjects
+     * @return
+     */
+    Class<? extends Pointer> pointerType() default Pointer.class;
+
+    /**
+     * The type of object. Only used for PointerObjects
+     * @return
+     */
+    Class<? extends Object> objectType() default Void.class;
 }

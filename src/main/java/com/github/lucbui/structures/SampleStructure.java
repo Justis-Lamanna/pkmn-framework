@@ -1,6 +1,7 @@
 package com.github.lucbui.structures;
 
 import com.github.lucbui.annotations.*;
+import com.github.lucbui.bytes.PointerObject;
 import com.github.lucbui.bytes.UnsignedWord;
 import com.github.lucbui.file.GBAPointer;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -11,14 +12,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 @DataStructure(size = 8)
 public class SampleStructure {
 
-    @StructField(value = 0, fieldType = StructFieldType.POINTER)
-    private UnsignedWord word1;
-
-    @StructField(value = 0, readOnly = true)
-    private GBAPointer ptr1;
-
-    @StructField(value = 4, fieldType = StructFieldType.POINTER)
-    private UnsignedWord prt2;
+    @StructField(value = 0, pointerType=GBAPointer.class, objectType=UnsignedWord.class)
+    private PointerObject<GBAPointer, UnsignedWord> ptr1;
 
     @StructField(value = 4, readOnly = true)
     private GBAPointer ptr2;

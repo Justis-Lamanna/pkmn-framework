@@ -10,6 +10,8 @@ import org.apache.commons.lang3.reflect.MethodUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -110,20 +112,18 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
             for(Field field : fields){
                 StructField annotation = field.getAnnotation(StructField.class);
                 int offset = annotation.value();
-                if(annotation.fieldType() == StructFieldType.NESTED) {
-                    Class<?> classToRead = annotation.readAs() == Void.class ? field.getType() : annotation.readAs();
+                if(field.getType().equals(PointerObject.class)){
+                    //PointerObjects are special cases.
+                    Class<? extends Pointer> ptrClass = annotation.pointerType();
+                    Class<? extends Object> objClass = annotation.objectType();
+                    Pointer ptr = (Pointer) getHexReaderFor(ptrClass).read(iterator);
+                    Object obj = getHexReaderFor(objClass).read(iterator.copy(ptr.getLocation()));
+                    FieldUtils.writeField(field, object, new PointerObject<>(ptr, obj), true);
+                } else {
+                    Class<?> classToRead = field.getType();
                     HexReader<?> reader = getHexReaderFor(classToRead);
                     Object parsedObject = reader.read(iterator.copyRelative(offset));
                     FieldUtils.writeField(field, object, parsedObject, true);
-                } else if(annotation.fieldType() == StructFieldType.POINTER) {
-                    HexReader<?> ptrReader = getHexReaderFor(Pointer.class);
-                    Pointer ptr = (Pointer) ptrReader.read(iterator.copyRelative(offset));
-                    Class<?> classToRead = annotation.readAs() == Void.class ? field.getType() : annotation.readAs();
-                    HexReader<?> reader = getHexReaderFor(classToRead);
-                    Object parsedObject = iterator.getAbsolute(ptr.getLocation(), reader);
-                    FieldUtils.writeField(field, object, parsedObject, true);
-                } else {
-                    throw new IllegalArgumentException("Illegal fieldType read: " + annotation.fieldType());
                 }
             }
             //Invoke all AfterRead methods.
@@ -199,23 +199,9 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
             for (Field field : fields) {
                 StructField annotation = field.getAnnotation(StructField.class);
                 int offset = annotation.value();
-                if (annotation.fieldType() == StructFieldType.NESTED) {
-                    Class<?> classToWrite = annotation.readAs() == Void.class ? field.getType() : annotation.readAs();
-                    HexWriter<?> writer = getHexWriterFor(classToWrite, repointStrategy);
-                    writer.writeObject(FieldUtils.readField(field, object, true), iterator.copyRelative(offset));
-                } else if (annotation.fieldType() == StructFieldType.POINTER) {
-                    //Create the repoint metadata, so the user can repoint properly.
-                    RepointStrategy.RepointMetadata metadata = createRepointMetadata(iterator, offset);
-                    Pointer repointOffset = repointStrategy.repoint(metadata);
-                    //Write the new pointers in place.
-                    HexWriter<?> newPointerWriter = getHexWriterFor(Pointer.class, null);
-                    newPointerWriter.writeObject(repointOffset, iterator.copyRelative(offset));
-                    //Write the new objects in place.
-                    HexWriter<?> newObjectWriter = getHexWriterFor(field.getType(), repointStrategy);
-                    newObjectWriter.writeObject(FieldUtils.readField(field, object, true), iterator.copy(repointOffset.getLocation()));
-                } else {
-                    throw new IllegalArgumentException("Illegal fieldType read: " + annotation.fieldType());
-                }
+                Class<?> classToWrite = field.getType();
+                HexWriter<?> writer = getHexWriterFor(classToWrite, repointStrategy);
+                writer.writeObject(FieldUtils.readField(field, object, true), iterator.copyRelative(offset));
             }
         } catch (IllegalAccessException ex){
             throw new IllegalArgumentException("Error writing object of type " + clazz.getName(), ex);

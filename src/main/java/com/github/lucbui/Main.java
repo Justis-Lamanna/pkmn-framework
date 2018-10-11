@@ -18,6 +18,7 @@ public class Main {
                 .addReaderWriter(GBAPointer.class, GBAPointer.HEX_READER, GBAPointer.HEX_WRITER)
                 .start();
         SampleStructure ss = PkmnFramework.read(0x4, SampleStructure.class);
-        PkmnFramework.write(0x0, ss,null);
+        //PkmnFramework.write(0x0, ss,null);
+        System.out.println(ss);
     }
 }
