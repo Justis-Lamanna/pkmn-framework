@@ -12,10 +12,10 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 @DataStructure(size = 8)
 public class SampleStructure {
 
-    @StructField(value = 0, pointerType=GBAPointer.class, objectType=UnsignedWord.class)
+    @StructField(value = 0, objectType=UnsignedWord.class)
     private PointerObject<GBAPointer, UnsignedWord> ptr1;
 
-    @StructField(value = 4, readOnly = true)
+    @StructField(value = 4)
     private GBAPointer ptr2;
 
     public SampleStructure(){
@@ -25,15 +25,5 @@ public class SampleStructure {
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
-    }
-
-    @AfterRead
-    private void test(){
-        System.out.println("Hello World!");
-    }
-
-    @BeforeWrite
-    private void test2(){
-        System.out.println("Goodbye World!");
     }
 }

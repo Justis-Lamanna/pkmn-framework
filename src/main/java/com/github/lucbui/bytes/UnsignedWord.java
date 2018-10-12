@@ -1,10 +1,13 @@
 package com.github.lucbui.bytes;
 
+import com.github.lucbui.annotations.DataStructure;
+
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+@DataStructure(size = 4)
 public class UnsignedWord implements ByteObject<UnsignedWord>,Comparable<UnsignedWord> {
 
     /**

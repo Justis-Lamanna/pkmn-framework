@@ -4,14 +4,10 @@ import com.github.lucbui.annotations.*;
 import com.github.lucbui.bytes.*;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,7 +72,7 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
 
     private ReflectionHexReaderWriter(Class<T> clazz){
         this.clazz = clazz;
-        this.repointStrategy = RepointStrategy.DISABLE_REPOINT;
+        this.repointStrategy = RepointUtils.disableRepointStrategy();
     }
 
     private ReflectionHexReaderWriter(Class<T> clazz, RepointStrategy strategy){
@@ -115,7 +111,7 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
                 if(field.getType().equals(PointerObject.class)){
                     //PointerObjects are special cases.
                     Class<? extends Pointer> ptrClass = annotation.pointerType();
-                    Class<? extends Object> objClass = annotation.objectType();
+                    Class<?> objClass = annotation.objectType();
                     Pointer ptr = (Pointer) getHexReaderFor(ptrClass).read(iterator);
                     Object obj = getHexReaderFor(objClass).read(iterator.copy(ptr.getLocation()));
                     FieldUtils.writeField(field, object, new PointerObject<>(ptr, obj), true);
@@ -187,7 +183,7 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
                 .forEach(m -> {
                     try {
                         MethodUtils.invokeMethod(object, true, m.getName());
-                    } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                    } catch (Exception e) {
                         throw new IllegalArgumentException("Error invoking method " + m.getName(), e);
                     }
                 });
@@ -199,17 +195,55 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
             for (Field field : fields) {
                 StructField annotation = field.getAnnotation(StructField.class);
                 int offset = annotation.value();
-                Class<?> classToWrite = field.getType();
-                HexWriter<?> writer = getHexWriterFor(classToWrite, repointStrategy);
-                writer.writeObject(FieldUtils.readField(field, object, true), iterator.copyRelative(offset));
+                if(field.getType().equals(PointerObject.class)){
+                    PointerObject<? extends Pointer, ?> pointerObj = (PointerObject<? extends Pointer, ?>) FieldUtils.readField(field, object, true);
+                    Pointer repoint = repointStrategy.repoint(createRepointMetadata(pointerObj, getSize(annotation.objectType(), pointerObj.getObject())));
+                    HexWriter<?> ptrWriter = getHexWriterFor(annotation.pointerType(), repointStrategy);
+                    HexWriter<?> objWriter = getHexWriterFor(annotation.objectType(), repointStrategy);
+                    ptrWriter.writeObject(repoint, iterator.copyRelative(offset));
+                    objWriter.writeObject(pointerObj.getObject(), iterator.copy(repoint.getLocation()));
+                } else {
+                    Class<?> classToWrite = field.getType();
+                    HexWriter<?> writer = getHexWriterFor(classToWrite, repointStrategy);
+                    writer.writeObject(FieldUtils.readField(field, object, true), iterator.copyRelative(offset));
+                }
             }
         } catch (IllegalAccessException ex){
             throw new IllegalArgumentException("Error writing object of type " + clazz.getName(), ex);
         }
     }
 
-    private RepointStrategy.RepointMetadata createRepointMetadata(HexFieldIterator iterator, int offset) {
-        return new RepointStrategy.RepointMetadata( 0);
+    /**
+     * Get the size of the object attempting to repoint.
+     * If the size is specified in teh DataStructure object, we return with it.
+     * Variable sizes can be provided by annotating a method with @DataStructureSize in the object to observe, which
+     * should take no parameters and return an integer.
+     * @param objectClass The class of the object.
+     * @param object The object itself.
+     * @return
+     */
+    private int getSize(Class<?> objectClass, Object object) {
+        if(objectClass.isAnnotationPresent(DataStructure.class)){
+            DataStructure ds = objectClass.getAnnotation(DataStructure.class);
+            if(ds.size() > 0){
+                return ds.size();
+            }
+        }
+        List<Method> methods = MethodUtils.getMethodsListWithAnnotation(objectClass, DataStructureSize.class);
+        if(methods.size() == 1){
+            try{
+                return (int)MethodUtils.invokeMethod(object, true, methods.get(0).getName());
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Error invoking method " + methods.get(0).getName(), e);
+            }
+        } else if(methods.size() > 1){
+            throw new IllegalArgumentException("Multiple methods with @DataStructureSize annotation specified. Please ensure there is only one.");
+        }
+        return -1;
+    }
+
+    private RepointStrategy.RepointMetadata createRepointMetadata(PointerObject<? extends Pointer, ?> pointerObject, int size) {
+        return new RepointStrategy.RepointMetadata(pointerObject, size);
     }
 
     public static HexWriter<?> getHexWriterFor(Class<?> type, RepointStrategy repointStrategy) {

@@ -1,5 +1,7 @@
 package com.github.lucbui.bytes;
 
+import com.github.lucbui.annotations.DataStructure;
+
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +13,7 @@ import java.util.Objects;
  * Unsigned bytes are immutable. Additionally, they are unique, so all UnsignedBytes of the
  * same value are the same object.
  */
+@DataStructure(size = 1)
 public class UnsignedByte implements ByteObject<UnsignedByte>, Comparable<UnsignedByte>{
 
     /**

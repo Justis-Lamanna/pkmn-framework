@@ -1,22 +1,14 @@
 package com.github.lucbui.framework;
 
+import com.github.lucbui.bytes.PointerObject;
 import com.github.lucbui.file.Pointer;
 
-import java.util.Optional;
 import java.util.OptionalInt;
 
 /**
  * A strategy that describes how to repoint data in case of write.
  */
 public interface RepointStrategy {
-
-    /**
-     * A repoint strategy where no repointing should occur.
-     * If a repoint attempts to occur with this strategy, an IllegalStateException is thrown.
-     */
-    public static final RepointStrategy DISABLE_REPOINT = metadata -> {
-        throw new IllegalStateException("Cannot repoint.");
-    };
 
     /**
      * Determine where and how to repoint data, if it needs to be repointed.
@@ -29,10 +21,12 @@ public interface RepointStrategy {
      * An object describing the state needed for repointing.
      */
     class RepointMetadata{
+        private PointerObject<? extends Pointer, ?> pointerObject;
         private int size;
 
-        RepointMetadata(int size){
+        RepointMetadata(PointerObject<? extends Pointer, ?> pointerObject, int size){
             this.size = size;
+            this.pointerObject = pointerObject;
         }
 
         /**
@@ -42,6 +36,10 @@ public interface RepointStrategy {
          */
         public OptionalInt getSize(){
             return this.size <= 0 ? OptionalInt.empty() : OptionalInt.of(this.size);
+        }
+
+        public PointerObject<? extends Pointer, ?> getPointerObject() {
+            return pointerObject;
         }
     }
 }

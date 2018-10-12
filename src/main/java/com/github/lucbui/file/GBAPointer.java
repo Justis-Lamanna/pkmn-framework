@@ -1,5 +1,6 @@
 package com.github.lucbui.file;
 
+import com.github.lucbui.annotations.DataStructure;
 import com.github.lucbui.bytes.HexUtils;
 import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.HexWriter;
@@ -14,6 +15,7 @@ import java.util.Objects;
  * three bytes indicate location in that memory address. Various validation checks also are used for each memory field,
  * since not all memory can be accessed in a given field. (To avoid validation, use valueOfNoRangeCheck()).
  */
+@DataStructure(size = 4)
 public class GBAPointer implements Pointer, Comparable<GBAPointer> {
 
     public static final HexReader<GBAPointer> HEX_READER = iterator -> GBAPointer.valueOf(iterator.get(4));

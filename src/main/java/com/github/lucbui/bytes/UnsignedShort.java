@@ -1,5 +1,7 @@
 package com.github.lucbui.bytes;
 
+import com.github.lucbui.annotations.DataStructure;
+
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +13,7 @@ import java.util.Objects;
  * UnsignedShorts are immutable. Additionally, they are unique, so all UnsignedShorts of the
  * same value are the same object.
  */
+@DataStructure(size = 2)
 public class UnsignedShort implements ByteObject<UnsignedShort>, Comparable<UnsignedShort> {
 
     /**
