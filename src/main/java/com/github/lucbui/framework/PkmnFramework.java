@@ -5,6 +5,7 @@ import com.github.lucbui.bytes.HexWriter;
 import com.github.lucbui.file.FileHexField;
 import com.github.lucbui.file.HexField;
 import com.github.lucbui.file.HexFieldIterator;
+import com.github.lucbui.config.Configuration;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +13,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * A PKMN Framework, which facilitates easier parsing of hex files.
@@ -24,6 +26,7 @@ import java.util.Objects;
 public class PkmnFramework {
 
     private static HexField hexField = null;
+    private static Configuration configuration = null;
 
     /**
      * Start creating the framework.
@@ -141,9 +144,100 @@ public class PkmnFramework {
         return hexField.iterator(position);
     }
 
+    /**
+     * Get a value from the configuration provided.
+     * If no configuration was provided, the default is provided.
+     * @param key The key to retrieve.
+     * @param def The default value.
+     * @return The value corresponding to the provided key.
+     */
+    public static String getFromConfig(String key, String def){
+        return configuration == null ? def : configuration.get(key, def);
+    }
+
+    /**
+     * Get a value from the configuration provided.
+     * If no configuration was provided, the default is provided.
+     * @param key The key to retrieve.
+     * @param def The default value.
+     * @return The value corresponding to the provided key.
+     */
+    public static byte getFromConfig(String key, byte def){
+        return configuration == null ? def : configuration.get(key, def);
+    }
+
+    /**
+     * Get a value from the configuration provided.
+     * If no configuration was provided, the default is provided.
+     * @param key The key to retrieve.
+     * @param def The default value.
+     * @return The value corresponding to the provided key.
+     */
+    public static short getFromConfig(String key, short def){
+        return configuration == null ? def : configuration.get(key, def);
+    }
+
+    /**
+     * Get a value from the configuration provided.
+     * If no configuration was provided, the default is provided.
+     * @param key The key to retrieve.
+     * @param def The default value.
+     * @return The value corresponding to the provided key.
+     */
+    public static int getFromConfig(String key, int def){
+        return configuration == null ? def : configuration.get(key, def);
+    }
+
+    /**
+     * Get a value from the configuration provided.
+     * If no configuration was provided, the default is provided.
+     * @param key The key to retrieve.
+     * @param def The default value.
+     * @return The value corresponding to the provided key.
+     */
+    public static long getFromConfig(String key, long def){
+        return configuration == null ? def : configuration.get(key, def);
+    }
+
+    /**
+     * Get a value from the configuration provided.
+     * If no configuration was provided, the default is provided.
+     * @param key The key to retrieve.
+     * @param def The default value.
+     * @return The value corresponding to the provided key.
+     */
+    public static float getFromConfig(String key, float def){
+        return configuration == null ? def : configuration.get(key, def);
+    }
+
+    /**
+     * Get a value from the configuration provided.
+     * If no configuration was provided, the default is provided.
+     * @param key The key to retrieve.
+     * @param def The default value.
+     * @return The value corresponding to the provided key.
+     */
+    public static double getFromConfig(String key, double def){
+        return configuration == null ? def : configuration.get(key, def);
+    }
+
+    /**
+     * Get a value from the configuration provided.
+     * If no configuration was provided, the default is provided.
+     * @param key The key to retrieve.
+     * @param converter A function that converts the value into the object T
+     * @param def The default value.
+     * @return The value corresponding to the provided key.
+     */
+    public static <T> T getFromConfig(String key, Function<String, T> converter, T def){
+        Objects.requireNonNull(converter);
+        return (configuration == null || !configuration.has(key)) ? def : converter.apply(configuration.get(key));
+    }
+
     public static class Builder {
         private File path;
         private HexField hexField;
+        private Configuration configuration;
 
         Map<Class<?>, HexReader<?>> readers;
         Map<Class<?>, HexWriter<?>> writers;
@@ -151,6 +245,14 @@ public class PkmnFramework {
         private Builder(){
             this.readers = new HashMap<>();
             this.writers = new HashMap<>();
+        }
+
+        public Builder setConfiguration(Configuration configuration){
+            if(configuration == null){
+                throw new NullPointerException("Null Configuration specified");
+            }
+            this.configuration = configuration;
+            return this;
         }
 
         /**
@@ -212,6 +314,7 @@ public class PkmnFramework {
             ReflectionHexReaderWriter.addReaders(this.readers);
             ReflectionHexReaderWriter.resetWriters();
             ReflectionHexReaderWriter.addWriters(this.writers);
+            PkmnFramework.configuration = configuration;
         }
     }
 }
