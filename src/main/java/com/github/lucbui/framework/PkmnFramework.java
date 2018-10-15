@@ -2,6 +2,7 @@ package com.github.lucbui.framework;
 
 import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.HexWriter;
+import com.github.lucbui.config.MutableConfig;
 import com.github.lucbui.file.FileHexField;
 import com.github.lucbui.file.HexField;
 import com.github.lucbui.file.HexFieldIterator;
@@ -9,6 +10,7 @@ import com.github.lucbui.config.Configuration;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
@@ -232,6 +234,110 @@ public class PkmnFramework {
     public static <T> T getFromConfig(String key, Function<String, T> converter, T def){
         Objects.requireNonNull(converter);
         return (configuration == null || !configuration.has(key)) ? def : converter.apply(configuration.get(key));
+    }
+
+    /**
+     * Set a value in the configuration.
+     * Throws an IllegalArgumentException is no saveable configuration is set.
+     * @param key The key
+     * @param value The value
+     */
+    public static void setInConfig(String key, String value){
+        verifySaving();
+        ((MutableConfig) configuration).set(key, value);
+    }
+
+    /**
+     * Set a value in the configuration.
+     * Throws an IllegalArgumentException is no saveable configuration is set.
+     * @param key The key
+     * @param value The value
+     */
+    public static void setInConfig(String key, byte value){
+        verifySaving();
+        ((MutableConfig) configuration).set(key, value);
+    }
+
+    /**
+     * Set a value in the configuration.
+     * Throws an IllegalArgumentException is no saveable configuration is set.
+     * @param key The key
+     * @param value The value
+     */
+    public static void setInConfig(String key, short value){
+        verifySaving();
+        ((MutableConfig) configuration).set(key, value);
+    }
+
+    /**
+     * Set a value in the configuration.
+     * Throws an IllegalArgumentException is no saveable configuration is set.
+     * @param key The key
+     * @param value The value
+     */
+    public static void setInConfig(String key, int value){
+        verifySaving();
+        ((MutableConfig) configuration).set(key, value);
+    }
+
+    /**
+     * Set a value in the configuration.
+     * Throws an IllegalArgumentException is no saveable configuration is set.
+     * @param key The key
+     * @param value The value
+     */
+    public static void setInConfig(String key, long value){
+        verifySaving();
+        ((MutableConfig) configuration).set(key, value);
+    }
+
+    /**
+     * Set a value in the configuration.
+     * Throws an IllegalArgumentException is no saveable configuration is set.
+     * @param key The key
+     * @param value The value
+     */
+    public static void setInConfig(String key, float value){
+        verifySaving();
+        ((MutableConfig) configuration).set(key, value);
+    }
+
+    /**
+     * Set a value in the configuration.
+     * Throws an IllegalArgumentException is no saveable configuration is set.
+     * @param key The key
+     * @param value The value
+     */
+    public static void setInConfig(String key, double value){
+        verifySaving();
+        ((MutableConfig) configuration).set(key, value);
+    }
+
+    /**
+     * Set a value in the configuration.
+     * Throws an IllegalArgumentException is no saveable configuration is set.
+     * @param key The key
+     * @param value The value
+     */
+    public static <T> void setInConfig(String key, T value, Function<T, String> converter){
+        verifySaving();
+        ((MutableConfig) configuration).set(key, value, converter);
+    }
+
+    /**
+     * Save the configuration.
+     * Throws an IllegalArgumentException is no saveable configuration is set.
+     * @param os The place to save it.
+     */
+    public static void saveConfig(OutputStream os){
+        verifySaving();
+        ((MutableConfig) configuration).save(os);
+    }
+
+    private static void verifySaving(){
+        if(!(configuration instanceof MutableConfig)){
+            throw new IllegalArgumentException("No saveable configuration specified.");
+        }
     }
 
     public static class Builder {
