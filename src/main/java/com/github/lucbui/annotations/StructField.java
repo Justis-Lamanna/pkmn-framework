@@ -27,16 +27,4 @@ public @interface StructField {
      * @return
      */
     boolean readOnly() default false;
-
-    /**
-     * The type of pointer. Only used for PointerObjects
-     * @return
-     */
-    Class<? extends Pointer> pointerType() default Pointer.class;
-
-    /**
-     * The type of object. Only used for PointerObjects
-     * @return
-     */
-    Class<? extends Object> objectType() default Void.class;
 }

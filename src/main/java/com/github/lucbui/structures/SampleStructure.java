@@ -12,7 +12,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 @DataStructure(size = 8)
 public class SampleStructure {
 
-    @StructField(value = 0, objectType=UnsignedWord.class)
+    @StructField(value = 0)
+    @PointerField(objectType = UnsignedWord.class)
     private PointerObject<GBAPointer, UnsignedWord> ptr1;
 
     @StructField(value = 4)

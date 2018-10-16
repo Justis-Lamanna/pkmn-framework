@@ -102,16 +102,17 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
     @Override
     public T read(HexFieldIterator iterator) {
         try {
-            T object = clazz.newInstance();
+            T object = invokeConstructor(clazz);
             //Fill in fields.
             List<Field> fields = FieldUtils.getFieldsListWithAnnotation(clazz, StructField.class);
             for(Field field : fields){
                 StructField annotation = field.getAnnotation(StructField.class);
                 int offset = annotation.value();
-                if(field.getType().equals(PointerObject.class)){
+                if(field.isAnnotationPresent(PointerField.class)){
                     //PointerObjects are special cases.
-                    Class<? extends Pointer> ptrClass = annotation.pointerType();
-                    Class<?> objClass = annotation.objectType();
+                    PointerField pointerAnnotation = field.getAnnotation(PointerField.class);
+                    Class<? extends Pointer> ptrClass = pointerAnnotation.pointerType();
+                    Class<?> objClass = pointerAnnotation.objectType();
                     Pointer ptr = (Pointer) getHexReaderFor(ptrClass).read(iterator);
                     Object obj = getHexReaderFor(objClass).read(iterator.copy(ptr.getLocation()));
                     FieldUtils.writeField(field, object, new PointerObject<>(ptr, obj), true);
@@ -136,6 +137,10 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
         } catch (InstantiationException | IllegalAccessException e) {
             throw new IllegalArgumentException("Error building object of type " + clazz.getName(), e);
         }
+    }
+
+    private T invokeConstructor(Class<T> clazz) throws IllegalAccessException, InstantiationException {
+        return clazz.newInstance();
     }
 
     public static HexReader<?> getHexReaderFor(Class<?> type) {
@@ -195,11 +200,12 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
             for (Field field : fields) {
                 StructField annotation = field.getAnnotation(StructField.class);
                 int offset = annotation.value();
-                if(field.getType().equals(PointerObject.class)){
+                if(field.isAnnotationPresent(PointerField.class)){
+                    PointerField pointerAnnotation = field.getAnnotation(PointerField.class);
                     PointerObject<? extends Pointer, ?> pointerObj = (PointerObject<? extends Pointer, ?>) FieldUtils.readField(field, object, true);
-                    Pointer repoint = repointStrategy.repoint(createRepointMetadata(pointerObj, getSize(annotation.objectType(), pointerObj.getObject())));
-                    HexWriter<?> ptrWriter = getHexWriterFor(annotation.pointerType(), repointStrategy);
-                    HexWriter<?> objWriter = getHexWriterFor(annotation.objectType(), repointStrategy);
+                    Pointer repoint = repointStrategy.repoint(createRepointMetadata(pointerObj, getSize(pointerAnnotation.objectType(), pointerObj.getObject())));
+                    HexWriter<?> ptrWriter = getHexWriterFor(pointerAnnotation.pointerType(), repointStrategy);
+                    HexWriter<?> objWriter = getHexWriterFor(pointerAnnotation.objectType(), repointStrategy);
                     ptrWriter.writeObject(repoint, iterator.copyRelative(offset));
                     objWriter.writeObject(pointerObj.getObject(), iterator.copy(repoint.getLocation()));
                 } else {
