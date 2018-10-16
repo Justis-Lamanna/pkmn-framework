@@ -16,7 +16,7 @@ import java.util.Objects;
 public class GBAColor {
 
     public static final HexReader<GBAColor> HEX_READER = iterator -> {
-        int color = UnsignedShort.valueOf(iterator.get(2)).getValue();
+        int color = (int) UnsignedShort.valueOf(iterator.get(2)).getValue();
         return new GBAColor(color & 31, (color >>> 5) & 31, (color >>> 10) & 31);
     };
 
