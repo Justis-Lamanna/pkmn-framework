@@ -31,6 +31,22 @@ public class Bitmask {
     }
 
     /**
+     * Get the mask applied to fields
+     * @return
+     */
+    public int getMask() {
+        return mask;
+    }
+
+    /**
+     * Get the right-shift applied to fields
+     * @return
+     */
+    public int getRightShift() {
+        return rightShift;
+    }
+
+    /**
      * Apply a Bitmask to an integer.
      * @param value The value to modify.
      * @return The modified value.
