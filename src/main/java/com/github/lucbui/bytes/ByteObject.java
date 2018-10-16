@@ -7,4 +7,9 @@ package com.github.lucbui.bytes;
  */
 public interface ByteObject<T> {
 
+    /**
+     * Get the value of a ByteObject.
+     * @return The byte's value, as a long.
+     */
+    long getValue();
 }

@@ -79,6 +79,7 @@ public class UnsignedWord implements ByteObject<UnsignedWord>,Comparable<Unsigne
         return words.computeIfAbsent((long) uShort.value, UnsignedWord::new);
     }
 
+    @Override
     public long getValue(){
         return value;
     }

@@ -74,7 +74,8 @@ public class UnsignedShort implements ByteObject<UnsignedShort>, Comparable<Unsi
         return shorts.computeIfAbsent(uByte.value, UnsignedShort::new);
     }
 
-    public int getValue() {
+    @Override
+    public long getValue() {
         return value;
     }
 

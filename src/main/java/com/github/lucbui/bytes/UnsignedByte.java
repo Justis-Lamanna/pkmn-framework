@@ -66,7 +66,8 @@ public class UnsignedByte implements ByteObject<UnsignedByte>, Comparable<Unsign
      * Get the value contained in this byte.
      * @return
      */
-    public int getValue() {
+    @Override
+    public long getValue() {
         return value;
     }
 
