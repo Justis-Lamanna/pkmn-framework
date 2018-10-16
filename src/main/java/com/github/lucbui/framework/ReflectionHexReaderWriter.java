@@ -108,7 +108,7 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
             for(Field field : fields){
                 StructField annotation = field.getAnnotation(StructField.class);
                 int offset = annotation.value();
-                if(field.isAnnotationPresent(PointerField.class)){
+                if(field.isAnnotationPresent(PointerField.class) && field.getType().equals(PointerObject.class)){
                     //PointerObjects are special cases.
                     PointerField pointerAnnotation = field.getAnnotation(PointerField.class);
                     Class<? extends Pointer> ptrClass = pointerAnnotation.pointerType();

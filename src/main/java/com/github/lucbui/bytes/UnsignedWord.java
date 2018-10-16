@@ -84,6 +84,11 @@ public class UnsignedWord implements ByteObject<UnsignedWord>,Comparable<Unsigne
         return value;
     }
 
+    @Override
+    public UnsignedWord newInstance(long value){
+        return UnsignedWord.valueOf(value);
+    }
+
     public ByteBuffer toBytes(){
         return HexUtils.toByteBuffer(value, value >>> 8, value >>> 16, value >>> 24);
     }

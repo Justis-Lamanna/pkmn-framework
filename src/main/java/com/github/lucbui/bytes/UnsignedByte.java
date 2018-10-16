@@ -62,13 +62,14 @@ public class UnsignedByte implements ByteObject<UnsignedByte>, Comparable<Unsign
         return bytes.computeIfAbsent(value, UnsignedByte::new);
     }
 
-    /**
-     * Get the value contained in this byte.
-     * @return
-     */
     @Override
     public long getValue() {
         return value;
+    }
+
+    @Override
+    public UnsignedByte newInstance(long value){
+        return UnsignedByte.valueOf((int) value);
     }
 
     /**

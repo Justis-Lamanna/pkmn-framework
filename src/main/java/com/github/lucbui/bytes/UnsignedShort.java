@@ -79,6 +79,11 @@ public class UnsignedShort implements ByteObject<UnsignedShort>, Comparable<Unsi
         return value;
     }
 
+    @Override
+    public UnsignedShort newInstance(long value){
+        return UnsignedShort.valueOf((int) value);
+    }
+
     public ByteBuffer toBytes() {
         //We can do this, because casting to a byte chops off everything except the 8 LSBs
         return HexUtils.toByteBuffer(value, value >>> 8);

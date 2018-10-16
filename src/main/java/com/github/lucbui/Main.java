@@ -1,5 +1,6 @@
 package com.github.lucbui;
 
+import com.github.lucbui.bytes.Bitmask;
 import com.github.lucbui.config.Configuration;
 import com.github.lucbui.config.MapConfig;
 import com.github.lucbui.file.GBAPointer;
@@ -17,7 +18,7 @@ public class Main {
                 .addReaderWriter(GBAPointer.class, GBAPointer.HEX_READER, GBAPointer.HEX_WRITER)
                 .addReaderWriter(GBAColor.class, GBAColor.HEX_READER, GBAColor.HEX_WRITER)
                 .start();
-        //PkmnFramework.write(0, GBAColor.from(10, 20, 30));
-        System.out.println(PkmnFramework.read(0, GBAColor.class));
+        PkmnFramework.write(0, GBAColor.from(10, 20, 30));
+        //System.out.println(PkmnFramework.read(0, GBAColor.class));
     }
 }

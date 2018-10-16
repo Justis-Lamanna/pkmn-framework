@@ -1,13 +1,11 @@
 package com.github.lucbui.gba.gfx;
 
-import com.github.lucbui.annotations.DataStructure;
+import com.github.lucbui.bytes.Bitmask;
 import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.HexWriter;
 import com.github.lucbui.bytes.UnsignedShort;
-import com.github.lucbui.file.HexFieldIterator;
 
 import java.awt.*;
-import java.nio.ByteBuffer;
 import java.util.Objects;
 
 /**
@@ -15,15 +13,37 @@ import java.util.Objects;
  */
 public class GBAColor {
 
+    private static final Bitmask RED_BITMASK = new Bitmask(0b11111,0);
+    private static final Bitmask GREEN_BITMASK = new Bitmask(0b1111100000, 5);
+    private static final Bitmask BLUE_BITMASK = new Bitmask(0b111110000000000, 10);
+
+    private static final int MIN_COLOR = 0;
+    private static final int MAX_COLOR = 31;
+
+    /**
+     * A HexReader for reading GBAColors.
+     */
     public static final HexReader<GBAColor> HEX_READER = iterator -> {
         int color = (int) UnsignedShort.valueOf(iterator.get(2)).getValue();
-        return new GBAColor(color & 31, (color >>> 5) & 31, (color >>> 10) & 31);
+        return new GBAColor(RED_BITMASK.apply(color), GREEN_BITMASK.apply(color), BLUE_BITMASK.apply(color));
     };
 
+    /**
+     * A HexWriter for writing GBAColors.
+     */
     public static final HexWriter<GBAColor> HEX_WRITER = (object, iterator) -> {
-        int color = object.getRed() | (object.getGreen() << 5) | (object.getBlue() << 10);
+        int color = Bitmask.merge().with(RED_BITMASK, object.red).with(GREEN_BITMASK, object.green).with(BLUE_BITMASK, object.blue).apply();
         iterator.write(UnsignedShort.valueOf(color).toBytes());
     };
+
+    public static GBAColor BLACK = new GBAColor(0, 0, 0);
+    public static GBAColor RED = new GBAColor(31, 0, 0);
+    public static GBAColor GREEN = new GBAColor(0, 31, 0);
+    public static GBAColor BLUE = new GBAColor(0, 0, 31);
+    public static GBAColor YELLOW = new GBAColor(31, 31, 0);
+    public static GBAColor CYAN = new GBAColor(0, 31, 31);
+    public static GBAColor MAGENTA = new GBAColor(31, 0, 31);
+    public static GBAColor WHITE = new GBAColor(31, 31, 31);
 
     private int red;
     private int green;
@@ -62,8 +82,8 @@ public class GBAColor {
     }
 
     private static void verifyBetweenZeroAndThirtyOne(int color, String colorName){
-        if(color < 0 || color > 31){
-            throw new IllegalArgumentException(colorName + " needs to be between 0 and 31. Found: " + color);
+        if(color < MIN_COLOR || color > MAX_COLOR){
+            throw new IllegalArgumentException(colorName + " needs to be between " + MIN_COLOR + " and " + MAX_COLOR + ". Found: " + color);
         }
     }
 
