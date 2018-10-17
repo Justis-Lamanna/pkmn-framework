@@ -17,6 +17,7 @@ public class Main {
                 .start();
         //PkmnFramework.write(0, GBAColor.from(10, 20, 30));
         SampleStructure ss = PkmnFramework.read(4, SampleStructure.class);
-        PkmnFramework.write(4, ss, RepointUtils.identityRepointStrategy());
+        System.out.println(ss);
+        PkmnFramework.write(0x14, ss, RepointUtils.identityRepointStrategy());
     }
 }

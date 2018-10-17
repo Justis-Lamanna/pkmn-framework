@@ -22,6 +22,7 @@ public interface ReflectionAnnotationFunction {
      * @param obj The object being written.
      * @param field The field being read.
      * @param iterator The iterator being used.
+     * @param repointStrategy Repoint strategy being used.
      */
-    void onWrite(Object obj, Field field, HexFieldIterator iterator);
+    void onWrite(Object obj, Field field, HexFieldIterator iterator, RepointStrategy repointStrategy);
 }
