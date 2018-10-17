@@ -2,12 +2,11 @@ package com.github.lucbui.framework;
 
 import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.HexWriter;
+import com.github.lucbui.config.Configuration;
 import com.github.lucbui.config.MutableConfig;
 import com.github.lucbui.file.FileHexField;
 import com.github.lucbui.file.HexField;
 import com.github.lucbui.file.HexFieldIterator;
-import com.github.lucbui.config.Configuration;
-import com.github.lucbui.gba.GBAFrameworkFactory;
 
 import java.io.File;
 import java.io.IOException;

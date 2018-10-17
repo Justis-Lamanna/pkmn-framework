@@ -1,6 +1,5 @@
 package com.github.lucbui.framework;
 
-import com.github.lucbui.framework.RepointStrategy;
 import org.apache.commons.lang3.NotImplementedException;
 
 public class RepointUtils {

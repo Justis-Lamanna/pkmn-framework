@@ -1,7 +1,7 @@
 package com.github.lucbui;
 
-import com.github.lucbui.gba.GBAFrameworkFactory;
 import com.github.lucbui.framework.PkmnFramework;
+import com.github.lucbui.gba.GBAFrameworkFactory;
 import com.github.lucbui.gba.gfx.GBAColor;
 
 import java.io.IOException;

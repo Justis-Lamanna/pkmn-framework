@@ -1,6 +1,8 @@
 package com.github.lucbui.structures;
 
-import com.github.lucbui.annotations.*;
+import com.github.lucbui.annotations.DataStructure;
+import com.github.lucbui.annotations.PointerField;
+import com.github.lucbui.annotations.StructField;
 import com.github.lucbui.bytes.PointerObject;
 import com.github.lucbui.bytes.UnsignedWord;
 import com.github.lucbui.gba.GBAPointer;
