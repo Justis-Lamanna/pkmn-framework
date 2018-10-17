@@ -144,7 +144,7 @@ public class GBAPointer implements Pointer, Comparable<GBAPointer> {
          */
         IO(0x04, 0x000000, 0x0003FE),
         /**
-         * Palette RAM, valid from 0x0 to 0x3FF
+         * GBAPalette RAM, valid from 0x0 to 0x3FF
          */
         PALETTE_RAM(0x05, 0x000000, 0x0003FF),
         /**
