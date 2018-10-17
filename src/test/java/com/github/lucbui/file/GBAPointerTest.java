@@ -1,5 +1,6 @@
 package com.github.lucbui.file;
 
+import com.github.lucbui.gba.GBAPointer;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;

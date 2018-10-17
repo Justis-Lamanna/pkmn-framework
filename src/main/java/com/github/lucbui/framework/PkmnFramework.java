@@ -7,6 +7,7 @@ import com.github.lucbui.file.FileHexField;
 import com.github.lucbui.file.HexField;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.config.Configuration;
+import com.github.lucbui.gba.GBAFrameworkFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -407,6 +408,17 @@ public class PkmnFramework {
             Objects.requireNonNull(writer);
             readers.put(clazz, reader);
             writers.put(clazz, writer);
+            return this;
+        }
+
+        /**
+         * Applies a FrameworkFactory
+         * @param frameworkFactory
+         * @return
+         */
+        public Builder frameworkFactory(FrameworkFactory frameworkFactory) {
+            Objects.requireNonNull(frameworkFactory);
+            frameworkFactory.addReadersWriters(this);
             return this;
         }
 

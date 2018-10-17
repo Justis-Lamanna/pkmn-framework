@@ -1,9 +1,10 @@
-package com.github.lucbui.file;
+package com.github.lucbui.gba;
 
 import com.github.lucbui.annotations.DataStructure;
 import com.github.lucbui.bytes.HexUtils;
 import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.HexWriter;
+import com.github.lucbui.file.Pointer;
 
 import java.nio.ByteBuffer;
 import java.util.Comparator;

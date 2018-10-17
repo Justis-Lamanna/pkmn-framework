@@ -1,9 +1,5 @@
 package com.github.lucbui.annotations;
 
-import com.github.lucbui.bytes.UnsignedWord;
-import com.github.lucbui.file.GBAPointer;
-import com.github.lucbui.file.Pointer;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

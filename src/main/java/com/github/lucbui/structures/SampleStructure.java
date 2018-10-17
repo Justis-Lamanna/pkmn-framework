@@ -3,7 +3,7 @@ package com.github.lucbui.structures;
 import com.github.lucbui.annotations.*;
 import com.github.lucbui.bytes.PointerObject;
 import com.github.lucbui.bytes.UnsignedWord;
-import com.github.lucbui.file.GBAPointer;
+import com.github.lucbui.gba.GBAPointer;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
