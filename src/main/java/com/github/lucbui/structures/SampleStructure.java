@@ -3,6 +3,7 @@ package com.github.lucbui.structures;
 import com.github.lucbui.annotations.DataStructure;
 import com.github.lucbui.annotations.PointerField;
 import com.github.lucbui.annotations.StructField;
+import com.github.lucbui.annotations.TestAnnot;
 import com.github.lucbui.bytes.PointerObject;
 import com.github.lucbui.bytes.UnsignedWord;
 import com.github.lucbui.gba.GBAPointer;
@@ -19,6 +20,7 @@ public class SampleStructure {
     private PointerObject<GBAPointer, UnsignedWord> ptr1;
 
     @StructField(value = 4)
+    @TestAnnot
     private GBAPointer ptr2;
 
     public SampleStructure(){

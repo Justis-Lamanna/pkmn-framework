@@ -9,5 +9,5 @@ public interface FrameworkFactory {
      * Add all the readers to the builder object.
      * @param builder
      */
-    void addReadersWriters(PkmnFramework.Builder builder);
+    void configure(PkmnFramework.Builder builder);
 }

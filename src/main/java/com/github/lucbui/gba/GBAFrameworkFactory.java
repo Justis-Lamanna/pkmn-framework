@@ -10,7 +10,7 @@ import com.github.lucbui.gba.gfx.GBAColor;
 public class GBAFrameworkFactory implements FrameworkFactory {
 
     @Override
-    public void addReadersWriters(PkmnFramework.Builder builder) {
+    public void configure(PkmnFramework.Builder builder) {
         builder.addReaderWriter(GBAPointer.class, GBAPointer.HEX_READER, GBAPointer.HEX_WRITER);
         builder.addReaderWriter(GBAColor.class, GBAColor.HEX_READER, GBAColor.HEX_WRITER);
     }

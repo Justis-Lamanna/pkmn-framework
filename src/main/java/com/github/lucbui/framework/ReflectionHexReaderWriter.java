@@ -7,12 +7,14 @@ import com.github.lucbui.file.Pointer;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -28,6 +30,7 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
     //A cache of readers, registered for reusing.
     static Map<Class<?>, HexReader<?>> READERS = new HashMap<>();
     static Map<Class<?>, HexWriter<?>> WRITERS = new HashMap<>();
+    static Map<Class<?>, ReflectionAnnotationFunction> ANNOTATIONS = new HashMap<>();
     static {
         resetReaders();
         resetWriters();
@@ -67,6 +70,21 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
      */
     public static void addWriters(Map<Class<?>, HexWriter<?>> writers){
         WRITERS.putAll(writers);
+    }
+
+    /**
+     * Reset Annotations to the default.
+     */
+    public static void resetAnnotations(){
+        ANNOTATIONS.clear();
+    }
+
+    /**
+     * Register a number of annotations.
+     * @param annotations The annotations to use.
+     */
+    public static void addAnnotations(Map<Class<?>, ReflectionAnnotationFunction> annotations){
+        ANNOTATIONS.putAll(annotations);
     }
 
     private final Class<T> clazz;
@@ -124,7 +142,17 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
                     Object parsedObject = reader.read(iterator.copyRelative(offset));
                     FieldUtils.writeField(field, object, parsedObject, true);
                 }
+                //
+                for(Annotation otherAnnotation : field.getAnnotations()){
+                    if(otherAnnotation.annotationType() != StructField.class && otherAnnotation.annotationType() != PointerField.class){
+                        ReflectionAnnotationFunction raf = ANNOTATIONS.get(otherAnnotation.annotationType());
+                        if(raf != null){
+                            raf.onRead(object, field, iterator.copy());
+                        }
+                    }
+                }
             }
+
             //Invoke all AfterRead methods.
             MethodUtils
                     .getMethodsListWithAnnotation(clazz, AfterRead.class, false, true)
@@ -214,6 +242,15 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
                     Class<?> classToWrite = field.getType();
                     HexWriter<?> writer = getHexWriterFor(classToWrite, repointStrategy);
                     writer.writeObject(FieldUtils.readField(field, object, true), iterator.copyRelative(offset));
+                }
+                //
+                for(Annotation otherAnnotation : field.getAnnotations()){
+                    if(otherAnnotation.annotationType() != StructField.class && otherAnnotation.annotationType() != PointerField.class){
+                        ReflectionAnnotationFunction raf = ANNOTATIONS.get(otherAnnotation.annotationType());
+                        if(raf != null){
+                            raf.onWrite(object, field, iterator.copy());
+                        }
+                    }
                 }
             }
         } catch (IllegalAccessException ex){
