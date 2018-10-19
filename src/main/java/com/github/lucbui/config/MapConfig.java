@@ -22,7 +22,7 @@ public class MapConfig implements Configuration {
 
     /**
      * Initializes a MapConfig with pairs of strings.
-     * @param pairs A list of strings, alternating between key and value.
+     * @param pairs A list of strings, alternating between key and size.
      */
     public MapConfig(String... pairs){
         if(pairs.length % 2 != 0){

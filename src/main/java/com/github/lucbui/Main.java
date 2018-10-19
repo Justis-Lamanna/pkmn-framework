@@ -1,9 +1,13 @@
 package com.github.lucbui;
 
+import com.github.lucbui.file.Pointer;
 import com.github.lucbui.framework.PkmnFramework;
+import com.github.lucbui.framework.RepointStrategy;
 import com.github.lucbui.framework.RepointUtils;
 import com.github.lucbui.gba.GBAFrameworkFactory;
+import com.github.lucbui.gba.GBAPointer;
 import com.github.lucbui.gba.gfx.GBAColor;
+import com.github.lucbui.gba.gfx.GBAPalette;
 import com.github.lucbui.structures.SampleStructure;
 
 import java.io.IOException;
@@ -17,7 +21,7 @@ public class Main {
                 .start();
         //PkmnFramework.write(0, GBAColor.from(10, 20, 30));
         SampleStructure ss = PkmnFramework.read(4, SampleStructure.class);
-        System.out.println(ss);
-        PkmnFramework.write(0x14, ss, RepointUtils.identityRepointStrategy());
+        PkmnFramework.write(0x14, ss,
+                metadata -> GBAPointer.valueOf(GBAPointer.Type.ROM, metadata.getPointerObject().getPointer().getLocation() + 0x10));
     }
 }

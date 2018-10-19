@@ -69,9 +69,9 @@ public class GBAColor {
     /**
      * Create a GBAColor from raw integer values.
      * Red, green, and blue must be between 0 and 31.
-     * @param red The red value, 0 - 31
-     * @param green The green value, 0 - 31
-     * @param blue The blue value, 0 - 31
+     * @param red The red size, 0 - 31
+     * @param green The green size, 0 - 31
+     * @param blue The blue size, 0 - 31
      * @return The converted GBAColor
      */
     public static GBAColor from(int red, int green, int blue){
@@ -88,7 +88,7 @@ public class GBAColor {
     }
 
     /**
-     * Get the red value
+     * Get the red size
      * @return 0-31
      */
     public int getRed() {
@@ -96,7 +96,7 @@ public class GBAColor {
     }
 
     /**
-     * Get the green value
+     * Get the green size
      * @return 0-31
      */
     public int getGreen() {
@@ -104,7 +104,7 @@ public class GBAColor {
     }
 
     /**
-     * Get the blue value
+     * Get the blue size
      * @return 0-31
      */
     public int getBlue() {

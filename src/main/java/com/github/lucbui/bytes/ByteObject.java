@@ -7,14 +7,14 @@ package com.github.lucbui.bytes;
 public interface ByteObject<T> {
 
     /**
-     * Get the value of a ByteObject.
-     * @return The byte's value, as a long.
+     * Get the size of a ByteObject.
+     * @return The byte's size, as a long.
      */
     long getValue();
 
     /**
-     * Create a new instance of this object with a new value.
-     * @param newValue The new value.
+     * Create a new instance of this object with a new size.
+     * @param newValue The new size.
      * @return The new instance of the object.
      */
     T newInstance(long newValue);

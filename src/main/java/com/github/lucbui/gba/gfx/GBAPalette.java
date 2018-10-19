@@ -1,5 +1,9 @@
 package com.github.lucbui.gba.gfx;
 
+import com.github.lucbui.bytes.HexReader;
+import com.github.lucbui.bytes.HexWriter;
+import com.github.lucbui.file.HexFieldIterator;
+
 import java.util.*;
 
 /**
@@ -15,7 +19,7 @@ public class GBAPalette {
     public GBAPalette(List<GBAColor> colors){
         Objects.requireNonNull(colors).forEach(Objects::requireNonNull);
         if(colors.isEmpty()){
-            throw new IllegalArgumentException("Palette supplied must have size > 0");
+            throw new IllegalArgumentException("GBAPaletteConfig supplied must have size > 0");
         }
         this.colors = new ArrayList<>(colors);
     }
@@ -27,6 +31,10 @@ public class GBAPalette {
     public GBAPalette(GBAPalette palette){
         Objects.requireNonNull(palette);
         this.colors = new ArrayList<>(palette.colors);
+    }
+
+    public List<GBAColor> getAsList(){
+        return new ArrayList<>(this.colors);
     }
 
     /**
@@ -102,6 +110,27 @@ public class GBAPalette {
     @Override
     public int hashCode() {
         return Objects.hash(colors);
+    }
+
+    public static HexReader<GBAPalette> getHexReader(int numberOfColors){
+        return iterator -> {
+            List<GBAColor> colors = new ArrayList<>();
+            for(int count = 0; count < numberOfColors; count++){
+                colors.add(GBAColor.HEX_READER.read(iterator));
+                iterator.advanceRelative(2);
+            }
+            return new GBAPalette(colors);
+        };
+    }
+
+    public static HexWriter<GBAPalette> getHexWriter(int numberOfColors){
+        return (object, iterator) -> {
+            for(int idx = 0; idx < numberOfColors; idx++){
+                GBAColor color = object.get(idx);
+                GBAColor.HEX_WRITER.write(color, iterator);
+                iterator.advanceRelative(2);
+            }
+        };
     }
 
     public static Builder builder(){

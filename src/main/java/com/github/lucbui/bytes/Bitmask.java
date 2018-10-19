@@ -48,16 +48,16 @@ public class Bitmask {
 
     /**
      * Apply a Bitmask to an integer.
-     * @param value The value to modify.
-     * @return The modified value.
+     * @param value The size to modify.
+     * @return The modified size.
      */
     public int apply(int value){
         return (value & mask) >>> rightShift;
     }
 
     /**
-     * Create one value from several using bitmasks.
-     * @param mergeStart The value to start with.
+     * Create one size from several using bitmasks.
+     * @param mergeStart The size to start with.
      * @return The BitmaskMerge object to begin using.
      */
     public static BitmaskMerge merge(int mergeStart){
@@ -65,8 +65,8 @@ public class Bitmask {
     }
 
     /**
-     * Use this Bitmask to apply one value to another.
-     * @return The merged value.
+     * Use this Bitmask to apply one size to another.
+     * @return The merged size.
      */
     public static BitmaskMerge merge(){
         return new BitmaskMerge(0);
@@ -92,7 +92,7 @@ public class Bitmask {
 
         /**
          * Initialize a BitmaskMerge
-         * @param mergeStart The value to intitialize with.
+         * @param mergeStart The size to intitialize with.
          */
         private BitmaskMerge(int mergeStart){
             this.mergeStart = mergeStart;
@@ -101,9 +101,9 @@ public class Bitmask {
         }
 
         /**
-         * Add a mask and value to merge.
+         * Add a mask and size to merge.
          * @param mask The mask to use.
-         * @param value The value to combine with
+         * @param value The size to combine with
          * @return This instance with chaining.
          */
         public BitmaskMerge with(Bitmask mask, int value){

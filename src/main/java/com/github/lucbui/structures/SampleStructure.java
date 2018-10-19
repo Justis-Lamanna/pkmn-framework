@@ -4,8 +4,9 @@ import com.github.lucbui.annotations.DataStructure;
 import com.github.lucbui.annotations.PointerField;
 import com.github.lucbui.annotations.StructField;
 import com.github.lucbui.bytes.PointerObject;
-import com.github.lucbui.bytes.UnsignedWord;
 import com.github.lucbui.gba.GBAPointer;
+import com.github.lucbui.gba.gfx.GBAPalette;
+import com.github.lucbui.gba.gfx.GBAPaletteConfig;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
@@ -14,12 +15,10 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 @DataStructure(size = 8)
 public class SampleStructure {
 
-    @StructField(value = 0)
-    @PointerField(objectType = UnsignedWord.class)
-    private PointerObject<GBAPointer, UnsignedWord> ptr1;
-
-    @StructField(value = 4)
-    private GBAPointer ptr2;
+    @StructField(offset = 0)
+    @PointerField(pointerType = GBAPointer.class, objectType = GBAPalette.class)
+    @GBAPaletteConfig(size = 4)
+    public PointerObject<GBAPointer, GBAPalette> palette;
 
     public SampleStructure(){
 

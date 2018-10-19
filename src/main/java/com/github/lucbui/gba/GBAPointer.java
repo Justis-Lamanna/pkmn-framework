@@ -176,7 +176,7 @@ public class GBAPointer implements Pointer, Comparable<GBAPointer> {
         }
 
         /**
-         * Get the prefix value.
+         * Get the prefix size.
          * @return The first byte in the four byte pointer, which represents the type of memory.
          */
         public long getPrefix() {

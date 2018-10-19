@@ -11,7 +11,7 @@ import java.util.Objects;
  * Represents an UnsignedShort
  *
  * UnsignedShorts are immutable. Additionally, they are unique, so all UnsignedShorts of the
- * same value are the same object.
+ * same size are the same object.
  */
 @DataStructure(size = 2)
 public class UnsignedShort implements ByteObject<UnsignedShort>, Comparable<UnsignedShort> {
@@ -26,7 +26,7 @@ public class UnsignedShort implements ByteObject<UnsignedShort>, Comparable<Unsi
      */
     public static final HexWriter<UnsignedShort> HEX_WRITER = (object, iterator) -> iterator.write(object.toBytes());
 
-    //The value inside this short.
+    //The size inside this short.
     int value;
 
     //Cache results to allow for == comparison.
@@ -41,7 +41,7 @@ public class UnsignedShort implements ByteObject<UnsignedShort>, Comparable<Unsi
      * @param bytes
      * @return
      * @throws IndexOutOfBoundsException ByteBuffer has capacity smaller than 2.
-     * @throws NullPointerException value is null.
+     * @throws NullPointerException size is null.
      */
     public static UnsignedShort valueOf(ByteBuffer bytes){
         Objects.requireNonNull(bytes);
@@ -53,10 +53,10 @@ public class UnsignedShort implements ByteObject<UnsignedShort>, Comparable<Unsi
     }
 
     /**
-     * Parse an UnsignedByte from a literal value.
+     * Parse an UnsignedByte from a literal size.
      * @param value
      * @return
-     * @throws IllegalArgumentException Provided value is not between 0 and 0xFFFF, inclusively.
+     * @throws IllegalArgumentException Provided size is not between 0 and 0xFFFF, inclusively.
      */
     public static UnsignedShort valueOf(int value){
         HexUtils.assertRange(value, 0, 0xFFFF);
@@ -92,7 +92,7 @@ public class UnsignedShort implements ByteObject<UnsignedShort>, Comparable<Unsi
     @Override
     public String toString() {
         return "UnsignedShort{" +
-                "value=" + value +
+                "size=" + value +
                 '}';
     }
 

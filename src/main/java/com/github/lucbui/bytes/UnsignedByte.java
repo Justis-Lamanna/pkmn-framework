@@ -11,7 +11,7 @@ import java.util.Objects;
  * Represents an Unsigned Byte.
  *
  * Unsigned bytes are immutable. Additionally, they are unique, so all UnsignedBytes of the
- * same value are the same object.
+ * same size are the same object.
  */
 @DataStructure(size = 1)
 public class UnsignedByte implements ByteObject<UnsignedByte>, Comparable<UnsignedByte>{
@@ -26,7 +26,7 @@ public class UnsignedByte implements ByteObject<UnsignedByte>, Comparable<Unsign
      */
     public static final HexWriter<UnsignedByte> HEX_WRITER = (object, iterator) -> iterator.write(object.toBytes());
 
-    //The value inside this byte.
+    //The size inside this byte.
     int value;
 
     //Cache results to allow for == comparison.
@@ -37,11 +37,11 @@ public class UnsignedByte implements ByteObject<UnsignedByte>, Comparable<Unsign
     }
 
     /**
-     * Parse an UnsignedByte from a literal value.
+     * Parse an UnsignedByte from a literal size.
      * @param value
      * @return
      * @throws IndexOutOfBoundsException ByteBuffer has capacity smaller than 1.
-     * @throws NullPointerException value is null.
+     * @throws NullPointerException size is null.
      */
     public static UnsignedByte valueOf(ByteBuffer value){
         Objects.requireNonNull(value);
@@ -52,10 +52,10 @@ public class UnsignedByte implements ByteObject<UnsignedByte>, Comparable<Unsign
     }
 
     /**
-     * Parse an UnsignedByte from a literal value.
+     * Parse an UnsignedByte from a literal size.
      * @param value
      * @return
-     * @throws IllegalArgumentException Provided value is not between 0 and 255, inclusively.
+     * @throws IllegalArgumentException Provided size is not between 0 and 255, inclusively.
      */
     public static UnsignedByte valueOf(int value){
         HexUtils.assertRange(value, 0, 0xFF);
@@ -83,7 +83,7 @@ public class UnsignedByte implements ByteObject<UnsignedByte>, Comparable<Unsign
     @Override
     public String toString() {
         return "UnsignedByte{" +
-                "value=" + value +
+                "size=" + value +
                 '}';
     }
 

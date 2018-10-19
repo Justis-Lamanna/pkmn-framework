@@ -12,11 +12,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface StructField {
     /**
-     * The offset of the field inside the raw data structure. For example, if value is set to 1, the matching field would
+     * The offset of the field inside the raw data structure. For example, if size is set to 1, the matching field would
      * be parsed, starting at [pointer] + 1.
      * @return
      */
-    int value();
+    int offset();
 
     /**
      * If true, this field is read-only.

@@ -11,18 +11,18 @@ public interface ReflectionAnnotationFunction {
 
     /**
      * Execute this code when a field being read.
-     * @param obj The object being read into.
+     * @param objToReadFrom The object being read into.
      * @param field The field being written.
      * @param iterator The iterator being used.
+     * @return The object to write to this field, or null if nothing happened.
      */
-    void onRead(Object obj, Field field, HexFieldIterator iterator);
+    Object onRead(Object objToReadFrom, Field field, HexFieldIterator iterator) throws IllegalAccessException;
 
     /**
      * Execute this code when a field is being written.
-     * @param obj The object being written.
-     * @param field The field being read.
+     * @param objToWrite The object being written.
      * @param iterator The iterator being used.
-     * @param repointStrategy Repoint strategy being used.
+     * @return True if the object was written.
      */
-    void onWrite(Object obj, Field field, HexFieldIterator iterator, RepointStrategy repointStrategy);
+    boolean onWrite(Object objToWrite, Field field, HexFieldIterator iterator) throws IllegalAccessException;
 }
