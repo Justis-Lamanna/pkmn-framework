@@ -98,6 +98,16 @@ public class GBAPointer implements Pointer, Comparable<GBAPointer> {
         return HexUtils.toByteBuffer(position, position >> 8, position >> 16, type.getPrefix());
     }
 
+    /**
+     * Returns a pointer that points d bytes further.
+     * @param d The number of bytes to add to this one.
+     * @return The new GBAPointer.
+     * @throws IllegalArgumentException d causes the new pointer to exceed the available range of the type.
+     */
+    public GBAPointer add(int d){
+        return GBAPointer.valueOf(type, position + d);
+    }
+
     @Override
     public String toString() {
         return "GBAPointer{" +

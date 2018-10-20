@@ -91,4 +91,17 @@ class GBAPointerTest {
         GBAPointer ptr = GBAPointer.valueOf(GBAPointer.Type.ROM, 0x800010);
         assertThrows(NullPointerException.class, () -> ptr.compareTo(null));
     }
+
+    @Test
+    void addSmallAmount(){
+        GBAPointer ptr = GBAPointer.valueOf(GBAPointer.Type.ROM, 0x800010);
+        GBAPointer ptr2 = ptr.add(10);
+        assertEquals(0x800010 + 10, ptr2.getLocation());
+    }
+
+    @Test
+    void addTooMuch(){
+        GBAPointer ptr = GBAPointer.valueOf(GBAPointer.Type.ROM, 0x800010);
+        assertThrows(IllegalArgumentException.class, () -> ptr.add(Integer.MAX_VALUE));
+    }
 }
