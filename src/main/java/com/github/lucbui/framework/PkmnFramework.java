@@ -147,89 +147,89 @@ public class PkmnFramework {
     }
 
     /**
-     * Get a size from the configuration provided.
+     * Get a value from the configuration provided.
      * If no configuration was provided, the default is provided.
      * @param key The key to retrieve.
-     * @param def The default size.
-     * @return The size corresponding to the provided key.
+     * @param def The default value.
+     * @return The value corresponding to the provided key.
      */
     public static String getFromConfig(String key, String def){
         return configuration == null ? def : configuration.get(key, def);
     }
 
     /**
-     * Get a size from the configuration provided.
+     * Get a value from the configuration provided.
      * If no configuration was provided, the default is provided.
      * @param key The key to retrieve.
-     * @param def The default size.
-     * @return The size corresponding to the provided key.
+     * @param def The default value.
+     * @return The value corresponding to the provided key.
      */
     public static byte getFromConfig(String key, byte def){
         return configuration == null ? def : configuration.get(key, def);
     }
 
     /**
-     * Get a size from the configuration provided.
+     * Get a value from the configuration provided.
      * If no configuration was provided, the default is provided.
      * @param key The key to retrieve.
-     * @param def The default size.
-     * @return The size corresponding to the provided key.
+     * @param def The default value.
+     * @return The value corresponding to the provided key.
      */
     public static short getFromConfig(String key, short def){
         return configuration == null ? def : configuration.get(key, def);
     }
 
     /**
-     * Get a size from the configuration provided.
+     * Get a value from the configuration provided.
      * If no configuration was provided, the default is provided.
      * @param key The key to retrieve.
-     * @param def The default size.
-     * @return The size corresponding to the provided key.
+     * @param def The default value.
+     * @return The value corresponding to the provided key.
      */
     public static int getFromConfig(String key, int def){
         return configuration == null ? def : configuration.get(key, def);
     }
 
     /**
-     * Get a size from the configuration provided.
+     * Get a value from the configuration provided.
      * If no configuration was provided, the default is provided.
      * @param key The key to retrieve.
-     * @param def The default size.
-     * @return The size corresponding to the provided key.
+     * @param def The default value.
+     * @return The value corresponding to the provided key.
      */
     public static long getFromConfig(String key, long def){
         return configuration == null ? def : configuration.get(key, def);
     }
 
     /**
-     * Get a size from the configuration provided.
+     * Get a value from the configuration provided.
      * If no configuration was provided, the default is provided.
      * @param key The key to retrieve.
-     * @param def The default size.
-     * @return The size corresponding to the provided key.
+     * @param def The default value.
+     * @return The value corresponding to the provided key.
      */
     public static float getFromConfig(String key, float def){
         return configuration == null ? def : configuration.get(key, def);
     }
 
     /**
-     * Get a size from the configuration provided.
+     * Get a value from the configuration provided.
      * If no configuration was provided, the default is provided.
      * @param key The key to retrieve.
-     * @param def The default size.
-     * @return The size corresponding to the provided key.
+     * @param def The default value.
+     * @return The value corresponding to the provided key.
      */
     public static double getFromConfig(String key, double def){
         return configuration == null ? def : configuration.get(key, def);
     }
 
     /**
-     * Get a size from the configuration provided.
+     * Get a value from the configuration provided.
      * If no configuration was provided, the default is provided.
      * @param key The key to retrieve.
-     * @param converter A function that converts the size into the object T
-     * @param def The default size.
-     * @return The size corresponding to the provided key.
+     * @param converter A function that converts the value into the object T
+     * @param def The default value.
+     * @return The value corresponding to the provided key.
      */
     public static <T> T getFromConfig(String key, Function<String, T> converter, T def){
         Objects.requireNonNull(converter);
@@ -237,10 +237,10 @@ public class PkmnFramework {
     }
 
     /**
-     * Set a size in the configuration.
+     * Set a value in the configuration.
      * Throws an IllegalArgumentException is no saveable configuration is set.
      * @param key The key
-     * @param value The size
+     * @param value The value
      */
     public static void setInConfig(String key, String value){
         verifySaving();
@@ -248,10 +248,10 @@ public class PkmnFramework {
     }
 
     /**
-     * Set a size in the configuration.
+     * Set a value in the configuration.
      * Throws an IllegalArgumentException is no saveable configuration is set.
      * @param key The key
-     * @param value The size
+     * @param value The value
      */
     public static void setInConfig(String key, byte value){
         verifySaving();
@@ -259,10 +259,10 @@ public class PkmnFramework {
     }
 
     /**
-     * Set a size in the configuration.
+     * Set a value in the configuration.
      * Throws an IllegalArgumentException is no saveable configuration is set.
      * @param key The key
-     * @param value The size
+     * @param value The value
      */
     public static void setInConfig(String key, short value){
         verifySaving();
@@ -270,10 +270,10 @@ public class PkmnFramework {
     }
 
     /**
-     * Set a size in the configuration.
+     * Set a value in the configuration.
      * Throws an IllegalArgumentException is no saveable configuration is set.
      * @param key The key
-     * @param value The size
+     * @param value The value
      */
     public static void setInConfig(String key, int value){
         verifySaving();
@@ -281,10 +281,10 @@ public class PkmnFramework {
     }
 
     /**
-     * Set a size in the configuration.
+     * Set a value in the configuration.
      * Throws an IllegalArgumentException is no saveable configuration is set.
      * @param key The key
-     * @param value The size
+     * @param value The value
      */
     public static void setInConfig(String key, long value){
         verifySaving();
@@ -292,10 +292,10 @@ public class PkmnFramework {
     }
 
     /**
-     * Set a size in the configuration.
+     * Set a value in the configuration.
      * Throws an IllegalArgumentException is no saveable configuration is set.
      * @param key The key
-     * @param value The size
+     * @param value The value
      */
     public static void setInConfig(String key, float value){
         verifySaving();
@@ -303,10 +303,10 @@ public class PkmnFramework {
     }
 
     /**
-     * Set a size in the configuration.
+     * Set a value in the configuration.
      * Throws an IllegalArgumentException is no saveable configuration is set.
      * @param key The key
-     * @param value The size
+     * @param value The value
      */
     public static void setInConfig(String key, double value){
         verifySaving();
@@ -314,10 +314,10 @@ public class PkmnFramework {
     }
 
     /**
-     * Set a size in the configuration.
+     * Set a value in the configuration.
      * Throws an IllegalArgumentException is no saveable configuration is set.
      * @param key The key
-     * @param value The size
+     * @param value The value
      */
     public static <T> void setInConfig(String key, T value, Function<T, String> converter){
         verifySaving();

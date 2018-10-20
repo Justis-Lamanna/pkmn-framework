@@ -20,7 +20,7 @@ public class UnsignedWord implements ByteObject<UnsignedWord>,Comparable<Unsigne
      */
     public static final HexWriter<UnsignedWord> HEX_WRITER = (object, iterator) -> iterator.write(object.toBytes());
 
-    //The size inside this short.
+    //The value inside this short.
     long value;
 
     //Cache results to allow for == comparison.
@@ -35,7 +35,7 @@ public class UnsignedWord implements ByteObject<UnsignedWord>,Comparable<Unsigne
      * @param bytes
      * @return
      * @throws IndexOutOfBoundsException ByteBuffer has capacity smaller than 4.
-     * @throws NullPointerException size is null.
+     * @throws NullPointerException value is null.
      */
     public static UnsignedWord valueOf(ByteBuffer bytes){
         Objects.requireNonNull(bytes);
@@ -47,10 +47,10 @@ public class UnsignedWord implements ByteObject<UnsignedWord>,Comparable<Unsigne
     }
 
     /**
-     * Parse an UnsignedWord from a size
+     * Parse an UnsignedWord from a value
      * @param value
      * @return
-     * @throws IllegalArgumentException Provided size is not between 0 and 0xFFFFFFFF, inclusively.
+     * @throws IllegalArgumentException Provided value is not between 0 and 0xFFFFFFFF, inclusively.
      */
     public static UnsignedWord valueOf(long value){
         HexUtils.assertRange(value, 0, 0xFFFFFFFFL);
@@ -96,7 +96,7 @@ public class UnsignedWord implements ByteObject<UnsignedWord>,Comparable<Unsigne
     @Override
     public String toString() {
         return "UnsignedWord{" +
-                "size=" + value +
+                "value=" + value +
                 '}';
     }
 
