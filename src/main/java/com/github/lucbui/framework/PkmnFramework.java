@@ -27,8 +27,8 @@ import java.util.function.Function;
  */
 public class PkmnFramework {
 
-    private static HexField hexField = null;
-    private static Configuration configuration = null;
+    private HexField hexField = null;
+    private Configuration configuration = null;
 
     /**
      * Start creating the framework.
@@ -66,7 +66,7 @@ public class PkmnFramework {
         return b;
     }
 
-    private static void verifyFieldsPresent(){
+    private void verifyFieldsPresent(){
         if(hexField == null){
             throw new IllegalStateException("PkmnFramework has not been initialized! Use .init() and .start() to initialize.");
         }
@@ -79,7 +79,7 @@ public class PkmnFramework {
      * @param <T> The object to extract
      * @return The extracted object.
      */
-    public static <T> T read(long pointer, HexReader<T> reader){
+    public <T> T read(long pointer, HexReader<T> reader){
         verifyFieldsPresent();
         return reader.read(hexField.iterator(pointer));
     }
@@ -91,7 +91,7 @@ public class PkmnFramework {
      * @param object The object to write.
      * @param <T> The object to write.
      */
-    public static <T> void write(long pointer, HexWriter<T> writer, T object){
+    public <T> void write(long pointer, HexWriter<T> writer, T object){
         verifyFieldsPresent();
         writer.write(object, hexField.iterator(pointer));
     }
@@ -103,7 +103,7 @@ public class PkmnFramework {
      * @param <T> The object to extract
      * @return The extracted object
      */
-    public static <T> T read(long pointer, Class<T> clazz){
+    public <T> T read(long pointer, Class<T> clazz){
         verifyFieldsPresent();
         return clazz.cast(ReflectionHexReaderWriter.getHexReaderFor(clazz).read(hexField.iterator(pointer)));
     }
@@ -116,7 +116,7 @@ public class PkmnFramework {
      * @param repointStrategy The strategy to use when repointing.
      * @param <T> The object to write
      */
-    public static <T> void write(long pointer, T object, RepointStrategy repointStrategy) {
+    public <T> void write(long pointer, T object, RepointStrategy repointStrategy) {
         verifyFieldsPresent();
         if(repointStrategy == null){
             repointStrategy = RepointUtils.disableRepointStrategy();
@@ -132,7 +132,7 @@ public class PkmnFramework {
      * @param object The object to write.
      * @param <T> The object to write
      */
-    public static <T> void write(long pointer, T object) {
+    public <T> void write(long pointer, T object) {
         write(pointer, object, RepointUtils.disableRepointStrategy());
     }
 
@@ -141,7 +141,7 @@ public class PkmnFramework {
      * @param position The position to start the iterator at.
      * @return An iterator.
      */
-    public static HexFieldIterator getIterator(long position){
+    public HexFieldIterator getIterator(long position){
         verifyFieldsPresent();
         return hexField.iterator(position);
     }
@@ -153,7 +153,7 @@ public class PkmnFramework {
      * @param def The default value.
      * @return The value corresponding to the provided key.
      */
-    public static String getFromConfig(String key, String def){
+    public String getFromConfig(String key, String def){
         return configuration == null ? def : configuration.get(key, def);
     }
 
@@ -164,7 +164,7 @@ public class PkmnFramework {
      * @param def The default value.
      * @return The value corresponding to the provided key.
      */
-    public static byte getFromConfig(String key, byte def){
+    public byte getFromConfig(String key, byte def){
         return configuration == null ? def : configuration.get(key, def);
     }
 
@@ -175,7 +175,7 @@ public class PkmnFramework {
      * @param def The default value.
      * @return The value corresponding to the provided key.
      */
-    public static short getFromConfig(String key, short def){
+    public short getFromConfig(String key, short def){
         return configuration == null ? def : configuration.get(key, def);
     }
 
@@ -186,7 +186,7 @@ public class PkmnFramework {
      * @param def The default value.
      * @return The value corresponding to the provided key.
      */
-    public static int getFromConfig(String key, int def){
+    public int getFromConfig(String key, int def){
         return configuration == null ? def : configuration.get(key, def);
     }
 
@@ -197,7 +197,7 @@ public class PkmnFramework {
      * @param def The default value.
      * @return The value corresponding to the provided key.
      */
-    public static long getFromConfig(String key, long def){
+    public long getFromConfig(String key, long def){
         return configuration == null ? def : configuration.get(key, def);
     }
 
@@ -208,7 +208,7 @@ public class PkmnFramework {
      * @param def The default value.
      * @return The value corresponding to the provided key.
      */
-    public static float getFromConfig(String key, float def){
+    public float getFromConfig(String key, float def){
         return configuration == null ? def : configuration.get(key, def);
     }
 
@@ -219,7 +219,7 @@ public class PkmnFramework {
      * @param def The default value.
      * @return The value corresponding to the provided key.
      */
-    public static double getFromConfig(String key, double def){
+    public double getFromConfig(String key, double def){
         return configuration == null ? def : configuration.get(key, def);
     }
 
@@ -231,7 +231,7 @@ public class PkmnFramework {
      * @param def The default value.
      * @return The value corresponding to the provided key.
      */
-    public static <T> T getFromConfig(String key, Function<String, T> converter, T def){
+    public <T> T getFromConfig(String key, Function<String, T> converter, T def){
         Objects.requireNonNull(converter);
         return (configuration == null || !configuration.has(key)) ? def : converter.apply(configuration.get(key));
     }
@@ -242,7 +242,7 @@ public class PkmnFramework {
      * @param key The key
      * @param value The value
      */
-    public static void setInConfig(String key, String value){
+    public void setInConfig(String key, String value){
         verifySaving();
         ((MutableConfig) configuration).set(key, value);
     }
@@ -253,7 +253,7 @@ public class PkmnFramework {
      * @param key The key
      * @param value The value
      */
-    public static void setInConfig(String key, byte value){
+    public void setInConfig(String key, byte value){
         verifySaving();
         ((MutableConfig) configuration).set(key, value);
     }
@@ -264,7 +264,7 @@ public class PkmnFramework {
      * @param key The key
      * @param value The value
      */
-    public static void setInConfig(String key, short value){
+    public void setInConfig(String key, short value){
         verifySaving();
         ((MutableConfig) configuration).set(key, value);
     }
@@ -275,7 +275,7 @@ public class PkmnFramework {
      * @param key The key
      * @param value The value
      */
-    public static void setInConfig(String key, int value){
+    public void setInConfig(String key, int value){
         verifySaving();
         ((MutableConfig) configuration).set(key, value);
     }
@@ -286,7 +286,7 @@ public class PkmnFramework {
      * @param key The key
      * @param value The value
      */
-    public static void setInConfig(String key, long value){
+    public void setInConfig(String key, long value){
         verifySaving();
         ((MutableConfig) configuration).set(key, value);
     }
@@ -297,7 +297,7 @@ public class PkmnFramework {
      * @param key The key
      * @param value The value
      */
-    public static void setInConfig(String key, float value){
+    public void setInConfig(String key, float value){
         verifySaving();
         ((MutableConfig) configuration).set(key, value);
     }
@@ -308,7 +308,7 @@ public class PkmnFramework {
      * @param key The key
      * @param value The value
      */
-    public static void setInConfig(String key, double value){
+    public void setInConfig(String key, double value){
         verifySaving();
         ((MutableConfig) configuration).set(key, value);
     }
@@ -319,7 +319,7 @@ public class PkmnFramework {
      * @param key The key
      * @param value The value
      */
-    public static <T> void setInConfig(String key, T value, Function<T, String> converter){
+    public <T> void setInConfig(String key, T value, Function<T, String> converter){
         verifySaving();
         ((MutableConfig) configuration).set(key, value, converter);
     }
@@ -329,12 +329,12 @@ public class PkmnFramework {
      * Throws an IllegalArgumentException is no saveable configuration is set.
      * @param os The place to save it.
      */
-    public static void saveConfig(OutputStream os){
+    public void saveConfig(OutputStream os){
         verifySaving();
         ((MutableConfig) configuration).save(os);
     }
 
-    private static void verifySaving(){
+    private void verifySaving(){
         if(!(configuration instanceof MutableConfig)){
             throw new IllegalArgumentException("No saveable configuration specified.");
         }
@@ -430,11 +430,12 @@ public class PkmnFramework {
             return this;
         }
 
-        public void start() throws IOException {
+        public PkmnFramework start() throws IOException {
+            PkmnFramework framework = new PkmnFramework();
             if(hexField == null) {
-                PkmnFramework.hexField = new FileHexField(path, StandardOpenOption.READ, StandardOpenOption.WRITE);
+                framework.hexField = new FileHexField(path, StandardOpenOption.READ, StandardOpenOption.WRITE);
             } else {
-                PkmnFramework.hexField = hexField;
+                framework.hexField = hexField;
             }
             ReflectionHexReaderWriter.resetReaders();
             ReflectionHexReaderWriter.addReaders(this.readers);
@@ -442,7 +443,8 @@ public class PkmnFramework {
             ReflectionHexReaderWriter.addWriters(this.writers);
             ReflectionHexReaderWriter.resetAnnotations();
             ReflectionHexReaderWriter.addAnnotations(this.annotations);
-            PkmnFramework.configuration = configuration;
+            framework.configuration = configuration;
+            return framework;
         }
     }
 }
