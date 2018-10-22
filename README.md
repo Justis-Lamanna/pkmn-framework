@@ -1,4 +1,4 @@
-# PKMN Framework
+# PKMN Framework [![Build Status](https://travis-ci.org/Justis-Lamanna/pkmn-framework.svg?branch=master)](https://travis-ci.org/Justis-Lamanna/pkmn-framework)
 
 A rudimentary framework for dealing with HEX files in an easier manner. 
 
