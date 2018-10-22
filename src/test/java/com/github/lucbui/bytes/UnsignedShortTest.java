@@ -1,49 +1,49 @@
 package com.github.lucbui.bytes;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.nio.ByteBuffer;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
-class UnsignedShortTest {
+public class UnsignedShortTest {
 
     @Test
-    void valueOfLiteralValid(){
+    public void valueOfLiteralValid(){
         UnsignedShort bite = UnsignedShort.valueOf(0);
         assertEquals(0, bite.value);
     }
 
-    @Test
-    void valueOfLiteralInvalid(){
-        assertThrows(IllegalArgumentException.class, () -> UnsignedShort.valueOf(-1));
+    @Test(expected = IllegalArgumentException.class)
+    public void valueOfLiteralInvalid(){
+        UnsignedShort.valueOf(-1);
     }
 
     @Test
-    void valueOfLiteralEqual(){
+    public void valueOfLiteralEqual(){
         assertSame(UnsignedShort.valueOf(0), UnsignedShort.valueOf(0));
     }
 
     @Test
-    void valueOfByteBufferValid(){
+    public void valueOfByteBufferValid(){
         ByteBuffer bb = ByteBuffer.wrap(new byte[]{0, 0});
         UnsignedShort bite = UnsignedShort.valueOf(bb);
         assertEquals(0, bite.value);
     }
 
-    @Test
-    void valueOfByteBufferInvalid(){
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void valueOfByteBufferInvalid(){
         ByteBuffer bb = ByteBuffer.wrap(new byte[0]);
-        assertThrows(IndexOutOfBoundsException.class, () -> UnsignedShort.valueOf(bb));
+        UnsignedShort.valueOf(bb);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void valueOfByteBufferNull(){
+        UnsignedShort.valueOf((ByteBuffer)null);
     }
 
     @Test
-    void valueOfByteBufferNull(){
-        assertThrows(NullPointerException.class, () -> UnsignedShort.valueOf((ByteBuffer)null));
-    }
-
-    @Test
-    void valueOfUnsignedByte(){
+    public void valueOfUnsignedByte(){
         UnsignedByte ub = UnsignedByte.valueOf(0);
         UnsignedShort us = UnsignedShort.valueOf(ub);
         UnsignedShort us2 = UnsignedShort.valueOf(0);
@@ -51,57 +51,47 @@ class UnsignedShortTest {
     }
 
     @Test
-    void compareToSame(){
+    public void compareToSame(){
         assertEquals(0, UnsignedShort.valueOf(0).compareTo(UnsignedShort.valueOf(0)));
     }
 
     @Test
-    void compareToSmaller(){
+    public void compareToSmaller(){
         assertTrue(UnsignedShort.valueOf(0).compareTo(UnsignedShort.valueOf(1)) < 0);
     }
 
     @Test
-    void compareToLarger(){
+    public void compareToLarger(){
         assertTrue(UnsignedShort.valueOf(1).compareTo(UnsignedShort.valueOf(0)) > 0);
     }
 
-    @Test
-    void compareToNull(){
-        assertThrows(NullPointerException.class, () -> UnsignedShort.valueOf(0).compareTo(null));
+    @Test(expected = NullPointerException.class)
+    public void compareToNull(){
+        UnsignedShort.valueOf(0).compareTo(null);
     }
 
     @Test
-    void equalsSame(){
+    public void equalsSame(){
         assertEquals(UnsignedShort.valueOf(0), UnsignedShort.valueOf(0));
     }
 
     @Test
-    void equalsDifferent(){
-        assertNotEquals(UnsignedShort.valueOf(0), UnsignedShort.valueOf(1));
-    }
-
-    @Test
-    void equalsNull(){
-        assertNotEquals(null, UnsignedShort.valueOf(0));
-    }
-
-    @Test
-    void equalsByValueSame(){
+    public void equalsByValueSame(){
         assertTrue(UnsignedShort.valueOf(0).equalsByValue(UnsignedWord.valueOf(0)));
     }
 
     @Test
-    void equalsByValueDifferent(){
+    public void equalsByValueDifferent(){
         assertFalse(UnsignedShort.valueOf(0).equalsByValue(UnsignedWord.valueOf(1)));
     }
 
     @Test
-    void equalsByValueNull(){
+    public void equalsByValueNull(){
         assertFalse(UnsignedShort.valueOf(0).equalsByValue(null));
     }
 
-    @Test
-    void equalsByValueWrongClass(){
-        assertThrows(ClassCastException.class, () -> UnsignedShort.valueOf(0).equalsByValue(0));
+    @Test(expected = ClassCastException.class)
+    public void equalsByValueWrongClass(){
+        UnsignedShort.valueOf(0).equalsByValue(0);
     }
 }

@@ -1,20 +1,20 @@
 package com.github.lucbui.bytes;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
-class BitmaskTest {
+public class BitmaskTest {
 
     @Test
-    void applyBitmask() {
+    public void applyBitmask() {
         Bitmask bm = new Bitmask(0b1111);
         int applied = bm.apply(64);
         assertEquals(64 & 0b1111, applied);
     }
 
     @Test
-    void applyBitmaskAndShift(){
+    public void applyBitmaskAndShift(){
         Bitmask bm = new Bitmask(0b1111, 4);
         int applied = bm.apply(64);
         assertEquals((64 & 0b1111) >> 4, applied);
