@@ -1,5 +1,6 @@
 package com.github.lucbui.gba.gfx;
 
+import com.github.lucbui.bytes.Bitmask;
 import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.HexUtils;
 import com.github.lucbui.bytes.HexWriter;
@@ -13,6 +14,9 @@ import java.util.Objects;
  * A class which encapsulates a GBA Tile.
  */
 public class GBATile {
+
+    private static final Bitmask LEFT_PIXEL_MASK = new Bitmask(0b1111);
+    private static final Bitmask RIGHT_PIXEL_MASK = new Bitmask(0b11110000, 4);
 
     /**
      * The bit depth of a tile.
@@ -82,8 +86,8 @@ public class GBATile {
                 //Each byte contains two pixels of info.
                 for(int idx = 0; idx < 32; idx++){
                     byte bite = iterator.getRelative(idx, 1).get(0);
-                    int leftPixel = bite & 0b00001111;
-                    int rightPixel = (bite & 0b11110000) >>> 4;
+                    int leftPixel = LEFT_PIXEL_MASK.apply(bite);
+                    int rightPixel = RIGHT_PIXEL_MASK.apply(bite);
                     pixels[idx * 2] = leftPixel;
                     pixels[idx * 2 + 1] = rightPixel;
                 }
@@ -109,9 +113,11 @@ public class GBATile {
             BitDepth depth = object.bitDepth;
             if(depth == BitDepth.FOUR){
                 for(int idx = 0; idx < 32; idx++){
-                    int leftPixel = pixels[idx * 2] & 0b1111;
-                    int rightPixel = pixels[idx * 2 + 1] & 0b1111;
-                    byte bite = HexUtils.unsignedByteToByte(leftPixel | (rightPixel << 4));
+                    int pixl = Bitmask.merge()
+                            .with(LEFT_PIXEL_MASK, pixels[idx * 2])
+                            .with(RIGHT_PIXEL_MASK, pixels[idx * 2 + 1])
+                            .apply();
+                    byte bite = HexUtils.unsignedByteToByte(pixl);
                     ByteBuffer bb = ByteBuffer.wrap(new byte[]{bite});
                     iterator.writeRelative(idx, bb);
                 }
