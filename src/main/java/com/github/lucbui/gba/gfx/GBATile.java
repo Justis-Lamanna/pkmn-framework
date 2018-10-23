@@ -18,24 +18,20 @@ public class GBATile {
     private static final Bitmask LEFT_PIXEL_MASK = new Bitmask(0b1111);
     private static final Bitmask RIGHT_PIXEL_MASK = new Bitmask(0b11110000, 4);
 
-    /**
-     * The bit depth of a tile.
-     */
-    public enum BitDepth {
-        /**
-         * Encoding where each pixel is 4 bits
-         */
-        FOUR,
-
-        /**
-         * Encoding where each pixel is 8 bits
-         */
-        EIGHT
-    }
-
     private BitDepth bitDepth;
 
     private int[] pixels;
+
+    /**
+     * Creates an empty GBATile, filled with 0s
+     * @param depth The bitdepth of this tile.
+     */
+    public GBATile(BitDepth depth){
+        Objects.requireNonNull(depth);
+        this.bitDepth = depth;
+        this.pixels = new int[64];
+        Arrays.fill(this.pixels, 0);
+    }
 
     /**
      * Create a GBATile from a BitDepth and 64 length array of pixels.
@@ -85,18 +81,20 @@ public class GBATile {
             if(depth == BitDepth.FOUR){
                 //Each byte contains two pixels of info.
                 for(int idx = 0; idx < 32; idx++){
-                    byte bite = iterator.getRelative(idx, 1).get(0);
+                    byte bite = iterator.getRelative(0, 1).get(0);
                     int leftPixel = LEFT_PIXEL_MASK.apply(bite);
                     int rightPixel = RIGHT_PIXEL_MASK.apply(bite);
                     pixels[idx * 2] = leftPixel;
                     pixels[idx * 2 + 1] = rightPixel;
+                    iterator.advanceRelative(1);
                 }
                 return new GBATile(depth, pixels);
             } else if(depth == BitDepth.EIGHT){
                 //Each bite contains only one pixel of info.
                 for(int idx = 0; idx < 64; idx++){
-                    byte bite = iterator.getRelative(idx, 1).get(0);
+                    byte bite = iterator.getRelative(0, 1).get(0);
                     pixels[idx] = HexUtils.byteToUnsignedByte(bite);
+                    iterator.advanceRelative(1);
                 }
                 return new GBATile(depth, pixels);
             } else {
@@ -108,29 +106,32 @@ public class GBATile {
     /**
      * A hex writer which can write a GBATile
      */
-    public static HexWriter<GBATile> HEX_WRITER = (object, iterator) -> {
+    public static HexWriter<GBATile> getHexWriter(BitDepth depth) {
+        return (object, iterator) -> {
             int[] pixels = object.pixels;
-            BitDepth depth = object.bitDepth;
-            if(depth == BitDepth.FOUR){
-                for(int idx = 0; idx < 32; idx++){
+            if (depth == BitDepth.FOUR) {
+                for (int idx = 0; idx < 32; idx++) {
                     int pixl = Bitmask.merge()
                             .with(LEFT_PIXEL_MASK, pixels[idx * 2])
                             .with(RIGHT_PIXEL_MASK, pixels[idx * 2 + 1])
                             .apply();
                     byte bite = HexUtils.unsignedByteToByte(pixl);
                     ByteBuffer bb = ByteBuffer.wrap(new byte[]{bite});
-                    iterator.writeRelative(idx, bb);
+                    iterator.writeRelative(0, bb);
+                    iterator.advanceRelative(1);
                 }
-            } else if(depth == BitDepth.EIGHT){
-                for(int idx = 0; idx < 64; idx++){
+            } else if (depth == BitDepth.EIGHT) {
+                for (int idx = 0; idx < 64; idx++) {
                     byte bite = HexUtils.unsignedByteToByte(pixels[idx]);
                     ByteBuffer bb = ByteBuffer.wrap(new byte[]{bite});
-                    iterator.writeRelative(idx, bb);
+                    iterator.writeRelative(0, bb);
+                    iterator.advanceRelative(1);
                 }
             } else {
                 throw new IllegalArgumentException("Invalid depth specified:" + depth);
             }
         };
+    }
 
     /**
      * Get the pixel at the speciifed x/y position.
@@ -141,6 +142,15 @@ public class GBATile {
      */
     public int getPixelAt(int x, int y){
         return pixels[y * 8 + x];
+    }
+
+    /**
+     * Get a row at the specified y position.
+     * @param y
+     * @return
+     */
+    public int[] getRowAt(int y){
+        return Arrays.copyOfRange(pixels, y * 8, (y + 1) * 8);
     }
 
     /**

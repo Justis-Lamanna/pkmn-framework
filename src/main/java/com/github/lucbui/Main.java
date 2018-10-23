@@ -6,13 +6,13 @@ import com.github.lucbui.framework.RepointStrategy;
 import com.github.lucbui.framework.RepointUtils;
 import com.github.lucbui.gba.GBAFrameworkFactory;
 import com.github.lucbui.gba.GBAPointer;
-import com.github.lucbui.gba.gfx.GBAColor;
-import com.github.lucbui.gba.gfx.GBAPalette;
-import com.github.lucbui.gba.gfx.GBATile;
+import com.github.lucbui.gba.gfx.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Main {
 
@@ -26,15 +26,9 @@ public class Main {
                 .frameworkFactory(new GBAFrameworkFactory())
                 .start();
 
-        //To be replaced with a specialized collection soon:tm:
-        List<GBATile> tiles = new ArrayList<>();
         long ptr = 0x4975F8;
-        for(int ctr = 0; ctr < 8; ctr++){
-           tiles.add(pkmnGame.read(ptr + (ctr * 32), GBATile.getHexReader(GBATile.BitDepth.FOUR)));
-        }
+        GBATiles tiles = pkmnGame.read(ptr, GBATiles.getHexReader(BitDepth.FOUR, 8));
 
-        for(int ctr = 0; ctr < 8; ctr++){
-            sandbox.write((ctr * 32), GBATile.HEX_WRITER, tiles.get(ctr));
-        }
+        sandbox.write(0, GBATiles.getHexWriter(BitDepth.FOUR, 8), tiles);
     }
 }

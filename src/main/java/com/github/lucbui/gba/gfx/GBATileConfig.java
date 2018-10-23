@@ -13,19 +13,20 @@ import java.lang.reflect.Field;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface GBATileConfig {
-    GBATile.BitDepth bitDepth();
+    BitDepth bitDepth();
 
     class Annotation implements ReflectionAnnotationFunction {
 
         @Override
         public Object onRead(Object objToReadFrom, Field field, HexFieldIterator iterator) {
-            GBATile.BitDepth bd = field.getAnnotation(GBATileConfig.class).bitDepth();
+            BitDepth bd = field.getAnnotation(GBATileConfig.class).bitDepth();
             return GBATile.getHexReader(bd).read(iterator);
         }
 
         @Override
         public boolean onWrite(Object objToWrite, Field field, HexFieldIterator iterator) {
-            GBATile.HEX_WRITER.write((GBATile) objToWrite, iterator);
+            BitDepth bd = field.getAnnotation(GBATileConfig.class).bitDepth();
+            GBATile.getHexWriter(bd).write((GBATile) objToWrite, iterator);
             return true;
         }
     }
