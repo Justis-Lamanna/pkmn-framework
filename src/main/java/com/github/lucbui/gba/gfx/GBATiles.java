@@ -5,6 +5,8 @@ import com.github.lucbui.bytes.HexWriter;
 import com.github.lucbui.file.HexFieldIterator;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -186,5 +188,21 @@ public class GBATiles {
                 GBATile.getHexWriter(depth).write(object.getTile(count), iterator);
             }
         };
+    }
+
+    /**
+     * Get number of tiles in this collection.
+     * @return The number of tiles
+     */
+    public int getNumberOfTiles() {
+        return tiles.length;
+    }
+
+    /**
+     * Get the tiles in this collection.
+     * @return The tiles.
+     */
+    public GBATile[] getTiles(){
+        return Arrays.copyOf(tiles, tiles.length);
     }
 }

@@ -4,6 +4,8 @@ import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.HexWriter;
 import com.github.lucbui.file.HexFieldIterator;
 
+import java.awt.image.ColorModel;
+import java.awt.image.IndexColorModel;
 import java.util.*;
 
 /**
@@ -86,6 +88,26 @@ public class GBAPalette {
         return colors.size();
     }
 
+    /**
+     * Get a ColorModel for this palette.
+     * @return
+     */
+    public IndexColorModel getColorModel(){
+        byte[] reds = new byte[colors.size()];
+        byte[] greens = new byte[colors.size()];
+        byte[] blues = new byte[colors.size()];
+        byte[] alphas = new byte[colors.size()];
+        int idx = 0;
+        for(GBAColor color : colors){
+            reds[idx] = (byte)(color.getRed() * 8);
+            greens[idx] = (byte)(color.getGreen() * 8);
+            blues[idx] = (byte)(color.getBlue() * 8);
+            alphas[idx] = (byte)(idx == 0 ? 0 : 1);
+            idx++;
+        }
+        return new IndexColorModel(8, colors.size(), reds, greens, blues, alphas);
+    }
+
     private void validateSlot(int slot){
         if(slot < 0){
             throw new IllegalArgumentException("Slot specified < 0");
@@ -156,5 +178,22 @@ public class GBAPalette {
         public GBAPalette build(){
             return new GBAPalette(colors);
         }
+    }
+
+    /**
+     * Our own GBA Index Color Model.
+     * This allows us to set an image's RGB as 0, 1, 2, and so on, and display the 0th, 1st, 2nd, and so on
+     * color.
+     */
+    public static class GBAIndexColorModel extends IndexColorModel{
+
+        public GBAIndexColorModel(int bits, int size, byte[] r, byte[] g, byte[] b, byte[] a) {
+            super(bits, size, r, g, b, a);
+        }
+/*
+        @Override
+        public synchronized Object getDataElements(int rgb, Object pixel){
+            return new byte[]{this.getRGB(rgb)};
+        }*/
     }
 }

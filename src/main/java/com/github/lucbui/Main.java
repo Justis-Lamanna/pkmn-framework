@@ -6,8 +6,13 @@ import com.github.lucbui.framework.RepointStrategy;
 import com.github.lucbui.framework.RepointUtils;
 import com.github.lucbui.gba.GBAFrameworkFactory;
 import com.github.lucbui.gba.GBAPointer;
+import com.github.lucbui.gba.GBAUtils;
 import com.github.lucbui.gba.gfx.*;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +34,7 @@ public class Main {
         long ptr = 0x4975F8;
         GBATiles tiles = pkmnGame.read(ptr, GBATiles.getHexReader(BitDepth.FOUR, 8));
 
-        sandbox.write(0, GBATiles.getHexWriter(BitDepth.FOUR, 8), tiles);
+        BufferedImage img = GBAUtils.createImage(tiles, GBAUtils.reverseGrayscale(16), 2, 4);
+        ImageIO.write(img, "png", new File("test.png"));
     }
 }
