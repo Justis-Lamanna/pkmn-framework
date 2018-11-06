@@ -1,9 +1,8 @@
 package com.github.lucbui.gba;
 
 import com.github.lucbui.gba.gfx.GBAColor;
+import com.github.lucbui.gba.gfx.GBAGraphic;
 import com.github.lucbui.gba.gfx.GBAPalette;
-import com.github.lucbui.gba.gfx.GBATile;
-import com.github.lucbui.gba.gfx.GBATiles;
 
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
@@ -14,41 +13,16 @@ public class GBAUtils {
     }
 
     /**
-     * Create an image from one tile and a palette.
-     * @param tile The tile to use.
+     * Create an image from a graphic and a palette.
+     * @param graphic The tile to use.
      * @param palette The palette to use.
-     * @return
+     * @return A bufferedimage created from the specified graphic and palette.
      */
-    public static BufferedImage createImage(GBATile tile, GBAPalette palette){
-        BufferedImage img = new BufferedImage( 8, 8, BufferedImage.TYPE_4BYTE_ABGR);
+    public static BufferedImage createImage(GBAGraphic graphic, GBAPalette palette){
+        BufferedImage img = new BufferedImage( graphic.getWidth(), graphic.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
         //TODO: Convert this into a proper Indexed image?
-        int[] pixels1D = Arrays.stream(tile.to1DArray()).map(i -> palette.get(i).getColor().getRGB()).toArray();
-        img.setRGB(0, 0, 8, 8, pixels1D, 0, 8);
-        return img;
-    }
-
-    /**
-     * Create an image from a combination of tiles and palette.
-     * @param tiles The tiles to use.
-     * @param palette The palette to use.
-     * @param widthInTiles The width, in tiles.
-     * @param heightInTiles The height, in tiles.
-     * @return
-     */
-    public static BufferedImage createImage(GBATiles tiles, GBAPalette palette, int widthInTiles, int heightInTiles){
-        if(widthInTiles * heightInTiles != tiles.getNumberOfTiles()){
-            throw new IllegalArgumentException("widthInTiles * heightInTiles must equal the number of tiles.");
-        }
-        BufferedImage img = new BufferedImage( widthInTiles * 8, heightInTiles * 8, BufferedImage.TYPE_4BYTE_ABGR);
-        //int[] pixels1D = Arrays.stream(tiles.to1DArray()).map(i -> palette.get(i).getColor().getRGB()).toArray();
-        //img.setRGB(0, 0, 8, 8, pixels1D, 0, 8);
-        for(int yTile = 0; yTile < heightInTiles; yTile++){
-            for(int xTile = 0; xTile < widthInTiles; xTile++){
-                GBATile tile = tiles.getTile(xTile + (widthInTiles * yTile));
-                int[] pixels1D = Arrays.stream(tile.to1DArray()).map(i -> palette.get(i).getColor().getRGB()).toArray();
-                img.setRGB(xTile * 8, yTile * 8, 8, 8, pixels1D, 0, 8);
-            }
-        }
+        int[] pixels1D = Arrays.stream(graphic.to1DArray()).map(i -> palette.get(i).getColor().getRGB()).toArray();
+        img.setRGB(0, 0, graphic.getWidth(), graphic.getHeight(), pixels1D, 0, graphic.getWidth());
         return img;
     }
 

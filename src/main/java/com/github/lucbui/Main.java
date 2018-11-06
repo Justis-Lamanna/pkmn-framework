@@ -26,15 +26,11 @@ public class Main {
                 .init("C:\\Users\\laman\\Desktop\\Procession of Glazed\\ROMs\\Um\\Glazed2.gba")
                 .frameworkFactory(new GBAFrameworkFactory())
                 .start();
-        PkmnFramework sandbox = PkmnFramework
-                .init("C:\\Users\\laman\\IdeaProjects\\pkmnframework\\src\\main\\resources\\test.hex")
-                .frameworkFactory(new GBAFrameworkFactory())
-                .start();
 
         long ptr = 0x4975F8;
-        GBATiles tiles = pkmnGame.read(ptr, GBATiles.getHexReader(BitDepth.FOUR, 8));
+        GBASprite tiles = pkmnGame.read(ptr, GBASprite.getHexReaderFor(BitDepth.FOUR, 2, 4));
 
-        BufferedImage img = GBAUtils.createImage(tiles, GBAUtils.reverseGrayscale(16), 2, 4);
+        BufferedImage img = GBAUtils.createImage(tiles, GBAUtils.reverseGrayscale(16));
         ImageIO.write(img, "png", new File("test.png"));
     }
 }

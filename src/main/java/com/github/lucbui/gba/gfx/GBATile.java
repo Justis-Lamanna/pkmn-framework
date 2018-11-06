@@ -13,7 +13,7 @@ import java.util.Objects;
 /**
  * A class which encapsulates a GBA Tile.
  */
-public class GBATile {
+public class GBATile implements GBAGraphic{
 
     private static final Bitmask LEFT_PIXEL_MASK = new Bitmask(0b1111);
     private static final Bitmask RIGHT_PIXEL_MASK = new Bitmask(0b11110000, 4);
@@ -46,28 +46,6 @@ public class GBATile {
         }
         this.bitDepth = depth;
         this.pixels = pixels;
-    }
-
-    /**
-     * Create a GBATile from a BitDepth and an 8x8 map of pixels.
-     * @param depth The bit depth to use.
-     * @param pixels The pixel values.
-     */
-    public GBATile(BitDepth depth, int[][] pixels){
-        Objects.requireNonNull(pixels);
-        Objects.requireNonNull(depth);
-        if(pixels.length != 8 && pixels[0].length != 8){
-            throw new IllegalArgumentException("pixel map must be 8 by 8");
-        }
-        this.pixels = new int[64];
-        for(int y = 0; y < 8; y++){
-            for(int x = 0; x < 8; x++){
-                //int pxl = pixels[y * 8 + x];
-                //array2d[y][x] = pxl;
-                int pxl = pixels[y][x];
-                this.pixels[y * 8 + x] = pxl;
-            }
-        }
     }
 
     /**
@@ -171,28 +149,24 @@ public class GBATile {
         return bitDepth;
     }
 
-    /**
-     * Get this tile as a 2d array.
-     * The first index represents y, while the second represents x.
-     * @return The 2d array.
-     */
-    public int[][] to2DArray(){
-        int[][] array2d = new int[8][8];
-        for(int y = 0; y < 8; y++){
-            for(int x = 0; x < 8; x++){
-                int pxl = pixels[y * 8 + x];
-                array2d[y][x] = pxl;
-            }
-        }
-        return array2d;
-    }
-
-    /**
-     * Get this tile as a 1d array.
-     * @return The 1d array.
-     */
+    @Override
     public int[] to1DArray(){
         return Arrays.copyOf(this.pixels, pixels.length);
+    }
+
+    @Override
+    public Type getType(){
+        return Type.INDEXED;
+    }
+
+    @Override
+    public int getWidth() {
+        return 8;
+    }
+
+    @Override
+    public int getHeight() {
+        return 8;
     }
 
     @Override
