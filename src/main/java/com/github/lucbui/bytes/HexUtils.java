@@ -70,4 +70,28 @@ public class HexUtils {
         }
         return ByteBuffer.wrap(bites);
     }
+
+    public static long fromByteBufferToLong(ByteBuffer bb) {
+        if(bb.capacity() > 4){
+            throw new IllegalArgumentException("Long overflow with bytebuffer > 2");
+        }
+        byte[] bites = bb.array();
+        long value = 0;
+        for(int idx = 0; idx < bites.length; idx++){
+            value += (byteToUnsignedByte(bites[idx]) * (0x100L * idx));
+        }
+        return value;
+    }
+
+    public static int fromByteBufferToInt(ByteBuffer bb) {
+        if(bb.capacity() > 2){
+            throw new IllegalArgumentException("Integer overflow with bytebuffer > 2");
+        }
+        byte[] bites = bb.array();
+        int value = 0;
+        for(int idx = 0; idx < bites.length; idx++){
+            value += (byteToUnsignedByte(bites[idx]) * (0x100 * idx));
+        }
+        return value;
+    }
 }
