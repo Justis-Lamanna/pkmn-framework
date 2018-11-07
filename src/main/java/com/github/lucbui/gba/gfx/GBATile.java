@@ -18,8 +18,8 @@ public class GBATile implements GBAGraphic{
     public static final int HEIGHT_IN_PIXELS = 8;
     public static final int AREA_IN_PIXELS = WIDTH_IN_PIXELS * HEIGHT_IN_PIXELS;
 
-    private static final Bitmask LEFT_PIXEL_MASK = new Bitmask(0b1111);
-    private static final Bitmask RIGHT_PIXEL_MASK = new Bitmask(0b11110000, 4);
+    private static final Bitmask LEFT_PIXEL_MASK = Bitmask.forBitRange(0, 3);
+    private static final Bitmask RIGHT_PIXEL_MASK = Bitmask.forBitRange(4, 7);
 
     private BitDepth bitDepth;
 

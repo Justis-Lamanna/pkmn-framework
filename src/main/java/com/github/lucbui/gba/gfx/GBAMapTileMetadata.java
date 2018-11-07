@@ -10,10 +10,10 @@ import java.nio.ByteBuffer;
  */
 public class GBAMapTileMetadata {
 
-    private static Bitmask TILE_NUMBER_MASK = new Bitmask(0b1111111111);
-    private static Bitmask HORIZONTAL_FLIP_MASK = new Bitmask(0b1 << 10, 10);
-    private static Bitmask VERTICAL_FLIP_MASK = new Bitmask(0b1 << 11, 11);
-    private static Bitmask PALETTE_NUMBER_MASK = new Bitmask(0b1111 << 12, 12);
+    private static Bitmask TILE_NUMBER_MASK = Bitmask.forBitRange(0, 9);
+    private static Bitmask HORIZONTAL_FLIP_MASK = Bitmask.forBit(10);
+    private static Bitmask VERTICAL_FLIP_MASK = Bitmask.forBit(11);
+    private static Bitmask PALETTE_NUMBER_MASK = Bitmask.forBitRange(12, 15);
 
     private int tileNumber;
     private boolean horizontalFlip;
@@ -108,6 +108,16 @@ public class GBAMapTileMetadata {
      */
     public int getPaletteNumber() {
         return paletteNumber;
+    }
+
+    @Override
+    public String toString() {
+        return "GBAMapTileMetadata{" +
+                "tileNumber=" + tileNumber +
+                ", horizontalFlip=" + horizontalFlip +
+                ", verticalFlip=" + verticalFlip +
+                ", paletteNumber=" + paletteNumber +
+                '}';
     }
 
     /**

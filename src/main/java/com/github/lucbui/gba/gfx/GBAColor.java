@@ -13,9 +13,9 @@ import java.util.Objects;
  */
 public class GBAColor {
 
-    private static final Bitmask RED_BITMASK = new Bitmask(0b11111,0);
-    private static final Bitmask GREEN_BITMASK = new Bitmask(0b1111100000, 5);
-    private static final Bitmask BLUE_BITMASK = new Bitmask(0b111110000000000, 10);
+    private static final Bitmask RED_BITMASK = Bitmask.forBitRange(0, 4);
+    private static final Bitmask GREEN_BITMASK = Bitmask.forBitRange(5, 9);
+    private static final Bitmask BLUE_BITMASK = Bitmask.forBitRange(10, 14);
 
     private static final int MIN_COLOR = 0;
     private static final int MAX_COLOR = 31;

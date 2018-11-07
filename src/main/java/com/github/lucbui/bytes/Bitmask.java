@@ -2,6 +2,7 @@ package com.github.lucbui.bytes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Encapsulates a Bitmask operation
@@ -28,6 +29,32 @@ public class Bitmask {
     public Bitmask(int mask){
         this.mask = mask;
         this.rightShift = 0;
+    }
+
+    /**
+     * Creates a Bitmask when given a start and an end value.
+     * For example, GBATEK specifies a data structure as "Bits 12-15"
+     * This method would automatically generate a new Bitmask(0b1111 <<< 12, 12),
+     * which would appropriately grab those bits
+     * @param start The starting bit of the range.
+     * @param end The ending bit of the range.
+     * @return A Bitmask that grabs the specified bit range.
+     */
+    public static Bitmask forBitRange(int start, int end){
+        int mask = 0;
+        for(int idx = start; idx <= end; idx++){
+            mask |= (1 << idx);
+        }
+        return new Bitmask(mask, start);
+    }
+
+    /**
+     * Create a Bitmask which extracts exactly one bit.
+     * @param bit The bit to extract.
+     * @return A bitmask that grabs the specified bit.
+     */
+    public static Bitmask forBit(int bit){
+        return new Bitmask(1 << bit, bit);
     }
 
     /**
@@ -78,6 +105,20 @@ public class Bitmask {
                 "mask=0b" + Integer.toBinaryString(mask) +
                 ", rightShift=" + rightShift +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Bitmask bitmask = (Bitmask) o;
+        return mask == bitmask.mask &&
+                rightShift == bitmask.rightShift;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mask, rightShift);
     }
 
     /**
