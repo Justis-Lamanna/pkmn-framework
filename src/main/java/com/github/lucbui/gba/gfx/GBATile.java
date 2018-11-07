@@ -4,7 +4,6 @@ import com.github.lucbui.bytes.Bitmask;
 import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.HexUtils;
 import com.github.lucbui.bytes.HexWriter;
-import com.github.lucbui.file.HexFieldIterator;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -14,6 +13,10 @@ import java.util.Objects;
  * A class which encapsulates a GBA Tile.
  */
 public class GBATile implements GBAGraphic{
+
+    public static final int WIDTH_IN_PIXELS = 8;
+    public static final int HEIGHT_IN_PIXELS = 8;
+    public static final int AREA_IN_PIXELS = WIDTH_IN_PIXELS * HEIGHT_IN_PIXELS;
 
     private static final Bitmask LEFT_PIXEL_MASK = new Bitmask(0b1111);
     private static final Bitmask RIGHT_PIXEL_MASK = new Bitmask(0b11110000, 4);
@@ -29,7 +32,7 @@ public class GBATile implements GBAGraphic{
     public GBATile(BitDepth depth){
         Objects.requireNonNull(depth);
         this.bitDepth = depth;
-        this.pixels = new int[64];
+        this.pixels = new int[AREA_IN_PIXELS];
         Arrays.fill(this.pixels, 0);
     }
 
@@ -41,8 +44,8 @@ public class GBATile implements GBAGraphic{
     public GBATile(BitDepth depth, int[] pixels){
         Objects.requireNonNull(pixels);
         Objects.requireNonNull(depth);
-        if(pixels.length != 64){
-            throw new IllegalArgumentException("pixels must be length 64");
+        if(pixels.length != AREA_IN_PIXELS){
+            throw new IllegalArgumentException("pixels must be length " + AREA_IN_PIXELS);
         }
         this.bitDepth = depth;
         this.pixels = pixels;
@@ -55,10 +58,10 @@ public class GBATile implements GBAGraphic{
      */
     public static HexReader<GBATile> getHexReader(BitDepth depth){
         return iterator -> {
-            int[] pixels = new int[64];
+            int[] pixels = new int[AREA_IN_PIXELS];
             if(depth == BitDepth.FOUR){
                 //Each byte contains two pixels of info.
-                for(int idx = 0; idx < 32; idx++){
+                for(int idx = 0; idx < (AREA_IN_PIXELS / 2); idx++){
                     byte bite = iterator.getRelative(0, 1).get(0);
                     int leftPixel = LEFT_PIXEL_MASK.apply(bite);
                     int rightPixel = RIGHT_PIXEL_MASK.apply(bite);
@@ -69,7 +72,7 @@ public class GBATile implements GBAGraphic{
                 return new GBATile(depth, pixels);
             } else if(depth == BitDepth.EIGHT){
                 //Each bite contains only one pixel of info.
-                for(int idx = 0; idx < 64; idx++){
+                for(int idx = 0; idx < AREA_IN_PIXELS; idx++){
                     byte bite = iterator.getRelative(0, 1).get(0);
                     pixels[idx] = HexUtils.byteToUnsignedByte(bite);
                     iterator.advanceRelative(1);
@@ -88,7 +91,7 @@ public class GBATile implements GBAGraphic{
         return (object, iterator) -> {
             int[] pixels = object.pixels;
             if (depth == BitDepth.FOUR) {
-                for (int idx = 0; idx < 32; idx++) {
+                for (int idx = 0; idx < (AREA_IN_PIXELS / 2); idx++) {
                     int pixl = Bitmask.merge()
                             .with(LEFT_PIXEL_MASK, pixels[idx * 2])
                             .with(RIGHT_PIXEL_MASK, pixels[idx * 2 + 1])
@@ -99,7 +102,7 @@ public class GBATile implements GBAGraphic{
                     iterator.advanceRelative(1);
                 }
             } else if (depth == BitDepth.EIGHT) {
-                for (int idx = 0; idx < 64; idx++) {
+                for (int idx = 0; idx < AREA_IN_PIXELS; idx++) {
                     byte bite = HexUtils.unsignedByteToByte(pixels[idx]);
                     ByteBuffer bb = ByteBuffer.wrap(new byte[]{bite});
                     iterator.writeRelative(0, bb);
@@ -119,7 +122,7 @@ public class GBATile implements GBAGraphic{
      * @return
      */
     public int getPixelAt(int x, int y){
-        return pixels[y * 8 + x];
+        return pixels[y * WIDTH_IN_PIXELS + x];
     }
 
     /**
@@ -128,17 +131,7 @@ public class GBATile implements GBAGraphic{
      * @return
      */
     public int[] getRowAt(int y){
-        return Arrays.copyOfRange(pixels, y * 8, (y + 1) * 8);
-    }
-
-    /**
-     * Set the pixel at the specified x/y position.
-     * @param x
-     * @param y
-     * @param pxl
-     */
-    public void setPixelAt(int x, int y, int pxl){
-        pixels[y * 8 + x] = pxl;
+        return Arrays.copyOfRange(pixels, y * WIDTH_IN_PIXELS, (y + 1) * WIDTH_IN_PIXELS);
     }
 
     /**
@@ -161,12 +154,12 @@ public class GBATile implements GBAGraphic{
 
     @Override
     public int getWidth() {
-        return 8;
+        return WIDTH_IN_PIXELS;
     }
 
     @Override
     public int getHeight() {
-        return 8;
+        return HEIGHT_IN_PIXELS;
     }
 
     @Override

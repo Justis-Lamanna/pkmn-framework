@@ -1,6 +1,7 @@
 package com.github.lucbui.gba.gfx;
 
 import com.github.lucbui.bytes.HexReader;
+import com.github.lucbui.bytes.HexWriter;
 import com.github.lucbui.file.HexFieldIterator;
 
 import java.util.Arrays;
@@ -58,42 +59,59 @@ public class GBASprite implements GBAGraphic{
         this.tileHeight = tileHeight;
     }
 
+    /**
+     * Get the tile at a given slot.
+     * @param slot The slot to retrieve.
+     * @return
+     */
     public GBATile getTile(int slot){
         return tiles[slot];
     }
 
+    /**
+     * Get the bit depth of this sprite.
+     * @return
+     */
     public BitDepth getBitDepth(){
         return bitDepth;
     }
 
+    /**
+     * Get the width of this sprite, in tiles.
+     * @return
+     */
     public int getTileWidth(){
         return tileWidth;
     }
 
+    /**
+     * Get the height of this sprite, in tiles.
+     * @return
+     */
     public int getTileHeight(){
         return tileHeight;
     }
 
     @Override
     public int getWidth(){
-        return getTileWidth() * 8;
+        return getTileWidth() * GBATile.WIDTH_IN_PIXELS;
     }
 
     @Override
     public int getHeight(){
-        return getTileHeight() * 8;
+        return getTileHeight() * GBATile.HEIGHT_IN_PIXELS;
     }
 
     @Override
     public int[] to1DArray() {
-        int[] pixels = new int[tiles.length * 64];
+        int[] pixels = new int[tiles.length * GBATile.AREA_IN_PIXELS];
         for(int tileY = 0; tileY < tileHeight; tileY++){
             for(int tileX = 0; tileX < tileWidth; tileX++){
                 GBATile tile = tiles[tileY * tileWidth + tileX];
                 for(int y = 0; y < 8; y++){
                     int[] row = tile.getRowAt(y);
                     //Convert from tilespace to pixelspace.
-                    System.arraycopy(row, 0, pixels, (tileY * 8 + y) * (tileWidth * 8) + (tileX * 8), row.length);
+                    System.arraycopy(row, 0, pixels, (tileY * GBATile.HEIGHT_IN_PIXELS + y) * (tileWidth * GBATile.WIDTH_IN_PIXELS) + (tileX * GBATile.WIDTH_IN_PIXELS), row.length);
                 }
             }
         }
@@ -105,7 +123,14 @@ public class GBASprite implements GBAGraphic{
         return Type.INDEXED;
     }
 
-    public static HexReader<GBASprite> getHexReaderFor(BitDepth bitDepth, int tileWidth, int tileHeight){
+    /**
+     * Get a hex reader to read a GBASprite
+     * @param bitDepth The bit depth to read as.
+     * @param tileWidth The width, in tiles.
+     * @param tileHeight The height, in tiles.
+     * @return A hex reader that can read the specified type of object.
+     */
+    public static HexReader<GBASprite> getHexReader(BitDepth bitDepth, int tileWidth, int tileHeight){
         return iterator -> {
             int numberOfTiles = tileWidth * tileHeight;
             GBATile[] tiles = new GBATile[numberOfTiles];
@@ -114,6 +139,22 @@ public class GBASprite implements GBAGraphic{
                 tiles[idx] = tile;
             }
             return new GBASprite(tiles, tileWidth, tileHeight);
+        };
+    }
+
+    /**
+     * Get a hex writer to write a GBASprite
+     * @param bitDepth The bit depth to write as.
+     * @param tileWidth The width, in tiles.
+     * @param tileHeight The height, in tiles.
+     * @return A hex writer that can write the specified type of object.
+     */
+    public static HexWriter<GBASprite> getHexWriter(BitDepth bitDepth, int tileWidth, int tileHeight){
+        return (object, iterator) -> {
+            int numberOfTiles = tileWidth * tileHeight;
+            for(int idx = 0; idx < numberOfTiles; idx++){
+                GBATile.getHexWriter(bitDepth).write(object.getTile(idx), iterator);
+            }
         };
     }
 }

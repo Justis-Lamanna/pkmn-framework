@@ -347,12 +347,10 @@ public class PkmnFramework {
 
         Map<Class<?>, HexReader<?>> readers;
         Map<Class<?>, HexWriter<?>> writers;
-        Map<Class<?>, ReflectionAnnotationFunction> annotations;
 
         private Builder(){
             this.readers = new HashMap<>();
             this.writers = new HashMap<>();
-            this.annotations = new HashMap<>();
         }
 
         public Builder setConfiguration(Configuration configuration){
@@ -412,13 +410,6 @@ public class PkmnFramework {
             return this;
         }
 
-        public Builder addReflectionAnnotationFunction(Class<?> annotationClazz, ReflectionAnnotationFunction raf){
-            Objects.requireNonNull(annotationClazz);
-            Objects.requireNonNull(raf);
-            annotations.put(annotationClazz, raf);
-            return this;
-        }
-
         /**
          * Applies a FrameworkFactory
          * @param frameworkFactory
@@ -441,8 +432,6 @@ public class PkmnFramework {
             ReflectionHexReaderWriter.addReaders(this.readers);
             ReflectionHexReaderWriter.resetWriters();
             ReflectionHexReaderWriter.addWriters(this.writers);
-            ReflectionHexReaderWriter.resetAnnotations();
-            ReflectionHexReaderWriter.addAnnotations(this.annotations);
             framework.configuration = configuration;
             return framework;
         }

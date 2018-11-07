@@ -58,19 +58,6 @@ public class GBAPalette {
     }
 
     /**
-     * Set a color in the palette.
-     * @param slot The slot to set.
-     * @param color The color to set it to.
-     * @return This instance, if you want to set several colors at once.
-     */
-    public GBAPalette set(int slot, GBAColor color){
-        validateSlot(slot);
-        Objects.requireNonNull(color);
-        colors.set(slot, color);
-        return this;
-    }
-
-    /**
      * Tests if a palette has a color at the specified slot.
      * @param slot The slot to view.
      * @return True if the palette has a color registered in that slot.
@@ -86,26 +73,6 @@ public class GBAPalette {
      */
     public int size(){
         return colors.size();
-    }
-
-    /**
-     * Get a ColorModel for this palette.
-     * @return
-     */
-    public IndexColorModel getColorModel(){
-        byte[] reds = new byte[colors.size()];
-        byte[] greens = new byte[colors.size()];
-        byte[] blues = new byte[colors.size()];
-        byte[] alphas = new byte[colors.size()];
-        int idx = 0;
-        for(GBAColor color : colors){
-            reds[idx] = (byte)(color.getRed() * 8);
-            greens[idx] = (byte)(color.getGreen() * 8);
-            blues[idx] = (byte)(color.getBlue() * 8);
-            alphas[idx] = (byte)(idx == 0 ? 0 : 1);
-            idx++;
-        }
-        return new IndexColorModel(8, colors.size(), reds, greens, blues, alphas);
     }
 
     private void validateSlot(int slot){
@@ -175,25 +142,13 @@ public class GBAPalette {
             return this;
         }
 
+        public Builder with(GBAPalette palette){
+            colors.addAll(palette.colors);
+            return this;
+        }
+
         public GBAPalette build(){
             return new GBAPalette(colors);
         }
-    }
-
-    /**
-     * Our own GBA Index Color Model.
-     * This allows us to set an image's RGB as 0, 1, 2, and so on, and display the 0th, 1st, 2nd, and so on
-     * color.
-     */
-    public static class GBAIndexColorModel extends IndexColorModel{
-
-        public GBAIndexColorModel(int bits, int size, byte[] r, byte[] g, byte[] b, byte[] a) {
-            super(bits, size, r, g, b, a);
-        }
-/*
-        @Override
-        public synchronized Object getDataElements(int rgb, Object pixel){
-            return new byte[]{this.getRGB(rgb)};
-        }*/
     }
 }

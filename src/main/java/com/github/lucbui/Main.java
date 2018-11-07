@@ -28,7 +28,7 @@ public class Main {
                 .start();
 
         long ptr = 0x4975F8;
-        GBASprite tiles = pkmnGame.read(ptr, GBASprite.getHexReaderFor(BitDepth.FOUR, 2, 4));
+        GBASprite tiles = pkmnGame.read(ptr, GBASprite.getHexReader(BitDepth.FOUR, 2, 4));
 
         BufferedImage img = GBAUtils.createImage(tiles, GBAUtils.reverseGrayscale(16));
         ImageIO.write(img, "png", new File("test.png"));

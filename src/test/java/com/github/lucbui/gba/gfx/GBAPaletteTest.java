@@ -51,25 +51,6 @@ public class GBAPaletteTest {
         assertEquals(GBAColor.BLACK, palette.getFirst());
     }
 
-    @Test
-    public void set() {
-        GBAPalette palette = new GBAPalette(Collections.singletonList(GBAColor.BLACK));
-        palette.set(0, GBAColor.BLUE);
-        assertEquals(palette.get(0), GBAColor.BLUE);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void setNegativeSlot() {
-        GBAPalette palette = new GBAPalette(Collections.singletonList(GBAColor.BLACK));
-        palette.set(-1, GBAColor.BLUE);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void setNullColor() {
-        GBAPalette palette = new GBAPalette(Collections.singletonList(GBAColor.BLACK));
-        palette.set(0, null);
-    }
-
     @Test(expected = IllegalArgumentException.class)
     public void hasColor() {
         GBAPalette palette = new GBAPalette(Collections.singletonList(GBAColor.BLACK));
