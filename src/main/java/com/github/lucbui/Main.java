@@ -21,7 +21,7 @@ public class Main {
         long ptr = 0x4975F8;
         GBASprite tiles = pkmnGame.read(ptr, GBASprite.getHexReader(BitDepth.FOUR, 2, 4));
 
-        BufferedImage img = GBAUtils.createImage(tiles, GBAUtils.reverseGrayscale(16));
+        BufferedImage img = GBAUtils.createImage(tiles, GBAUtils.BLACK_TO_WHITE_16.reversePalette());
         ImageIO.write(img, "png", new File("test.png"));
     }
 }
