@@ -4,12 +4,16 @@ import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.HexWriter;
 import com.github.lucbui.file.HexFieldIterator;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class GBASprite implements GBAGraphic{
+public class GBASprite implements GBAGraphic, Serializable {
+
+    static final long serialVersionUID = 42L;
+
     private GBATile[] tiles;
     private BitDepth bitDepth;
     private int tileWidth;

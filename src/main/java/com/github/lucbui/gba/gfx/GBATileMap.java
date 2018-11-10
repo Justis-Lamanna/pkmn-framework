@@ -2,6 +2,7 @@ package com.github.lucbui.gba.gfx;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -9,7 +10,9 @@ import java.util.Objects;
 /**
  * Represents the combination of Tiles and their metadata to create a full image.
  */
-public class GBATileMap implements GBAGraphic {
+public class GBATileMap implements GBAGraphic, Serializable {
+
+    static final long serialVersionUID = 42L;
 
     public static final int MAP_WIDTH = 32;
     public static final int MAP_HEIGHT = 32;

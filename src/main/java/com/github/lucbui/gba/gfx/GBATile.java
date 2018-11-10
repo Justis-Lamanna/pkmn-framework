@@ -5,6 +5,7 @@ import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.HexUtils;
 import com.github.lucbui.bytes.HexWriter;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Objects;
@@ -12,10 +13,23 @@ import java.util.Objects;
 /**
  * A class which encapsulates a GBA Tile.
  */
-public class GBATile implements GBAGraphic{
+public class GBATile implements GBAGraphic, Serializable {
 
+    static final long serialVersionUID = 42L;
+
+    /**
+     * The width of a tile, in pixels
+     */
     public static final int WIDTH_IN_PIXELS = 8;
+
+    /**
+     * The height of a tile, in pixels
+     */
     public static final int HEIGHT_IN_PIXELS = 8;
+
+    /**
+     * The area of a tile, in pixels
+     */
     public static final int AREA_IN_PIXELS = WIDTH_IN_PIXELS * HEIGHT_IN_PIXELS;
 
     private static final Bitmask LEFT_PIXEL_MASK = Bitmask.forBitRange(0, 3);

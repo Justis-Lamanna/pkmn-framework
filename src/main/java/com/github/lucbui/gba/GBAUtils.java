@@ -9,8 +9,41 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class GBAUtils {
-    private GBAUtils(){
-        //
+
+    /**
+     * A 16-color grayscale pattern, from black to white.
+     */
+    public static final GBAPalette BLACK_TO_WHITE_16 = grayscalePalette(16);
+
+    /**
+     * A 256-color grayscale pattern, from black to white.
+     */
+    public static final GBAPalette BLACK_TO_WHITE_256 = grayscalePalette(256);
+
+    /**
+     * A 16-color palette, matching the Windows VGA Palette.
+     */
+    public static final GBAPalette VGA_COLORS = GBAPalette.builder()
+            .with(GBAColor.from(31, 31, 31)) //White
+            .with(GBAColor.from(23, 23, 23)) //Silver
+            .with(GBAColor.from(15, 15, 15)) //Gray
+            .with(GBAColor.from(0, 0, 0)) //Black
+            .with(GBAColor.from(31, 0, 0)) //Red
+            .with(GBAColor.from(15, 0, 0)) //Maroon
+            .with(GBAColor.from(31, 31, 0)) //Yellow
+            .with(GBAColor.from(15, 15, 0)) //Olive
+            .with(GBAColor.from(0, 31, 0)) //Lime
+            .with(GBAColor.from(0, 15, 0)) //Green
+            .with(GBAColor.from(0, 31, 31)) //Aqua
+            .with(GBAColor.from(0, 15, 15)) //Teal
+            .with(GBAColor.from(0, 0, 31)) //Blue
+            .with(GBAColor.from(0, 0, 15)) //Navy
+            .with(GBAColor.from(31, 0, 31)) //Fuschia
+            .with(GBAColor.from(15, 0, 15)) //Purple
+            .build();
+
+    private GBAUtils() throws InstantiationException {
+        throw new InstantiationException();
     }
 
     /**
@@ -34,34 +67,12 @@ public class GBAUtils {
      * @param size
      * @return
      */
-    public static GBAPalette grayscalePalette(int size){
-        if(size <= 0){
-            throw new IllegalArgumentException("Size must be >0");
-        }
-        GBAPalette.Builder builder = GBAPalette.builder();
+    private static GBAPalette grayscalePalette(int size){
+         GBAPalette.Builder builder = GBAPalette.builder();
         //Interpolating! (0,0), (size, 31)
         //slope = 256 / size
         for(int count = 0; count < size; count++){
             int pixel = count * 31 / size;
-            builder.with(GBAColor.from(pixel, pixel, pixel));
-        }
-        return builder.build();
-    }
-
-    /**
-     * Generate a palette from White to Black
-     * @param size
-     * @return
-     */
-    public static GBAPalette reverseGrayscale(int size){
-        if(size <= 0){
-            throw new IllegalArgumentException("Size must be >0");
-        }
-        GBAPalette.Builder builder = GBAPalette.builder();
-        //Interpolating! (0,0), (size, 31)
-        //slope = 256 / size
-        for(int count = 0; count < size; count++){
-            int pixel = 31 - (count * 31 / size);
             builder.with(GBAColor.from(pixel, pixel, pixel));
         }
         return builder.build();
