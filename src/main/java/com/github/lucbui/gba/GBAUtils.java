@@ -42,8 +42,8 @@ public class GBAUtils {
             .with(GBAColor.from(15, 0, 15)) //Purple
             .build();
 
-    private GBAUtils(){
-        //
+    private GBAUtils() throws InstantiationException {
+        throw new InstantiationException();
     }
 
     /**
@@ -68,33 +68,11 @@ public class GBAUtils {
      * @return
      */
     private static GBAPalette grayscalePalette(int size){
-        if(size <= 0){
-            throw new IllegalArgumentException("Size must be >0");
-        }
-        GBAPalette.Builder builder = GBAPalette.builder();
+         GBAPalette.Builder builder = GBAPalette.builder();
         //Interpolating! (0,0), (size, 31)
         //slope = 256 / size
         for(int count = 0; count < size; count++){
             int pixel = count * 31 / size;
-            builder.with(GBAColor.from(pixel, pixel, pixel));
-        }
-        return builder.build();
-    }
-
-    /**
-     * Generate a palette from White to Black
-     * @param size
-     * @return
-     */
-    private static GBAPalette reverseGrayscale(int size){
-        if(size <= 0){
-            throw new IllegalArgumentException("Size must be >0");
-        }
-        GBAPalette.Builder builder = GBAPalette.builder();
-        //Interpolating! (0,0), (size, 31)
-        //slope = 256 / size
-        for(int count = 0; count < size; count++){
-            int pixel = 31 - (count * 31 / size);
             builder.with(GBAColor.from(pixel, pixel, pixel));
         }
         return builder.build();

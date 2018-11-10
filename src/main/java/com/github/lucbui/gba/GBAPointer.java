@@ -6,6 +6,7 @@ import com.github.lucbui.bytes.HexUtils;
 import com.github.lucbui.bytes.HexWriter;
 import com.github.lucbui.file.Pointer;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Comparator;
 import java.util.Objects;
@@ -17,16 +18,27 @@ import java.util.Objects;
  * since not all memory can be accessed in a given field. (To avoid validation, use valueOfNoRangeCheck()).
  */
 @DataStructure(size = 4)
-public class GBAPointer implements Pointer, Comparable<GBAPointer> {
+public class GBAPointer implements Pointer, Comparable<GBAPointer>, Serializable {
 
+    static final long serialVersionUID = 42L;
+
+    /**
+     * A Hex Reader which can read out a GBAPointer
+     */
     public static final HexReader<GBAPointer> HEX_READER = iterator -> GBAPointer.valueOf(iterator.get(4));
 
+    /**
+     * A Hex Writer which can write our a GBAPointer
+     */
     public static final HexWriter<GBAPointer> HEX_WRITER = (object, iterator) -> iterator.write(object.toBytes());
 
     private final Type type;
     private final long position;
 
-    private static final Comparator<GBAPointer> COMPARATOR =
+    /**
+     * A comparator which compares GBAPointers
+     */
+    public static final Comparator<GBAPointer> COMPARATOR =
             Comparator.comparing(GBAPointer::getType).thenComparingLong(GBAPointer::getLocation);
 
     private GBAPointer(Type type, long position){
@@ -65,20 +77,6 @@ public class GBAPointer implements Pointer, Comparable<GBAPointer> {
         Type type = Type.getTypeForPrefix(HexUtils.byteToUnsignedByte(bytes.get(3)));
         long value = HexUtils.byteToUnsignedByte(bytes.get(2)) * 0x10000L + HexUtils.byteToUnsignedByte(bytes.get(1)) * 0x100 + HexUtils.byteToUnsignedByte(bytes.get(0));
         return valueOf(type, value);
-    }
-
-    /**
-     * Create a pointer from literal values, without a range check.
-     * @param type The type of memory address
-     * @param position The position in that address
-     * @return The created pointer.
-     */
-    public static GBAPointer valueOfNoRangeCheck(Type type, long position){
-        Objects.requireNonNull(type);
-        if(position < 0){
-            throw new IllegalArgumentException("Invalid pointer specified: " + position + " must be greater than zero");
-        }
-        return new GBAPointer(type, position);
     }
 
     /**

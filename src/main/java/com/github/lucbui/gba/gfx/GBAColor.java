@@ -6,12 +6,15 @@ import com.github.lucbui.bytes.HexWriter;
 import com.github.lucbui.bytes.UnsignedShort;
 
 import java.awt.*;
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * A class which encapsulates a GBAColor
  */
-public class GBAColor {
+public class GBAColor implements Serializable {
+
+    static final long serialVersionUID = 42L;
 
     private static final Bitmask RED_BITMASK = Bitmask.forBitRange(0, 4);
     private static final Bitmask GREEN_BITMASK = Bitmask.forBitRange(5, 9);
@@ -117,6 +120,73 @@ public class GBAColor {
      */
     public Color getColor(){
         return new Color(red << 3, green << 3, blue << 3);
+    }
+
+    /**
+     * Tint this color.
+     * The current red, green, and blue channels are multipled by redAmt, greenAmt,
+     * and blueAmt, respectively, and combined into a new color. If any color exceeds the 0-31
+     * range, it is clamped to 0 or 31, depending. The following breaks down the multipliers and their effects:
+     * * amount <= 0 - Turns the color black
+     * * 0 < amount < 1 - Darkens the color. Numbers closer to 0 result in darker colors.
+     * * amount = 1 - No change occurs
+     * * amount > 1 - Lightens the color. The greater the number, the more white the color becomes.
+     * @param redAmt The amount to tint the red channel.
+     * @param greenAmt The amount to tint the green channel.
+     * @param blueAmt The amount to tint the blue channel.
+     * @return The tinted colors
+     */
+    public GBAColor tint(float redAmt, float greenAmt, float blueAmt){
+        int newRed = (int)(red * redAmt);
+        int newGreen = (int)(green * greenAmt);
+        int newBlue = (int)(blue * blueAmt);
+        return new GBAColor(
+                clamp(newRed, 0, 31),
+                clamp(newGreen, 0, 31),
+                clamp(newBlue, 0, 31));
+    }
+
+    /**
+     * Tint this color
+     * The red, green, and blue channels are all multipled by amount, and combined into a new color.
+     * If any color exceeds the 0-31 range, it is clamped to 0 or 31, depending.
+     * The following breaks down the multipliers and their effects:
+     * * amount <= 0 - Turns the color black
+     * * 0 < amount < 1 - Darkens the color. Numbers closer to 0 result in darker colors.
+     * * amount = 1 - No change occurs
+     * * amount > 1 - Lightens the color. The greater the number, the more white the color becomes.
+     * @param amount The amount to tint all channels.
+     * @return
+     */
+    public GBAColor tint(float amount){
+        return tint(amount, amount, amount);
+    }
+
+    /**
+     * Darkens this color by 10%
+     * @return
+     */
+    public GBAColor darken(){
+        return tint(0.9f, 0.9f, 0.9f);
+    }
+
+    /**
+     * Lightens the color by 10%
+     * @return
+     */
+    public GBAColor lighten(){
+        return tint(1.1f, 1.1f, 1.1f);
+    }
+
+    //Why doesn't this exist standardly smh.
+    private int clamp(int num, int lower, int upper){
+        if(num < lower){
+            return lower;
+        } else if(num > upper){
+            return upper;
+        } else {
+            return num;
+        }
     }
 
     @Override
