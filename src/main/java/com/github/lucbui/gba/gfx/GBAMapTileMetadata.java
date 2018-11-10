@@ -3,12 +3,15 @@ package com.github.lucbui.gba.gfx;
 import com.github.lucbui.bytes.*;
 import com.github.lucbui.file.HexFieldIterator;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
 /**
  * Metadata on a tile, for a Tilemap
  */
-public class GBAMapTileMetadata {
+public class GBAMapTileMetadata implements Serializable {
+
+    static final long serialVersionUID = 42L;
 
     private static Bitmask TILE_NUMBER_MASK = Bitmask.forBitRange(0, 9);
     private static Bitmask HORIZONTAL_FLIP_MASK = Bitmask.forBit(10);

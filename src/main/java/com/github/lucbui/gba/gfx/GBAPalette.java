@@ -89,12 +89,21 @@ public class GBAPalette implements Iterable<GBAColor>, Serializable {
                 '}';
     }
 
-    public GBAPalette shiftPalette(int shift){
+    /**
+     * Rotates a palette by some number of slots.
+     * @param shift The number of slots to shift.
+     * @return
+     */
+    public GBAPalette rotatePalette(int shift){
         List<GBAColor> newColors = new ArrayList<>(this.colors);
         Collections.rotate(newColors, shift);
         return new GBAPalette(newColors);
     }
 
+    /**
+     * Reverses a palette.
+     * @return
+     */
     public GBAPalette reversePalette(){
         List<GBAColor> newColors = new ArrayList<>(this.colors);
         Collections.reverse(newColors);

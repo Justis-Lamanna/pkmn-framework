@@ -2,6 +2,7 @@ package com.github.lucbui.bytes;
 
 import com.github.lucbui.annotations.DataStructure;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,8 +15,9 @@ import java.util.Objects;
  * same value are the same object.
  */
 @DataStructure(size = 1)
-public class UnsignedByte implements ByteObject<UnsignedByte>, Comparable<UnsignedByte>{
+public class UnsignedByte implements ByteObject<UnsignedByte>, Comparable<UnsignedByte>, Serializable {
 
+    static final long serialVersionUID = 42L;
     /**
      * Dedicated HexReader for UnsignedByte
      */
