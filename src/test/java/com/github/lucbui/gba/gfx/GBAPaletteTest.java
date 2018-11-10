@@ -39,24 +39,16 @@ public class GBAPaletteTest {
         assertEquals(GBAColor.BLACK, palette.get(0));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void getNegativeSlot() {
-        GBAPalette palette = new GBAPalette(Collections.singletonList(GBAColor.BLACK));
-        palette.get(-1);
-    }
-
     @Test
     public void getFirst() {
         GBAPalette palette = new GBAPalette(Collections.singletonList(GBAColor.BLACK));
         assertEquals(GBAColor.BLACK, palette.getFirst());
     }
 
-    @Test(expected = IllegalArgumentException.class)
     public void hasColor() {
         GBAPalette palette = new GBAPalette(Collections.singletonList(GBAColor.BLACK));
         assertTrue(palette.hasColor(0));
         assertFalse(palette.hasColor(1));
-        palette.hasColor(-1);
     }
 
     @Test
