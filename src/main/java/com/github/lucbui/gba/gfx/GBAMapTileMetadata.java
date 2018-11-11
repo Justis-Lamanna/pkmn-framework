@@ -21,6 +21,32 @@ public class GBAMapTileMetadata implements Serializable {
     private static final int HIGHEST_TILE_NUMBER = 1023;
     private static final int HIGHEST_PALETTE_NUMBER = 16;
 
+    /**
+     * Get a Hex Reader that reads a GBAMapTileMetadata
+     */
+    public static final HexReader<GBAMapTileMetadata> HEX_READER = iterator -> {
+            ByteBuffer bb = iterator.get(2); iterator.advanceRelative(2);
+            int val = HexUtils.fromByteBufferToInt(bb);
+            short tileNumber = (short)verifyInRange("tileNumber", TILE_NUMBER_MASK.apply(val), 0, HIGHEST_TILE_NUMBER);
+            boolean horizontalFlip = HORIZONTAL_FLIP_MASK.apply(val) == 1;
+            boolean verticalFlip = VERTICAL_FLIP_MASK.apply(val) == 1;
+            byte paletteNumber = (byte)verifyInRange("paletteNumber", PALETTE_NUMBER_MASK.apply(val), 0, HIGHEST_PALETTE_NUMBER);
+            return new GBAMapTileMetadata(tileNumber, horizontalFlip, verticalFlip, paletteNumber);
+        };
+
+    /**
+     * Get a Hex Writer that writes a GBAMapTileMetadata
+     */
+    public static final HexWriter<GBAMapTileMetadata> HEX_WRITER = (object, iterator) -> {
+            int val = Bitmask.merge()
+                    .with(TILE_NUMBER_MASK, object.getTileNumber())
+                    .with(HORIZONTAL_FLIP_MASK, object.isHorizontalFlip() ? 1 : 0)
+                    .with(VERTICAL_FLIP_MASK, object.isVerticalFlip() ? 1 : 0)
+                    .with(PALETTE_NUMBER_MASK, object.getPaletteNumber())
+                    .apply();
+            iterator.write(HexUtils.toByteBuffer(val, val >>> 8));
+        };
+
     private short tileNumber;
     private boolean horizontalFlip;
     private boolean verticalFlip;
@@ -105,38 +131,6 @@ public class GBAMapTileMetadata implements Serializable {
         return new Creator();
     }
 
-    /**
-     * Get a Hex Reader that reads a GBAMapTileMetadata
-     * @return
-     */
-    public static HexReader<GBAMapTileMetadata> getHexReader(){
-        return iterator -> {
-            ByteBuffer bb = iterator.get(2); iterator.advanceRelative(2);
-            int val = HexUtils.fromByteBufferToInt(bb);
-            short tileNumber = (short)verifyInRange("tileNumber", TILE_NUMBER_MASK.apply(val), 0, HIGHEST_TILE_NUMBER);
-            boolean horizontalFlip = HORIZONTAL_FLIP_MASK.apply(val) == 1;
-            boolean verticalFlip = VERTICAL_FLIP_MASK.apply(val) == 1;
-            byte paletteNumber = (byte)verifyInRange("paletteNumber", PALETTE_NUMBER_MASK.apply(val), 0, HIGHEST_PALETTE_NUMBER);
-            return new GBAMapTileMetadata(tileNumber, horizontalFlip, verticalFlip, paletteNumber);
-        };
-    }
-
-    /**
-     * Get a Hex Writer that writes a GBAMapTileMetadata
-     * @return
-     */
-    public static HexWriter<GBAMapTileMetadata> getHexWriter(){
-        return (object, iterator) -> {
-            int val = Bitmask.merge()
-                    .with(TILE_NUMBER_MASK, object.getTileNumber())
-                    .with(HORIZONTAL_FLIP_MASK, object.isHorizontalFlip() ? 1 : 0)
-                    .with(VERTICAL_FLIP_MASK, object.isVerticalFlip() ? 1 : 0)
-                    .with(PALETTE_NUMBER_MASK, object.getPaletteNumber())
-                    .apply();
-            iterator.write(HexUtils.toByteBuffer(val, val >>> 8));
-        };
-    }
-
     public static class Creator{
         private short tileNumber;
         private boolean horizontalFlip;
@@ -157,26 +151,53 @@ public class GBAMapTileMetadata implements Serializable {
             paletteNumber = 0;
         }
 
+        /**
+         * Set the tile number this metadata references
+         * @param tileNumber The tile number
+         * @return This instance
+         * @throws IllegalArgumentException tilenumber is not between 0 and HIGHEST_TILE_NUMBER
+         */
         public Creator setTileNumber(int tileNumber){
             this.tileNumber = (short)verifyInRange("tileNumber", tileNumber, 0, HIGHEST_TILE_NUMBER);
             return this;
         }
 
+        /**
+         * Set whether this tile is flipped horizontally.
+         * @param horizontalFlip If true, tile is flipped horizontally.
+         * @return This instance
+         */
         public Creator setHorizontalFlip(boolean horizontalFlip){
             this.horizontalFlip = horizontalFlip;
             return this;
         }
 
+        /**
+         * Set whether this tile is flipped vertically.
+         * @param verticalFlip If true, tile is flipped vertically.
+         * @return This instance
+         */
         public Creator setVerticalFlip(boolean verticalFlip){
             this.verticalFlip = verticalFlip;
             return this;
         }
 
+        /**
+         * Set the palette number for this tile.
+         * For 256-bit tilemaps, this should ALWAYS be 0.
+         * @param palette The palette to use.
+         * @return This instance
+         * @throws IllegalArgumentException Palette isn't between 0 and HIGHEST_PALETTE_NUMBER
+         */
         public Creator setPalette(int palette){
             this.paletteNumber = (byte)verifyInRange("palette", tileNumber, 0, HIGHEST_PALETTE_NUMBER);
             return this;
         }
 
+        /**
+         * Creates a GBAMapTileMetadata
+         * @return A newly-created map metadata.
+         */
         public GBAMapTileMetadata create(){
             return new GBAMapTileMetadata(tileNumber, horizontalFlip, verticalFlip, paletteNumber);
         }

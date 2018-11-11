@@ -292,7 +292,7 @@ public class GBATile implements GBAGraphic, Serializable {
          * for the bitDepth.
          */
         public Creator setPixel(int x, int y, int pixel){
-            GBATile.verifyBounds(x, y);
+            verifyBounds(x, y);
             bitDepth.verifyPixel(pixel);
             this.pixels[y * WIDTH_IN_PIXELS + x] = HexUtils.unsignedByteToByte(pixel);
             return this;

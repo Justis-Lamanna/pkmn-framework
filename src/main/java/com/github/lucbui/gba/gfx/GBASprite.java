@@ -6,6 +6,7 @@ import com.github.lucbui.file.HexFieldIterator;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -16,51 +17,36 @@ public class GBASprite implements GBAGraphic, Serializable {
 
     private GBATile[] tiles;
     private BitDepth bitDepth;
-    private int tileWidth;
-    private int tileHeight;
+    private SpriteSize spriteSize;
 
-    /**
-     * Create a blank GBASprite, filled with blank tiles.
-     * @param bitDepth The Bit depth of the sprite
-     * @param tileWidth The width of the sprite, in tiles.
-     * @param tileHeight The height of the sprite, in tiles.
-     */
-    public GBASprite(BitDepth bitDepth, int tileWidth, int tileHeight){
-        Objects.requireNonNull(bitDepth);
-        if(tileWidth <= 0 || tileHeight <= 0){
-            throw new IllegalArgumentException("tileWidth and tileHeight must be greater than 0");
+    private static void verifyBounds(int x, int y, SpriteSize spriteSize){
+        if(x < 0 || x >= spriteSize.getWidthInPixels()){
+            throw new IndexOutOfBoundsException("x must be between 0 and " + spriteSize.getWidthInPixels());
         }
-        this.tiles = new GBATile[tileWidth * tileHeight];
-        Arrays.setAll(this.tiles, i -> new GBATile(bitDepth));
-        this.bitDepth = bitDepth;
-        this.tileWidth = tileWidth;
-        this.tileHeight = tileHeight;
+        if(y < 0 || y >= spriteSize.getHeightInPixels()){
+            throw new IndexOutOfBoundsException("y must be between 0 and " + spriteSize.getHeightInPixels());
+        }
     }
 
     /**
      * Create a GBASprite from a list of GBATiles.
      * @param tiles The tiles to use.
-     * @param tileWidth The width, in tiles.
-     * @param tileHeight The height, in tiles.
+     * @param spriteSize The sprite size to use.
      * @throws IllegalArgumentException TileWidth or TileHeight are 0, or tileWidth * tileHeight does not equal
      * the number of tiles, or a mixture of bit depths are provided in the tiles.
      */
-    public GBASprite(GBATile[] tiles, int tileWidth, int tileHeight){
-        Objects.requireNonNull(tiles);
-        if(tileWidth <= 0 || tileHeight <= 0){
-            throw new IllegalArgumentException("tileWidth and tileHeight must be less than 0");
-        }
-        if(tiles.length != tileWidth * tileHeight){
-            throw new IllegalArgumentException("tiles must be equal to tileWidth * tileHeight");
-        }
-        List<BitDepth> bitDepths = Arrays.stream(tiles).map(GBATile::getBitDepth).distinct().collect(Collectors.toList());
-        if(bitDepths.size() > 1){
-            throw new IllegalArgumentException("Mixture of BitDepths provided. All tiles must be uniform bit depth");
-        }
-        this.tiles = Arrays.copyOf(tiles, tiles.length);
-        this.bitDepth = bitDepths.get(0);
-        this.tileWidth = tileWidth;
-        this.tileHeight = tileHeight;
+    private GBASprite(GBATile[] tiles, SpriteSize spriteSize){
+        this.tiles = tiles;
+        this.bitDepth = tiles[0].getBitDepth();
+        this.spriteSize = spriteSize;
+    }
+
+    /**
+     * Get the SpriteSize of this graphic.
+     * @return
+     */
+    public SpriteSize getSpriteSize(){
+        return spriteSize;
     }
 
     /**
@@ -85,7 +71,7 @@ public class GBASprite implements GBAGraphic, Serializable {
      * @return
      */
     public int getTileWidth(){
-        return tileWidth;
+        return getSpriteSize().getWidth();
     }
 
     /**
@@ -93,7 +79,7 @@ public class GBASprite implements GBAGraphic, Serializable {
      * @return
      */
     public int getTileHeight(){
-        return tileHeight;
+        return getSpriteSize().getHeight();
     }
 
     @Override
@@ -109,14 +95,14 @@ public class GBASprite implements GBAGraphic, Serializable {
     @Override
     public int[] to1DArray() {
         int[] pixels = new int[tiles.length * GBATile.AREA_IN_PIXELS];
-        for(int tileY = 0; tileY < tileHeight; tileY++){
-            for(int tileX = 0; tileX < tileWidth; tileX++){
-                GBATile tile = tiles[tileY * tileWidth + tileX];
-                for(int y = 0; y < 8; y++){
+        for(int tileY = 0; tileY < getTileHeight(); tileY++){
+            for(int tileX = 0; tileX < getTileWidth(); tileX++){
+                GBATile tile = tiles[tileY * getTileWidth() + tileX];
+                for(int y = 0; y < GBATile.HEIGHT_IN_PIXELS; y++){
                     int[] row = tile.getRow(y);
                     //Convert from tilespace to pixelspace.
                     //(y * width) + x
-                    System.arraycopy(row, 0, pixels, (tileY * GBATile.HEIGHT_IN_PIXELS + y) * (tileWidth * GBATile.WIDTH_IN_PIXELS) + (tileX * GBATile.WIDTH_IN_PIXELS), row.length);
+                    System.arraycopy(row, 0, pixels, (tileY * GBATile.HEIGHT_IN_PIXELS + y) * (getTileWidth() * GBATile.WIDTH_IN_PIXELS) + (tileX * GBATile.WIDTH_IN_PIXELS), row.length);
                 }
             }
         }
@@ -129,37 +115,119 @@ public class GBASprite implements GBAGraphic, Serializable {
     }
 
     /**
+     * Modify this GBASprite.
+     * This returns a Creator which modifies the current sprite. The sprite returned from the creator is an all-new
+     * sprite built from this one.
+     * @return A creator to modify this sprite.
+     */
+    public Creator modify(){
+        return new Creator(this);
+    }
+
+    /**
+     * Create a GBASprite.
+     * Returns a Creator for creating a sprite at the specified bitDepth and spriteSize.
+     * @param bitDepth The bit depth to create the image at.
+     * @param spriteSize The sprite size to use.
+     * @return A creator to create a Sprite.
+     * @throws NullPointerException bitDepth or spriteSize is null.
+     */
+    public static Creator create(BitDepth bitDepth, SpriteSize spriteSize){
+        Objects.requireNonNull(bitDepth);
+        Objects.requireNonNull(spriteSize);
+        return new Creator(bitDepth, spriteSize);
+    }
+
+    /**
      * Get a hex reader to read a GBASprite
      * @param bitDepth The bit depth to read as.
-     * @param tileWidth The width, in tiles.
-     * @param tileHeight The height, in tiles.
+     * @param spriteSize The sprite size to use.
      * @return A hex reader that can read the specified type of object.
+     * @throws NullPointerException bitDepth or spriteSize is null.
      */
-    public static HexReader<GBASprite> getHexReader(BitDepth bitDepth, int tileWidth, int tileHeight){
+    public static HexReader<GBASprite> getHexReader(BitDepth bitDepth, SpriteSize spriteSize){
+        Objects.requireNonNull(bitDepth);
+        Objects.requireNonNull(spriteSize);
         return iterator -> {
-            int numberOfTiles = tileWidth * tileHeight;
+            int numberOfTiles = spriteSize.getArea();
             GBATile[] tiles = new GBATile[numberOfTiles];
             for(int idx = 0; idx < numberOfTiles; idx++){
                 GBATile tile = GBATile.getHexReader(bitDepth).read(iterator);
                 tiles[idx] = tile;
             }
-            return new GBASprite(tiles, tileWidth, tileHeight);
+            return new GBASprite(tiles, spriteSize);
         };
     }
 
     /**
      * Get a hex writer to write a GBASprite
      * @param bitDepth The bit depth to write as.
-     * @param tileWidth The width, in tiles.
-     * @param tileHeight The height, in tiles.
+     * @param spriteSize The sprite size to use.
      * @return A hex writer that can write the specified type of object.
+     * @throws NullPointerException bitDepth or spriteSize is null.
      */
-    public static HexWriter<GBASprite> getHexWriter(BitDepth bitDepth, int tileWidth, int tileHeight){
+    public static HexWriter<GBASprite> getHexWriter(BitDepth bitDepth, SpriteSize spriteSize){
+        Objects.requireNonNull(bitDepth);
+        Objects.requireNonNull(spriteSize);
         return (object, iterator) -> {
-            int numberOfTiles = tileWidth * tileHeight;
+            int numberOfTiles = spriteSize.getArea();
             for(int idx = 0; idx < numberOfTiles; idx++){
                 GBATile.getHexWriter(bitDepth).write(object.getTile(idx), iterator);
             }
         };
+    }
+
+    /**
+     * A creator for making GBASprites.
+     */
+    public static class Creator{
+        private GBATile.Creator[] tiles;
+        private BitDepth bitDepth;
+        private SpriteSize spriteSize;
+
+        private Creator(BitDepth bitDepth, SpriteSize spriteSize){
+            this.bitDepth = bitDepth;
+            this.spriteSize = spriteSize;
+            this.tiles = new GBATile.Creator[spriteSize.getArea()];
+            Arrays.setAll(tiles, i -> GBATile.build(bitDepth));
+        }
+
+        private Creator(GBASprite sprite){
+            this.bitDepth = sprite.bitDepth;
+            this.spriteSize = sprite.spriteSize;
+            this.tiles = new GBATile.Creator[spriteSize.getArea()];
+            Arrays.setAll(tiles, i -> sprite.tiles[i].modify());
+        }
+
+        /**
+         * Set the pixel at the specified value.
+         * @param x The x position in the sprite.
+         * @param y The y position in the sprite.
+         * @param pixel The pixel to set it to.
+         * @return This instance.
+         * @throws IllegalArgumentException x or y exceed the sprite's boundaries, or the pixel value
+         * exceeds the maxium for the bitDepth specified.
+         */
+        public Creator setPixel(int x, int y, int pixel){
+            verifyBounds(x, y, spriteSize);
+            bitDepth.verifyPixel(pixel);
+            //First, get tile
+            int tileX = x / GBATile.WIDTH_IN_PIXELS;
+            int tileY = y / GBATile.HEIGHT_IN_PIXELS;
+            //Then, relative position inside tile
+            int pixelInTileX = x % GBATile.WIDTH_IN_PIXELS;
+            int pixelInTileY = y % GBATile.HEIGHT_IN_PIXELS;
+            this.tiles[tileY * spriteSize.getWidth() + tileX].setPixel(pixelInTileX, pixelInTileY, pixel);
+            return this;
+        }
+
+        /**
+         * Create a GBASprite
+         * @return A new GBASprite
+         */
+        public GBASprite create(){
+           GBATile[] builtTiles = Arrays.stream(tiles).map(GBATile.Creator::create).toArray(GBATile[]::new);
+           return new GBASprite(builtTiles, spriteSize);
+        }
     }
 }
