@@ -59,13 +59,13 @@ public class GBAPaletteTest {
 
     @Test
     public void buildWithOne() {
-        GBAPalette palette = GBAPalette.builder().with(GBAColor.BLACK).build();
+        GBAPalette palette = GBAPalette.create().with(GBAColor.BLACK).build();
         assertEquals(1, palette.size());
         assertEquals(GBAColor.BLACK, palette.getFirst());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void buildWithNone() {
-        GBAPalette.builder().build();
+        GBAPalette.create().build();
     }
 }

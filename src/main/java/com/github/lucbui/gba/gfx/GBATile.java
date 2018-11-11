@@ -39,6 +39,11 @@ public class GBATile implements GBAGraphic, Serializable {
      */
     public static GBATile BLANK_TILE_FOUR_BIT = new GBATile(BitDepth.FOUR);
 
+    /**
+     * A blank eight-bit tile.
+     */
+    public static GBATile BLANK_TILE_EIGHT_BIT = new GBATile(BitDepth.EIGHT);
+
     private static final Bitmask LEFT_PIXEL_MASK = Bitmask.forBitRange(0, 3);
     private static final Bitmask RIGHT_PIXEL_MASK = Bitmask.forBitRange(4, 7);
 
@@ -231,6 +236,22 @@ public class GBATile implements GBAGraphic, Serializable {
                 '}';
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GBATile gbaTile = (GBATile) o;
+        return bitDepth == gbaTile.bitDepth &&
+                Arrays.equals(pixels, gbaTile.pixels);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(bitDepth);
+        result = 31 * result + Arrays.hashCode(pixels);
+        return result;
+    }
+
     /**
      * Modify this tile.
      * This returns a Creator which modifies the current tile. The tile returned from the creator is an all-new
@@ -268,18 +289,6 @@ public class GBATile implements GBAGraphic, Serializable {
             Objects.requireNonNull(bitDepth);
             this.bitDepth = bitDepth;
             this.pixels = new byte[AREA_IN_PIXELS];
-        }
-
-        /**
-         * Set the BitDepth of this tile.
-         * @param bitDepth The new bitDepth.
-         * @return This instance.
-         * @throws NullPointerException bitDepth is null.
-         */
-        public Creator setBitDepth(BitDepth bitDepth){
-            Objects.requireNonNull(bitDepth);
-            this.bitDepth = bitDepth;
-            return this;
         }
 
         /**

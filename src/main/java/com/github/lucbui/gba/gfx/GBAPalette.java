@@ -45,7 +45,7 @@ public class GBAPalette implements Iterable<GBAColor>, Serializable {
      * @return The colors in this palette.
      */
     public List<GBAColor> getColors(){
-        return Collections.unmodifiableList(this.colors);
+        return new ArrayList<>(this.colors);
     }
 
     /**
@@ -158,8 +158,8 @@ public class GBAPalette implements Iterable<GBAColor>, Serializable {
      * Create a PaletteBuilder to easily create a palette.
      * @return
      */
-    public static Builder builder(){
-        return new Builder();
+    public static Creator create(){
+        return new Creator();
     }
 
     //Functions that allow this palette to be used identically to a list of colors.
@@ -180,13 +180,13 @@ public class GBAPalette implements Iterable<GBAColor>, Serializable {
     }
 
     /**
-     * A builder to make building palettes easier
+     * A create to make building palettes easier
      */
-    public static class Builder{
+    public static class Creator {
 
         private List<GBAColor> colors;
 
-        private Builder(){
+        private Creator(){
             this.colors = new ArrayList<>();
         }
 
@@ -195,7 +195,7 @@ public class GBAPalette implements Iterable<GBAColor>, Serializable {
          * @param color The color to add.
          * @return
          */
-        public Builder with(GBAColor color){
+        public Creator with(GBAColor color){
             colors.add(color);
             return this;
         }
@@ -205,7 +205,7 @@ public class GBAPalette implements Iterable<GBAColor>, Serializable {
          * @param palette The palette to add.
          * @return
          */
-        public Builder with(GBAPalette palette){
+        public Creator with(GBAPalette palette){
             colors.addAll(palette.colors);
             return this;
         }
@@ -215,7 +215,7 @@ public class GBAPalette implements Iterable<GBAColor>, Serializable {
          * @param color The color to add
          * @return
          */
-        public Builder with(Color color){
+        public Creator with(Color color){
             colors.add(GBAColor.from(color));
             return this;
         }
@@ -227,7 +227,7 @@ public class GBAPalette implements Iterable<GBAColor>, Serializable {
          * @param b Blue value, 0-31
          * @return
          */
-        public Builder with(int r, int g, int b){
+        public Creator with(int r, int g, int b){
             colors.add(GBAColor.from(r, g, b));
             return this;
         }

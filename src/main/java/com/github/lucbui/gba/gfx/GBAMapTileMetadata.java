@@ -18,8 +18,8 @@ public class GBAMapTileMetadata implements Serializable {
     private static Bitmask VERTICAL_FLIP_MASK = Bitmask.forBit(11);
     private static Bitmask PALETTE_NUMBER_MASK = Bitmask.forBitRange(12, 15);
 
-    private static final int HIGHEST_TILE_NUMBER = 1023;
-    private static final int HIGHEST_PALETTE_NUMBER = 16;
+    public static final int HIGHEST_TILE_NUMBER = 1023;
+    public static final int HIGHEST_PALETTE_NUMBER = 16;
 
     /**
      * Get a Hex Reader that reads a GBAMapTileMetadata

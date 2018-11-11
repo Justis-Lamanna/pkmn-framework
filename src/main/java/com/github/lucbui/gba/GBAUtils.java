@@ -23,7 +23,7 @@ public class GBAUtils {
     /**
      * A 16-color palette, matching the Windows VGA Palette.
      */
-    public static final GBAPalette VGA_COLORS = GBAPalette.builder()
+    public static final GBAPalette VGA_COLORS = GBAPalette.create()
             .with(GBAColor.from(31, 31, 31)) //White
             .with(GBAColor.from(23, 23, 23)) //Silver
             .with(GBAColor.from(15, 15, 15)) //Gray
@@ -68,13 +68,13 @@ public class GBAUtils {
      * @return
      */
     private static GBAPalette grayscalePalette(int size){
-         GBAPalette.Builder builder = GBAPalette.builder();
+         GBAPalette.Creator creator = GBAPalette.create();
         //Interpolating! (0,0), (size, 31)
         //slope = 256 / size
         for(int count = 0; count < size; count++){
             int pixel = count * 31 / size;
-            builder.with(GBAColor.from(pixel, pixel, pixel));
+            creator.with(GBAColor.from(pixel, pixel, pixel));
         }
-        return builder.build();
+        return creator.build();
     }
 }
