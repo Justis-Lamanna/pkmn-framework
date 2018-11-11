@@ -18,10 +18,20 @@ public class GBAMapTileMetadata implements Serializable {
     private static Bitmask VERTICAL_FLIP_MASK = Bitmask.forBit(11);
     private static Bitmask PALETTE_NUMBER_MASK = Bitmask.forBitRange(12, 15);
 
-    private int tileNumber;
+    private static final int HIGHEST_TILE_NUMBER = 1023;
+    private static final int HIGHEST_PALETTE_NUMBER = 16;
+
+    private short tileNumber;
     private boolean horizontalFlip;
     private boolean verticalFlip;
-    private int paletteNumber;
+    private byte paletteNumber;
+
+    private static int verifyInRange(String varName, int number, int lowBound, int highBound){
+        if(number < lowBound || number > highBound){
+            throw new IllegalArgumentException(varName + " exceeds bounds, must be between " + lowBound + " and " + highBound);
+        }
+        return number;
+    }
 
     /**
      * Constructs a GBAMapTileMetadata.
@@ -30,55 +40,11 @@ public class GBAMapTileMetadata implements Serializable {
      * @param verticalFlip If true, this tile is flipped vertically.
      * @param paletteNumber The palette to use, if 16 palette mode.
      */
-    public GBAMapTileMetadata(int tileNumber, boolean horizontalFlip, boolean verticalFlip, int paletteNumber) {
+    private GBAMapTileMetadata(short tileNumber, boolean horizontalFlip, boolean verticalFlip, byte paletteNumber) {
         this.tileNumber = tileNumber;
         this.horizontalFlip = horizontalFlip;
         this.verticalFlip = verticalFlip;
         this.paletteNumber = paletteNumber;
-    }
-
-    /**
-     * Constructs a GBAMapTileMetadata, for 256-color mode.
-     * @param tileNumber The tile number to use.
-     * @param horizontalFlip If true, this tile is flipped horizontally.
-     * @param verticalFlip If true, this tile is flipped vertically.
-     */
-    public GBAMapTileMetadata(int tileNumber, boolean horizontalFlip, boolean verticalFlip) {
-        this.tileNumber = tileNumber;
-        this.horizontalFlip = horizontalFlip;
-        this.verticalFlip = verticalFlip;
-        this.paletteNumber = 0;
-    }
-
-    /**
-     * Constructs a GBAMapTileMetadata with no flipping.
-     * @param tileNumber The tile number to use.
-     * @param paletteNumber The palette to use, if 16 palette mode.
-     */
-    public GBAMapTileMetadata(int tileNumber, int paletteNumber) {
-        this.tileNumber = tileNumber;
-        this.paletteNumber = paletteNumber;
-        this.horizontalFlip = this.verticalFlip = false;
-    }
-
-    /**
-     * Constructs a GBAMapTileMetadata with no flipping, for 256-color mode.
-     * @param tileNumber The tile number to use.
-     */
-    public GBAMapTileMetadata(int tileNumber) {
-        this.tileNumber = tileNumber;
-        this.paletteNumber = 0;
-        this.horizontalFlip = this.verticalFlip = false;
-    }
-
-    /**
-     * An empty GBAMapTileMetadata.
-     * By default, uses tile 0, palette 0, and has no flipping.
-     */
-    public GBAMapTileMetadata() {
-        this.tileNumber = 0;
-        this.paletteNumber = 0;
-        this.horizontalFlip = this.verticalFlip = false;
     }
 
     /**
@@ -124,6 +90,22 @@ public class GBAMapTileMetadata implements Serializable {
     }
 
     /**
+     * Modify this GBAMapTileMetadata
+     * @return A creator, populated with this GBAMapTileMetadata data.
+     */
+    public Creator modify(){
+        return new Creator(this);
+    }
+
+    /**
+     * Create a GBAMapTileMetadata
+     * @return A creator, populated with empty default metadata.
+     */
+    public static Creator build(){
+        return new Creator();
+    }
+
+    /**
      * Get a Hex Reader that reads a GBAMapTileMetadata
      * @return
      */
@@ -131,10 +113,10 @@ public class GBAMapTileMetadata implements Serializable {
         return iterator -> {
             ByteBuffer bb = iterator.get(2); iterator.advanceRelative(2);
             int val = HexUtils.fromByteBufferToInt(bb);
-            int tileNumber = TILE_NUMBER_MASK.apply(val);
+            short tileNumber = (short)verifyInRange("tileNumber", TILE_NUMBER_MASK.apply(val), 0, HIGHEST_TILE_NUMBER);
             boolean horizontalFlip = HORIZONTAL_FLIP_MASK.apply(val) == 1;
             boolean verticalFlip = VERTICAL_FLIP_MASK.apply(val) == 1;
-            int paletteNumber = PALETTE_NUMBER_MASK.apply(val);
+            byte paletteNumber = (byte)verifyInRange("paletteNumber", PALETTE_NUMBER_MASK.apply(val), 0, HIGHEST_PALETTE_NUMBER);
             return new GBAMapTileMetadata(tileNumber, horizontalFlip, verticalFlip, paletteNumber);
         };
     }
@@ -153,5 +135,50 @@ public class GBAMapTileMetadata implements Serializable {
                     .apply();
             iterator.write(HexUtils.toByteBuffer(val, val >>> 8));
         };
+    }
+
+    public static class Creator{
+        private short tileNumber;
+        private boolean horizontalFlip;
+        private boolean verticalFlip;
+        private byte paletteNumber;
+
+        private Creator(GBAMapTileMetadata metadata){
+            tileNumber = metadata.tileNumber;
+            horizontalFlip = metadata.horizontalFlip;
+            verticalFlip = metadata.verticalFlip;
+            paletteNumber = metadata.paletteNumber;
+        }
+
+        private Creator(){
+            tileNumber = 0;
+            horizontalFlip = false;
+            verticalFlip = false;
+            paletteNumber = 0;
+        }
+
+        public Creator setTileNumber(int tileNumber){
+            this.tileNumber = (short)verifyInRange("tileNumber", tileNumber, 0, HIGHEST_TILE_NUMBER);
+            return this;
+        }
+
+        public Creator setHorizontalFlip(boolean horizontalFlip){
+            this.horizontalFlip = horizontalFlip;
+            return this;
+        }
+
+        public Creator setVerticalFlip(boolean verticalFlip){
+            this.verticalFlip = verticalFlip;
+            return this;
+        }
+
+        public Creator setPalette(int palette){
+            this.paletteNumber = (byte)verifyInRange("palette", tileNumber, 0, HIGHEST_PALETTE_NUMBER);
+            return this;
+        }
+
+        public GBAMapTileMetadata create(){
+            return new GBAMapTileMetadata(tileNumber, horizontalFlip, verticalFlip, paletteNumber);
+        }
     }
 }

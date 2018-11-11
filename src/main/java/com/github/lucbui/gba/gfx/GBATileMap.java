@@ -84,9 +84,9 @@ public class GBATileMap implements GBAGraphic, Serializable {
     private int[] getRowForMetadata(GBATile tile, GBAMapTileMetadata metadata, int y) {
         int[] row;
         if(metadata.isVerticalFlip()){
-            row = tile.getRowAt((GBATile.HEIGHT_IN_PIXELS - 1) - y);
+            row = tile.getRow((GBATile.HEIGHT_IN_PIXELS - 1) - y);
         } else {
-            row = tile.getRowAt(y);
+            row = tile.getRow(y);
         }
         if(metadata.isHorizontalFlip()){
             ArrayUtils.reverse(row);

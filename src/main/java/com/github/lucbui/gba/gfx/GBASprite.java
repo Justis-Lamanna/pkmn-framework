@@ -113,7 +113,7 @@ public class GBASprite implements GBAGraphic, Serializable {
             for(int tileX = 0; tileX < tileWidth; tileX++){
                 GBATile tile = tiles[tileY * tileWidth + tileX];
                 for(int y = 0; y < 8; y++){
-                    int[] row = tile.getRowAt(y);
+                    int[] row = tile.getRow(y);
                     //Convert from tilespace to pixelspace.
                     //(y * width) + x
                     System.arraycopy(row, 0, pixels, (tileY * GBATile.HEIGHT_IN_PIXELS + y) * (tileWidth * GBATile.WIDTH_IN_PIXELS) + (tileX * GBATile.WIDTH_IN_PIXELS), row.length);
