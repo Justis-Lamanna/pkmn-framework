@@ -3,7 +3,9 @@ package com.github.lucbui;
 import com.github.lucbui.framework.PkmnFramework;
 import com.github.lucbui.gba.GBAFrameworkFactory;
 import com.github.lucbui.gba.GBAUtils;
-import com.github.lucbui.gba.gfx.*;
+import com.github.lucbui.gba.gfx.BitDepth;
+import com.github.lucbui.gba.gfx.GBASprite;
+import com.github.lucbui.gba.gfx.SpriteSize;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -19,9 +21,11 @@ public class Main {
                 .start();
 
         long ptr = 0x4975F8;
-        GBASprite tiles = pkmnGame.read(ptr, GBASprite.getHexReader(BitDepth.FOUR, 2, 4));
+        GBASprite tiles = pkmnGame.read(ptr, GBASprite.getHexReader(BitDepth.FOUR, SpriteSize.VERTICAL_2));
 
-        BufferedImage img = GBAUtils.createImage(tiles, GBAUtils.BLACK_TO_WHITE_16.reversePalette());
+        tiles = tiles.modify().setPixel(10, 5, 10).create();
+
+        BufferedImage img = GBAUtils.createImage(tiles, GBAUtils.VGA_COLORS);
         ImageIO.write(img, "png", new File("test.png"));
     }
 }
