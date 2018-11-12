@@ -240,6 +240,9 @@ public class GBAPalette implements Iterable<GBAColor>, Serializable {
          * @return A new palette
          */
         public GBAPalette build(){
+            if(colors.isEmpty()){
+                throw new IllegalArgumentException("Palette is empty");
+            }
             return new GBAPalette(colors);
         }
 
