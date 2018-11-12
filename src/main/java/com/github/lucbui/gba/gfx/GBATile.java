@@ -8,7 +8,6 @@ import com.github.lucbui.gba.exception.IllegalSizeException;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
-import java.text.BreakIterator;
 import java.util.Arrays;
 import java.util.Objects;
 

@@ -3,7 +3,9 @@ package com.github.lucbui;
 import com.github.lucbui.framework.PkmnFramework;
 import com.github.lucbui.gba.GBAFrameworkFactory;
 import com.github.lucbui.gba.GBAUtils;
-import com.github.lucbui.gba.gfx.*;
+import com.github.lucbui.gba.gfx.BitDepth;
+import com.github.lucbui.gba.gfx.GBASprite;
+import com.github.lucbui.gba.gfx.SpriteSize;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

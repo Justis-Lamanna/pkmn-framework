@@ -2,9 +2,6 @@ package com.github.lucbui.gba.gfx;
 
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.List;
-
 import static org.junit.Assert.*;
 
 public class GBAPaletteTest {

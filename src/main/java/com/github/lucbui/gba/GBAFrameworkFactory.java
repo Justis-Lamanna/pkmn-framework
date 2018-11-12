@@ -2,7 +2,7 @@ package com.github.lucbui.gba;
 
 import com.github.lucbui.framework.FrameworkFactory;
 import com.github.lucbui.framework.PkmnFramework;
-import com.github.lucbui.gba.gfx.*;
+import com.github.lucbui.gba.gfx.GBAColor;
 
 /**
  * A FrameworkFactory which works with GBA games specifically.

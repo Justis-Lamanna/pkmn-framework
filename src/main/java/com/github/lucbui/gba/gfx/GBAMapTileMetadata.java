@@ -1,7 +1,9 @@
 package com.github.lucbui.gba.gfx;
 
-import com.github.lucbui.bytes.*;
-import com.github.lucbui.file.HexFieldIterator;
+import com.github.lucbui.bytes.Bitmask;
+import com.github.lucbui.bytes.HexReader;
+import com.github.lucbui.bytes.HexUtils;
+import com.github.lucbui.bytes.HexWriter;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;

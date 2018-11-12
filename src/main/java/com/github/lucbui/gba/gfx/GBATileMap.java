@@ -1,7 +1,5 @@
 package com.github.lucbui.gba.gfx;
 
-import com.github.lucbui.gba.exception.IllegalSizeException;
-import com.sun.xml.internal.ws.util.StreamUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.Serializable;
