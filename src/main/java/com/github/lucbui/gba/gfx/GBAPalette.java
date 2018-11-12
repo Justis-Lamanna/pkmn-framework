@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * A palette which holds a list of GBAColors
@@ -22,21 +23,8 @@ public class GBAPalette implements Iterable<GBAColor>, Serializable {
      * Initialize a GBAPalette from a list of colors.
      * @param colors The colors to use.
      */
-    public GBAPalette(List<GBAColor> colors){
-        Objects.requireNonNull(colors).forEach(Objects::requireNonNull);
-        if(colors.isEmpty()){
-            throw new IllegalArgumentException("GBAPaletteConfig supplied must have size > 0");
-        }
+    private GBAPalette(List<GBAColor> colors){
         this.colors = new ArrayList<>(colors);
-    }
-
-    /**
-     * Copy a GBAPalette from one.
-     * @param palette The palette to copy.
-     */
-    public GBAPalette(GBAPalette palette){
-        Objects.requireNonNull(palette);
-        this.colors = new ArrayList<>(palette.colors);
     }
 
     /**
@@ -155,11 +143,15 @@ public class GBAPalette implements Iterable<GBAColor>, Serializable {
     }
 
     /**
-     * Create a PaletteBuilder to easily create a palette.
+     * Initialize a builder to easily generate palettes.
      * @return
      */
     public static Creator create(){
         return new Creator();
+    }
+
+    public Creator modify(){
+        return new Creator(this);
     }
 
     //Functions that allow this palette to be used identically to a list of colors.
@@ -190,12 +182,18 @@ public class GBAPalette implements Iterable<GBAColor>, Serializable {
             this.colors = new ArrayList<>();
         }
 
+        private Creator(GBAPalette palette){
+            this.colors = new ArrayList<>(palette.colors);
+        }
+
         /**
          * Add a color to this palette.
          * @param color The color to add.
-         * @return
+         * @return this instance
+         * @throws NullPointerException color is null.
          */
         public Creator with(GBAColor color){
+            Objects.requireNonNull(color);
             colors.add(color);
             return this;
         }
@@ -203,9 +201,11 @@ public class GBAPalette implements Iterable<GBAColor>, Serializable {
         /**
          * Add a palette to this one.
          * @param palette The palette to add.
-         * @return
+         * @return This instance
+         * @throws NullPointerException palette is null.
          */
         public Creator with(GBAPalette palette){
+            Objects.requireNonNull(palette);
             colors.addAll(palette.colors);
             return this;
         }
@@ -213,9 +213,11 @@ public class GBAPalette implements Iterable<GBAColor>, Serializable {
         /**
          * Add a color to this palette.
          * @param color The color to add
-         * @return
+         * @return This instance
+         * @throws NullPointerException color is null.
          */
         public Creator with(Color color){
+            Objects.requireNonNull(color);
             colors.add(GBAColor.from(color));
             return this;
         }
@@ -225,7 +227,8 @@ public class GBAPalette implements Iterable<GBAColor>, Serializable {
          * @param r Red value, 0-31
          * @param g Green value, 0-31
          * @param b Blue value, 0-31
-         * @return
+         * @return This instance
+         * @throws IllegalArgumentException r, g, or b is not between 0 and 31
          */
         public Creator with(int r, int g, int b){
             colors.add(GBAColor.from(r, g, b));
@@ -234,9 +237,30 @@ public class GBAPalette implements Iterable<GBAColor>, Serializable {
 
         /**
          * Assemble the palette.
-         * @return
+         * @return A new palette
          */
         public GBAPalette build(){
+            return new GBAPalette(colors);
+        }
+
+        /**
+         * Pad out the remainder of the palette
+         * @param padSize The size the final palette should be.
+         * @param paddedColor The color to use for padding.
+         * @return A new palette
+         * @throws NullPointerException paddedColor is null.
+         * @throws IllegalArgumentException padSize is nonpositive.
+         */
+        public GBAPalette buildToSize(int padSize, GBAColor paddedColor){
+            Objects.requireNonNull(paddedColor);
+            if(padSize <= 0){
+                throw new IllegalArgumentException("padSize must be > 0");
+            }
+            if(colors.size() < padSize){
+                Stream.iterate(colors.size(), i -> i+1).limit(padSize).forEach(i -> colors.add(paddedColor));
+            } else if(colors.size() > padSize){
+                colors = colors.subList(0, padSize);
+            }
             return new GBAPalette(colors);
         }
     }
