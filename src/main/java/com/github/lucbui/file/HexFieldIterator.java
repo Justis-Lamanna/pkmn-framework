@@ -1,5 +1,6 @@
 package com.github.lucbui.file;
 
+import com.github.lucbui.bytes.ByteWindow;
 import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.HexWriter;
 
@@ -49,7 +50,7 @@ public interface HexFieldIterator {
      * @param numberOfBytes The number of bytes to read.
      * @return The read bytes.
      */
-    ByteBuffer getRelative(long distance, int numberOfBytes);
+    ByteWindow getRelative(long distance, int numberOfBytes);
 
     /**
      * Write some bytes relativeIndex away from the current position
@@ -60,14 +61,21 @@ public interface HexFieldIterator {
      * @param distance The number of bytes away where writing should begin.
      * @param bytes The bytes to write.
      */
-    void writeRelative(long distance, ByteBuffer bytes);
+    void writeRelative(long distance, ByteWindow bytes);
+
+    /**
+     * Get one byte at a specified position.
+     * @param distance The position to retrieve from.
+     * @return The read byte.
+     */
+    byte getByte(long distance);
 
     /**
      * Get a number of bytes, starting at the current position.
      * @param numberOfBytes The number of bytes to read.
      * @return The read bytes.
      */
-    default ByteBuffer get(int numberOfBytes){
+    default ByteWindow get(int numberOfBytes){
         return getRelative(0, numberOfBytes);
     }
 
@@ -75,34 +83,7 @@ public interface HexFieldIterator {
      * Writes bytes, starting at the current position.
      * @param bytes The bytes to write.
      */
-    default void write(ByteBuffer bytes){writeRelative(0, bytes);}
-
-
-    /**
-     * Read an object from an absolute position
-     * @param pointer Pointer to read from
-     * @param reader The reader to use.
-     * @param <T> The object to retrieve.
-     * @return
-     */
-    default <T> T getAbsolute(long pointer, HexReader<T> reader){
-        HexFieldIterator copy = this.copy();
-        copy.advanceTo(pointer);
-        return reader.read(copy);
-    }
-
-    /**
-     * Write an object to an absolute position
-     * @param pointer The pointer to write to
-     * @param writer The writer to use.
-     * @param object The object to write.
-     * @param <T> The object to write.
-     */
-    default <T> void writeAbsolute(T object, long pointer, HexWriter<T> writer){
-        HexFieldIterator copy = this.copy();
-        copy.advanceTo(pointer);
-        writer.write(object, copy);
-    }
+    default void write(ByteWindow bytes){writeRelative(0, bytes);}
 
     /**
      * Advances the iterator forward some amount.

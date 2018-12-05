@@ -20,7 +20,7 @@ public class UnsignedWord implements ByteObject<UnsignedWord>,Comparable<Unsigne
     /**
      * Dedicated HexWriter for UnsignedWord
      */
-    public static final HexWriter<UnsignedWord> HEX_WRITER = (object, iterator) -> iterator.write(object.toBytes());
+    public static final HexWriter<UnsignedWord> HEX_WRITER = (object, iterator) -> iterator.write(object.toByteWindow());
 
     //The value inside this short.
     long value;
@@ -38,12 +38,25 @@ public class UnsignedWord implements ByteObject<UnsignedWord>,Comparable<Unsigne
      * @return
      * @throws IndexOutOfBoundsException ByteBuffer has capacity smaller than 4.
      * @throws NullPointerException value is null.
+     * @deprecated Not using ByteBuffers anymore
      */
+    @Deprecated
     public static UnsignedWord valueOf(ByteBuffer bytes){
         Objects.requireNonNull(bytes);
         if(bytes.capacity() < 4){
             throw new IndexOutOfBoundsException("ByteBuffer capacity < 4");
         }
+        long value = HexUtils.byteToUnsignedByte(bytes.get(3)) * 0x1000000L + HexUtils.byteToUnsignedByte(bytes.get(2)) * 0x10000 + HexUtils.byteToUnsignedByte(bytes.get(1)) * 0x100 + HexUtils.byteToUnsignedByte(bytes.get(0));
+        return words.computeIfAbsent(value, UnsignedWord::new);
+    }
+
+    /**
+     * Parse an UnsignedWord from a literal bytestring.
+     * @param bytes
+     * @return
+     */
+    public static UnsignedWord valueOf(ByteWindow bytes){
+        Objects.requireNonNull(bytes);
         long value = HexUtils.byteToUnsignedByte(bytes.get(3)) * 0x1000000L + HexUtils.byteToUnsignedByte(bytes.get(2)) * 0x10000 + HexUtils.byteToUnsignedByte(bytes.get(1)) * 0x100 + HexUtils.byteToUnsignedByte(bytes.get(0));
         return words.computeIfAbsent(value, UnsignedWord::new);
     }
@@ -91,8 +104,13 @@ public class UnsignedWord implements ByteObject<UnsignedWord>,Comparable<Unsigne
         return UnsignedWord.valueOf(value);
     }
 
+    @Deprecated
     public ByteBuffer toBytes(){
         return HexUtils.toByteBuffer(value, value >>> 8, value >>> 16, value >>> 24);
+    }
+
+    public ByteWindow toByteWindow(){
+        return HexUtils.toByteWindow(value, value >>> 8, value >>> 16, value >>> 24);
     }
 
     @Override

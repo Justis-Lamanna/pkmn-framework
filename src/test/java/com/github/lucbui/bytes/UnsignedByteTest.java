@@ -39,7 +39,7 @@ public class UnsignedByteTest {
 
     @Test(expected = NullPointerException.class)
     public void valueOfByteBufferNull(){
-        UnsignedByte.valueOf(null);
+        UnsignedByte.valueOf((ByteWindow)null);
     }
 
     @Test

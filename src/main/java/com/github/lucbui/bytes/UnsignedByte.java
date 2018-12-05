@@ -26,7 +26,7 @@ public class UnsignedByte implements ByteObject<UnsignedByte>, Comparable<Unsign
     /**
      * Dedicated HexWriter for UnsignedByte
      */
-    public static final HexWriter<UnsignedByte> HEX_WRITER = (object, iterator) -> iterator.write(object.toBytes());
+    public static final HexWriter<UnsignedByte> HEX_WRITER = (object, iterator) -> iterator.write(object.toByteWindow());
 
     //The value inside this byte.
     int value;
@@ -44,7 +44,9 @@ public class UnsignedByte implements ByteObject<UnsignedByte>, Comparable<Unsign
      * @return
      * @throws IndexOutOfBoundsException ByteBuffer has capacity smaller than 1.
      * @throws NullPointerException value is null.
+     * @deprecated Not using ByteBuffers anymore
      */
+    @Deprecated
     public static UnsignedByte valueOf(ByteBuffer value){
         Objects.requireNonNull(value);
         if(value.capacity() < 1){
@@ -52,6 +54,17 @@ public class UnsignedByte implements ByteObject<UnsignedByte>, Comparable<Unsign
         }
         return bytes.computeIfAbsent(HexUtils.byteToUnsignedByte(value.get()), UnsignedByte::new);
     }
+
+    /**
+     * Parse an UnsignedByte from a literal value.
+     * @param value
+     * @return
+     */
+    public static UnsignedByte valueOf(ByteWindow value){
+        Objects.requireNonNull(value);
+        return bytes.computeIfAbsent(HexUtils.byteToUnsignedByte(value.get(0)), UnsignedByte::new);
+    }
+
 
     /**
      * Parse an UnsignedByte from a literal value.
@@ -78,8 +91,17 @@ public class UnsignedByte implements ByteObject<UnsignedByte>, Comparable<Unsign
      * Convert this UnsignedByte to a byte representation.
      * @return
      */
+    @Deprecated
     public ByteBuffer toBytes(){
         return HexUtils.toByteBuffer(value);
+    }
+
+    /**
+     * Convert this UnsignedByte to a byte representation.
+     * @return
+     */
+    public ByteWindow toByteWindow(){
+        return HexUtils.toByteWindow(value);
     }
 
     @Override

@@ -1,9 +1,6 @@
 package com.github.lucbui.gba.gfx;
 
-import com.github.lucbui.bytes.Bitmask;
-import com.github.lucbui.bytes.HexReader;
-import com.github.lucbui.bytes.HexUtils;
-import com.github.lucbui.bytes.HexWriter;
+import com.github.lucbui.bytes.*;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -27,8 +24,8 @@ public class GBAMapTileMetadata implements Serializable {
      * Get a Hex Reader that reads a GBAMapTileMetadata
      */
     public static final HexReader<GBAMapTileMetadata> HEX_READER = iterator -> {
-            ByteBuffer bb = iterator.get(2); iterator.advanceRelative(2);
-            int val = HexUtils.fromByteBufferToInt(bb);
+            ByteWindow bb = iterator.get(2); iterator.advanceRelative(2);
+            int val = HexUtils.byteToUnsignedByte(bb.get(0)) * 0x100 + HexUtils.byteToUnsignedByte(bb.get(1));
             short tileNumber = (short)verifyInRange("tileNumber", TILE_NUMBER_MASK.apply(val), 0, HIGHEST_TILE_NUMBER);
             boolean horizontalFlip = HORIZONTAL_FLIP_MASK.apply(val) == 1;
             boolean verticalFlip = VERTICAL_FLIP_MASK.apply(val) == 1;
@@ -46,7 +43,7 @@ public class GBAMapTileMetadata implements Serializable {
                     .with(VERTICAL_FLIP_MASK, object.isVerticalFlip() ? 1 : 0)
                     .with(PALETTE_NUMBER_MASK, object.getPaletteNumber())
                     .apply();
-            iterator.write(HexUtils.toByteBuffer(val, val >>> 8));
+            iterator.write(HexUtils.toByteWindow(val, val >>> 8));
         };
 
     private short tileNumber;

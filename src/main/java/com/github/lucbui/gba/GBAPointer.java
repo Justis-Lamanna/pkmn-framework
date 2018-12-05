@@ -1,6 +1,7 @@
 package com.github.lucbui.gba;
 
 import com.github.lucbui.annotations.DataStructure;
+import com.github.lucbui.bytes.ByteWindow;
 import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.HexUtils;
 import com.github.lucbui.bytes.HexWriter;
@@ -30,7 +31,7 @@ public class GBAPointer implements Pointer, Comparable<GBAPointer>, Serializable
     /**
      * A Hex Writer which can write our a GBAPointer
      */
-    public static final HexWriter<GBAPointer> HEX_WRITER = (object, iterator) -> iterator.write(object.toBytes());
+    public static final HexWriter<GBAPointer> HEX_WRITER = (object, iterator) -> iterator.write(object.toByteWindow());
 
     private final Type type;
     private final long position;
@@ -69,11 +70,24 @@ public class GBAPointer implements Pointer, Comparable<GBAPointer>, Serializable
      * @throws NullPointerException Type is null
      * @throws IllegalArgumentException Position is not valid for the GBA.
      * @throws IndexOutOfBoundsException ByteBuffer capacity is less than 4
+     * @deprecated Not using ByteBuffer anymore
      */
+    @Deprecated
     public static GBAPointer valueOf(ByteBuffer bytes){
         if(bytes.capacity() < 4){
             throw new IndexOutOfBoundsException("Bytebuffer capacity < 4");
         }
+        Type type = Type.getTypeForPrefix(HexUtils.byteToUnsignedByte(bytes.get(3)));
+        long value = HexUtils.byteToUnsignedByte(bytes.get(2)) * 0x10000L + HexUtils.byteToUnsignedByte(bytes.get(1)) * 0x100 + HexUtils.byteToUnsignedByte(bytes.get(0));
+        return valueOf(type, value);
+    }
+
+    /**
+     * Get a pointer from raw bytes
+     * @param bytes The bytes to retrieve
+     * @return
+     */
+    public static GBAPointer valueOf(ByteWindow bytes){
         Type type = Type.getTypeForPrefix(HexUtils.byteToUnsignedByte(bytes.get(3)));
         long value = HexUtils.byteToUnsignedByte(bytes.get(2)) * 0x10000L + HexUtils.byteToUnsignedByte(bytes.get(1)) * 0x100 + HexUtils.byteToUnsignedByte(bytes.get(0));
         return valueOf(type, value);
@@ -92,8 +106,17 @@ public class GBAPointer implements Pointer, Comparable<GBAPointer>, Serializable
         return position;
     }
 
+    @Deprecated
     public ByteBuffer toBytes(){
         return HexUtils.toByteBuffer(position, position >> 8, position >> 16, type.getPrefix());
+    }
+
+    /**
+     * Get Pointer as a ByteWindow.
+     * @return
+     */
+    public ByteWindow toByteWindow(){
+        return HexUtils.toByteWindow(position, position >> 8, position >> 16, type.getPrefix());
     }
 
     /**
