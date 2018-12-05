@@ -1,5 +1,8 @@
 package com.github.lucbui.file;
 
+import com.github.lucbui.bytes.ByteWindow;
+import com.github.lucbui.bytes.HexUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -62,27 +65,42 @@ public class FileHexField implements HexField {
         }
 
         @Override
-        public ByteBuffer getRelative(long distance, int numberOfBytes) {
+        public byte getByte(long distance){
             try {
-                ByteBuffer bite = ByteBuffer.allocate(numberOfBytes);
+                ByteBuffer bite = ByteBuffer.allocate(1);
                 int read = hex.fileChannel.read(bite, currentPosition + distance);
-                if(read != numberOfBytes){
-                    throw new IllegalStateException("Error reading bytes, expected " + numberOfBytes + " byte, got " + read);
+                if (read != 1) {
+                    throw new IllegalStateException("Error reading bytes, expected " + 1 + " byte, got " + read);
                 }
-                bite.flip();
-                return bite;
+                return bite.get(0);
             } catch (IOException e) {
                 throw new IllegalStateException("Error retrieving from iterator", e);
             }
         }
 
         @Override
-        public void writeRelative(long distance, ByteBuffer bytes){
+        public ByteWindow getRelative(long distance, int numberOfBytes) {
             try {
-                int write = hex.fileChannel.write(bytes, currentPosition + distance);
+                ByteBuffer bite = ByteBuffer.allocate(numberOfBytes);
+                int read = hex.fileChannel.read(bite, currentPosition + distance);
+                if(read != numberOfBytes){
+                    throw new IllegalStateException("Error reading bytes, expected " + numberOfBytes + " byte, got " + read);
+                }
+                return new ByteWindow(bite);
             } catch (IOException e) {
-                throw new IllegalStateException("Error writing from iterator", e);
+                throw new IllegalStateException("Error retrieving from iterator", e);
             }
+        }
+
+        @Override
+        public void writeRelative(long distance, ByteWindow bytes){
+            bytes.forEach((pos, bite) -> {
+                try {
+                    hex.fileChannel.write(HexUtils.toByteBuffer(bite), distance + pos);
+                } catch (IOException e) {
+                    throw new RuntimeException("Error writing to iterator", e);
+                }
+            });
         }
 
         @Override

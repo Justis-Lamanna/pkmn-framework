@@ -26,7 +26,7 @@ public class UnsignedShort implements ByteObject<UnsignedShort>, Comparable<Unsi
     /**
      * Dedicated HexWriter for UnsignedShort
      */
-    public static final HexWriter<UnsignedShort> HEX_WRITER = (object, iterator) -> iterator.write(object.toBytes());
+    public static final HexWriter<UnsignedShort> HEX_WRITER = (object, iterator) -> iterator.write(object.toByteWindow());
 
     //The value inside this short.
     int value;
@@ -39,17 +39,30 @@ public class UnsignedShort implements ByteObject<UnsignedShort>, Comparable<Unsi
     }
 
     /**
-     * Parse an UnsignedByte from a literal bytestring.
+     * Parse an UnsignedShort from a literal bytestring.
      * @param bytes
      * @return
      * @throws IndexOutOfBoundsException ByteBuffer has capacity smaller than 2.
      * @throws NullPointerException value is null.
+     * @deprecated Not using ByteBuffers anymore
      */
+    @Deprecated
     public static UnsignedShort valueOf(ByteBuffer bytes){
         Objects.requireNonNull(bytes);
         if(bytes.capacity() < 2){
             throw new IndexOutOfBoundsException("ByteBuffer capacity < 2");
         }
+        int value = HexUtils.byteToUnsignedByte(bytes.get(1)) * 0x100 + HexUtils.byteToUnsignedByte(bytes.get(0));
+        return shorts.computeIfAbsent(value, UnsignedShort::new);
+    }
+
+    /**
+     * Parse an UnsignedShort from a literal bytes.
+     * @param bytes
+     * @return
+     */
+    public static UnsignedShort valueOf(ByteWindow bytes){
+        Objects.requireNonNull(bytes);
         int value = HexUtils.byteToUnsignedByte(bytes.get(1)) * 0x100 + HexUtils.byteToUnsignedByte(bytes.get(0));
         return shorts.computeIfAbsent(value, UnsignedShort::new);
     }
@@ -86,9 +99,14 @@ public class UnsignedShort implements ByteObject<UnsignedShort>, Comparable<Unsi
         return UnsignedShort.valueOf((int) value);
     }
 
+    @Deprecated
     public ByteBuffer toBytes() {
         //We can do this, because casting to a byte chops off everything except the 8 LSBs
         return HexUtils.toByteBuffer(value, value >>> 8);
+    }
+
+    public ByteWindow toByteWindow(){
+        return HexUtils.toByteWindow(value, value >>> 8);
     }
 
     @Override

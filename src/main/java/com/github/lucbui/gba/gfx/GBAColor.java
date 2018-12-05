@@ -1,9 +1,6 @@
 package com.github.lucbui.gba.gfx;
 
-import com.github.lucbui.bytes.Bitmask;
-import com.github.lucbui.bytes.HexReader;
-import com.github.lucbui.bytes.HexWriter;
-import com.github.lucbui.bytes.UnsignedShort;
+import com.github.lucbui.bytes.*;
 
 import java.awt.*;
 import java.io.Serializable;
@@ -36,7 +33,7 @@ public class GBAColor implements Serializable {
      */
     public static final HexWriter<GBAColor> HEX_WRITER = (object, iterator) -> {
         int color = Bitmask.merge().with(RED_BITMASK, object.red).with(GREEN_BITMASK, object.green).with(BLUE_BITMASK, object.blue).apply();
-        iterator.write(UnsignedShort.valueOf(color).toBytes());
+        iterator.write(HexUtils.toByteWindow(color, color >>> 8));
     };
 
     public static GBAColor BLACK = new GBAColor(0, 0, 0);

@@ -1,9 +1,6 @@
 package com.github.lucbui.gba.gfx;
 
-import com.github.lucbui.bytes.Bitmask;
-import com.github.lucbui.bytes.HexReader;
-import com.github.lucbui.bytes.HexUtils;
-import com.github.lucbui.bytes.HexWriter;
+import com.github.lucbui.bytes.*;
 import com.github.lucbui.gba.exception.IllegalSizeException;
 
 import java.io.Serializable;
@@ -107,8 +104,7 @@ public class GBATile implements GBAGraphic, Serializable {
             } else if(depth == BitDepth.EIGHT){
                 //Each bite contains only one pixel of info.
                 for(int idx = 0; idx < AREA_IN_PIXELS; idx++){
-                    ByteBuffer bite = iterator.get(1);
-                    pixels[idx] = bite.get(0);
+                    pixels[idx] = iterator.getByte(0);
                     iterator.advanceRelative(1);
                 }
                 return new GBATile(depth, pixels);
@@ -127,6 +123,7 @@ public class GBATile implements GBAGraphic, Serializable {
         Objects.requireNonNull(depth);
         return (object, iterator) -> {
             byte[] pixels = object.pixels;
+            ByteWindow window = new ByteWindow();
             if (depth == BitDepth.FOUR) {
                 for (int idx = 0; idx < (AREA_IN_PIXELS / 2); idx++) {
                     int pixl = Bitmask.merge()
@@ -134,20 +131,18 @@ public class GBATile implements GBAGraphic, Serializable {
                             .with(RIGHT_PIXEL_MASK, pixels[idx * 2 + 1])
                             .apply();
                     byte bite = HexUtils.unsignedByteToByte(pixl);
-                    ByteBuffer bb = ByteBuffer.wrap(new byte[]{bite});
-                    iterator.writeRelative(0, bb);
-                    iterator.advanceRelative(1);
+                    window.set(idx, bite);
                 }
             } else if (depth == BitDepth.EIGHT) {
                 for (int idx = 0; idx < AREA_IN_PIXELS; idx++) {
                     byte bite = HexUtils.unsignedByteToByte(pixels[idx]);
-                    ByteBuffer bb = ByteBuffer.wrap(new byte[]{bite});
-                    iterator.writeRelative(0, bb);
-                    iterator.advanceRelative(1);
+                    window.set(idx, bite);
                 }
             } else {
                 throw new IllegalArgumentException("Invalid depth specified:" + depth);
             }
+            iterator.write(window);
+            iterator.advanceRelative(window.getRange());
         };
     }
 
