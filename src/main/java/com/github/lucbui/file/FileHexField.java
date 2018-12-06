@@ -112,5 +112,10 @@ public class FileHexField implements HexField {
         public void advanceTo(long pointer) {
             currentPosition = pointer;
         }
+
+        @Override
+        public long getPosition() {
+            return currentPosition;
+        }
     }
 }

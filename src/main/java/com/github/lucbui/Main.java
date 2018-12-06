@@ -1,5 +1,8 @@
 package com.github.lucbui;
 
+import com.github.lucbui.annotations.DataStructure;
+import com.github.lucbui.annotations.StructField;
+import com.github.lucbui.bytes.UnsignedByte;
 import com.github.lucbui.framework.PkmnFramework;
 import com.github.lucbui.gba.GBAFrameworkFactory;
 import com.github.lucbui.gba.GBAUtils;
@@ -20,12 +23,25 @@ public class Main {
                 .frameworkFactory(new GBAFrameworkFactory())
                 .start();
 
-        long ptr = 0x4975F8;
+        /*long ptr = 0x4975F8;
         GBASprite tiles = pkmnGame.read(ptr, GBASprite.getHexReader(BitDepth.FOUR, SpriteSize.VERTICAL_2));
 
         tiles = tiles.modify().setPixel(10, 5, 10).create();
 
         BufferedImage img = GBAUtils.createImage(tiles, GBAUtils.VGA_COLORS);
-        ImageIO.write(img, "png", new File("test.png"));
+        ImageIO.write(img, "png", new File("test.png"));*/
+        TestStructure ts = pkmnGame.read(0x70, TestStructure.class);
+        ts.b1 = UnsignedByte.valueOf(0x80);
+        pkmnGame.write(0x70, ts);
+        System.out.println(ts);
+    }
+
+    @DataStructure
+    public static class TestStructure {
+        @StructField(offset = 0)
+        public UnsignedByte b1;
+
+        @StructField(offset = 1)
+        public UnsignedByte b2;
     }
 }

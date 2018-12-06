@@ -21,6 +21,8 @@ import java.util.stream.Collectors;
  * Using reflection, an arbitrary object can be read/write via its annotations. An object read in this way *MUST* have
  * an {@code @DataStructure} annotation at the class definition level. Fields can then be specified using the {@code @StructField}
  * annotation. See documentation of both classes for more information.
+ *
+ * If a write fails, the structure will *not* be written to disk.
  * @param <T>
  */
 public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> {
@@ -122,10 +124,7 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
                     fieldIterator.advanceTo(ptr.getLocation());
                 }
 
-                //If no annotations matched, parse the normal way.
-                if(parsedObject == null){
-                    parsedObject = getHexReaderFor(classToRead).read(fieldIterator);
-                }
+                parsedObject = getHexReaderFor(classToRead).read(fieldIterator);
 
                 //Wrap up the object in a PointerObject if necessary.
                 FieldUtils.writeDeclaredField(object, field.getName(), ptr == null ? parsedObject : new PointerObject<>(ptr, parsedObject), true);
@@ -205,11 +204,13 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
             //Get all StructFields that aren't read only.
             List<Field> fields = FieldUtils.getFieldsListWithAnnotation(clazz, StructField.class).stream()
                     .filter(i -> !i.getAnnotation(StructField.class).readOnly()).collect(Collectors.toList());
+            ByteWindow bw = new ByteWindow();
+            HexFieldIterator fieldIterator = bw.iterator();
             for (Field field : fields) {
                 StructField structAnnotation = field.getAnnotation(StructField.class);
                 int offset = structAnnotation.offset();
 
-                HexFieldIterator fieldIterator = iterator.copyRelative(offset); //The iterator we're writing with.
+                fieldIterator.advanceTo(offset); //The iterator we're writing with.
                 Object writingObject = FieldUtils.readDeclaredField(object, field.getName(), true); //The object we are writing.
                 Class<?> classToWrite = field.getType();
 
@@ -222,8 +223,9 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
                     writingObject = ((PointerObject<? extends Pointer, ?>) writingObject).getObject();
                     classToWrite = ptrAnnotation.objectType();
                 }
-                getHexWriterFor(classToWrite, repointStrategy).writeObject(FieldUtils.readField(field, object, true), fieldIterator);
+                getHexWriterFor(classToWrite, repointStrategy).writeObject(writingObject, fieldIterator);
             }
+            iterator.writeRelative(iterator.getPosition(), bw);
         } catch (IllegalAccessException ex){
             throw new IllegalArgumentException("Error writing object of type " + clazz.getName(), ex);
         }

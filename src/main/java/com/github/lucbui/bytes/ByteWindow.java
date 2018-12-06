@@ -7,6 +7,8 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.ToLongFunction;
 
+import com.github.lucbui.file.HexField;
+import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.gba.exception.IllegalSizeException;
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -21,7 +23,7 @@ import org.apache.commons.lang3.NotImplementedException;
  *
  * I wrote this because I hated ByteBuffers.
  */
-public class ByteWindow {
+public class ByteWindow implements HexField {
 
     public static byte DEFAULT_VALUE = 0;
     private byte defaultValue;
@@ -192,6 +194,16 @@ public class ByteWindow {
         this.bytes.forEach(consumer);
     }
 
+    /**
+     * Creates a copy of this ByteWindow.
+     * @return
+     */
+    public ByteWindow copy() {
+        ByteWindow newByteWindow = new ByteWindow(defaultValue);
+        newByteWindow.bytes = new TreeMap<>(this.bytes);
+        return newByteWindow;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -203,5 +215,56 @@ public class ByteWindow {
     @Override
     public int hashCode() {
         return Objects.hash(bytes);
+    }
+
+    @Override
+    public HexFieldIterator iterator(long position) {
+        return new ByteWindowHexFieldIterator(this, position);
+    }
+
+    private class ByteWindowHexFieldIterator implements HexFieldIterator {
+
+        private ByteWindow byteWindow;
+        private long current;
+
+        public ByteWindowHexFieldIterator(ByteWindow byteWindow, long position) {
+            this.byteWindow = byteWindow;
+            this.current = position;
+        }
+
+        @Override
+        public HexFieldIterator copy() {
+            return new ByteWindowHexFieldIterator(byteWindow.copy(), current);
+        }
+
+        @Override
+        public ByteWindow getRelative(long distance, int numberOfBytes) {
+            return byteWindow.subWindow(current + distance, (current + distance) + numberOfBytes);
+        }
+
+        @Override
+        public void writeRelative(long distance, ByteWindow bytes) {
+            byteWindow.set(current + distance, bytes);
+        }
+
+        @Override
+        public byte getByte(long distance) {
+            return byteWindow.get(current + distance);
+        }
+
+        @Override
+        public void advanceRelative(long distance) {
+            current += distance;
+        }
+
+        @Override
+        public void advanceTo(long pointer) {
+            current = pointer;
+        }
+
+        @Override
+        public long getPosition() {
+            return current;
+        }
     }
 }

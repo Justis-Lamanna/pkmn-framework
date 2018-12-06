@@ -99,4 +99,10 @@ public interface HexFieldIterator {
      * @param pointer The pointer to move to.
      */
     void advanceTo(long pointer);
+
+    /**
+     * Get the current position in the iterator.
+     * @return
+     */
+    long getPosition();
 }
