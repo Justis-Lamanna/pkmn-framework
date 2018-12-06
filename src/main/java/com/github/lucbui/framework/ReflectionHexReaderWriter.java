@@ -112,22 +112,23 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
             for(Field field : fields){
                 StructField structAnnotation = field.getAnnotation(StructField.class);
                 int offset = structAnnotation.offset();
-                //Special support for Pointer objects, which store a pointer to themselves, as well as data poined to.
-                Pointer ptr = null; //If this a PointerField, ptr contains the Pointer. Otherwise it's null.
-                Object parsedObject = null; //The object read. If it's a pointer object, it's the object pointed to.
                 Class<?> classToRead = field.getType(); //The class of this field. If it's a pointer object, this becomes the objectField.
                 HexFieldIterator fieldIterator = iterator.copyRelative(offset); //An iterator starting at offset. If it's a pointer object, this moves to the pointed value.
                 if(field.isAnnotationPresent(PointerField.class) && field.getType().equals(PointerObject.class)){
+                    //Special support for Pointer objects, which store a pointer to themselves, as well as data poined to.
                     PointerField pointerAnnotation = field.getAnnotation(PointerField.class);
                     classToRead = pointerAnnotation.objectType();
-                    ptr = (Pointer) getHexReaderFor(pointerAnnotation.pointerType()).read(iterator);
+                    Pointer ptr = (Pointer) getHexReaderFor(pointerAnnotation.pointerType()).read(iterator);
+                    Object parsedObject = getHexReaderFor(classToRead).read(fieldIterator);; //The object read.
+
+                    FieldUtils.writeDeclaredField(object, field.getName(), new PointerObject<>(ptr, parsedObject), true);
                     fieldIterator.advanceTo(ptr.getLocation());
+                } else {
+                    //No special modifications necessary.
+                    Object parsedObject = getHexReaderFor(classToRead).read(fieldIterator);
+
+                    FieldUtils.writeDeclaredField(object, field.getName(), parsedObject, true);
                 }
-
-                parsedObject = getHexReaderFor(classToRead).read(fieldIterator);
-
-                //Wrap up the object in a PointerObject if necessary.
-                FieldUtils.writeDeclaredField(object, field.getName(), ptr == null ? parsedObject : new PointerObject<>(ptr, parsedObject), true);
             }
 
             //Invoke all AfterRead methods.
@@ -222,8 +223,11 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
                     fieldIterator.advanceTo(ptr.getLocation());
                     writingObject = ((PointerObject<? extends Pointer, ?>) writingObject).getObject();
                     classToWrite = ptrAnnotation.objectType();
+
+                    getHexWriterFor(classToWrite, repointStrategy).writeObject(writingObject, fieldIterator);
+                } else {
+                    getHexWriterFor(classToWrite, repointStrategy).writeObject(writingObject, fieldIterator);
                 }
-                getHexWriterFor(classToWrite, repointStrategy).writeObject(writingObject, fieldIterator);
             }
             iterator.writeRelative(iterator.getPosition(), bw);
         } catch (IllegalAccessException ex){
