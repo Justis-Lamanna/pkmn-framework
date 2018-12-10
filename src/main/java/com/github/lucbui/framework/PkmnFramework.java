@@ -105,7 +105,7 @@ public class PkmnFramework {
      */
     public <T> T read(long pointer, Class<T> clazz){
         verifyFieldsPresent();
-        return clazz.cast(ReflectionHexReaderWriter.getHexReaderFor(clazz).read(hexField.iterator(pointer)));
+        return clazz.cast(ReflectionHexReaderWriter.getHexReaderFor(clazz, this).read(hexField.iterator(pointer)));
     }
 
     /**
@@ -121,7 +121,7 @@ public class PkmnFramework {
         if(repointStrategy == null){
             repointStrategy = RepointUtils.disableRepointStrategy();
         }
-        ReflectionHexReaderWriter.getHexWriterFor(object.getClass(), repointStrategy).writeObject(object, hexField.iterator(pointer));
+        ReflectionHexReaderWriter.getHexWriterFor(object.getClass(), repointStrategy, this).writeObject(object, hexField.iterator(pointer));
     }
 
     /**

@@ -7,9 +7,11 @@ import com.github.lucbui.file.Pointer;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +28,8 @@ import java.util.stream.Collectors;
  * @param <T>
  */
 public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> {
+
+    public static final List<Class<? extends Annotation>> STRUCT_FIELD_MARKER_ANNOTATION_CLASSES = Arrays.asList(StructField.class, Offset.class);
 
     //A cache of readers, registered for reusing.
     static Map<Class<?>, HexReader<?>> READERS = new HashMap<>();
@@ -72,15 +76,18 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
     }
 
     private final Class<T> clazz;
+    private final PkmnFramework pkmnFramework;
     private final RepointStrategy repointStrategy;
 
-    private ReflectionHexReaderWriter(Class<T> clazz){
+    private ReflectionHexReaderWriter(Class<T> clazz, PkmnFramework pkmnFramework){
         this.clazz = clazz;
+        this.pkmnFramework = pkmnFramework;
         this.repointStrategy = RepointUtils.disableRepointStrategy();
     }
 
-    private ReflectionHexReaderWriter(Class<T> clazz, RepointStrategy strategy){
+    private ReflectionHexReaderWriter(Class<T> clazz, RepointStrategy strategy, PkmnFramework pkmnFramework){
         this.clazz = clazz;
+        this.pkmnFramework = pkmnFramework;
         this.repointStrategy = strategy;
     }
 
@@ -105,15 +112,35 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
      */
     @Override
     public T read(HexFieldIterator iterator) {
+
+        long startPosition = iterator.getPosition();
+
         try {
             T object = invokeConstructor(clazz);
             //Fill in fields.
-            List<Field> fields = FieldUtils.getFieldsListWithAnnotation(clazz, StructField.class);
+            List<Field> fields = FieldUtils.getAllFieldsList(clazz).stream()
+                    .filter(i -> STRUCT_FIELD_MARKER_ANNOTATION_CLASSES.stream().anyMatch(i::isAnnotationPresent))
+                    .collect(Collectors.toList());
             for(Field field : fields){
-                StructField structAnnotation = field.getAnnotation(StructField.class);
-                int offset = structAnnotation.offset();
+                long offset;
+                if(field.isAnnotationPresent(StructField.class)){
+                    offset = field.getAnnotation(StructField.class).offset();
+                } else if(field.isAnnotationPresent(Offset.class)){
+                    Offset offsetAnnotation = field.getAnnotation(Offset.class);
+                    offset = new FrameworkEvaluator(pkmnFramework, startPosition).evaluate(offsetAnnotation.value());
+                } else {
+                    throw new RuntimeException("Field encountered missing expected annotations: @StructField, @Offset");
+                }
+
                 Class<?> classToRead = field.getType(); //The class of this field. If it's a pointer object, this becomes the objectField.
-                HexFieldIterator fieldIterator = iterator.copyRelative(offset); //An iterator starting at offset. If it's a pointer object, this moves to the pointed value.
+
+                HexFieldIterator fieldIterator;
+                if(field.isAnnotationPresent(AbsoluteOffset.class)){
+                    fieldIterator = iterator.copy(offset);
+                } else {
+                    fieldIterator = iterator.copyRelative(offset); //An iterator starting at offset. If it's a pointer object, this moves to the pointed value.
+                }
+
                 if(field.isAnnotationPresent(PointerField.class) && field.getType().equals(PointerObject.class)){
                     //Special support for Pointer objects, which store a pointer to themselves, as well as data poined to.
                     PointerField pointerAnnotation = field.getAnnotation(PointerField.class);
@@ -151,17 +178,21 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
         return clazz.newInstance();
     }
 
-    public static HexReader<?> getHexReaderFor(Class<?> type) {
+    public static HexReader<?> getHexReaderFor(Class<?> type, PkmnFramework pkmnFramework) {
         HexReader<?> reader = findHexReaderInSubclasses(type);
         if(reader != null){
             return reader;
         } else {
             if(type.isAnnotationPresent(DataStructure.class)) {
-                return new ReflectionHexReaderWriter<>(type);
+                return new ReflectionHexReaderWriter<>(type, pkmnFramework);
             } else {
                 throw new IllegalArgumentException("Requested type " + type.getName() + " does not contain @DataStructure or an associated reader. Use PkmnFramework.addReader() to add a class-reader association.");
             }
         }
+    }
+
+    private HexReader<?> getHexReaderFor(Class<?> type) {
+        return getHexReaderFor(type, pkmnFramework);
     }
 
     /**
@@ -190,6 +221,8 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
     @Override
     public void write(T object, HexFieldIterator iterator) {
 
+        long startPosition = iterator.getPosition();
+
         //Invoke all BeforeWrite methods.
         MethodUtils
                 .getMethodsListWithAnnotation(clazz, BeforeWrite.class, false, true)
@@ -203,13 +236,21 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
 
         try {
             //Get all StructFields that aren't read only.
-            List<Field> fields = FieldUtils.getFieldsListWithAnnotation(clazz, StructField.class).stream()
-                    .filter(i -> !i.getAnnotation(StructField.class).readOnly()).collect(Collectors.toList());
+            List<Field> fields = FieldUtils.getAllFieldsList(clazz).stream()
+                    .filter(i -> STRUCT_FIELD_MARKER_ANNOTATION_CLASSES.stream().anyMatch(i::isAnnotationPresent))
+                    .collect(Collectors.toList());
             ByteWindow bw = new ByteWindow();
             HexFieldIterator fieldIterator = bw.iterator();
             for (Field field : fields) {
-                StructField structAnnotation = field.getAnnotation(StructField.class);
-                int offset = structAnnotation.offset();
+                long offset;
+                if(field.isAnnotationPresent(StructField.class)){
+                    offset = field.getAnnotation(StructField.class).offset();
+                } else if(field.isAnnotationPresent(Offset.class)){
+                    Offset offsetAnnotation = field.getAnnotation(Offset.class);
+                    offset = new FrameworkEvaluator(pkmnFramework, startPosition).evaluate(offsetAnnotation.value());
+                } else {
+                    throw new RuntimeException("Field encountered missing expected annotations: @StructField, @Offset");
+                }
 
                 fieldIterator.advanceTo(offset); //The iterator we're writing with.
                 Object writingObject = FieldUtils.readDeclaredField(object, field.getName(), true); //The object we are writing.
@@ -219,14 +260,14 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
                     PointerField ptrAnnotation = field.getAnnotation(PointerField.class);
                     PointerObject<? extends Pointer, ?> po = (PointerObject<? extends Pointer, ?>) writingObject;
                     Pointer ptr = repointStrategy.repoint(new RepointStrategy.RepointMetadata(po, getSize(ptrAnnotation.objectType(), po.getObject())));
-                    getHexWriterFor(ptrAnnotation.pointerType(), repointStrategy).writeObject(ptr, fieldIterator);
+                    getHexWriterFor(ptrAnnotation.pointerType()).writeObject(ptr, fieldIterator);
                     fieldIterator.advanceTo(ptr.getLocation());
                     writingObject = ((PointerObject<? extends Pointer, ?>) writingObject).getObject();
                     classToWrite = ptrAnnotation.objectType();
 
-                    getHexWriterFor(classToWrite, repointStrategy).writeObject(writingObject, fieldIterator);
+                    getHexWriterFor(classToWrite).writeObject(writingObject, fieldIterator);
                 } else {
-                    getHexWriterFor(classToWrite, repointStrategy).writeObject(writingObject, fieldIterator);
+                    getHexWriterFor(classToWrite).writeObject(writingObject, fieldIterator);
                 }
             }
             iterator.writeRelative(iterator.getPosition(), bw);
@@ -264,17 +305,21 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
             return -1;
         }
 
-    public static HexWriter<?> getHexWriterFor(Class<?> type, RepointStrategy repointStrategy) {
+    public static HexWriter<?> getHexWriterFor(Class<?> type, RepointStrategy repointStrategy, PkmnFramework pkmnFramework) {
         HexWriter<?> reader = findHexWriterInSubclasses(type);
         if(reader != null){
             return reader;
         } else {
             if(type.isAnnotationPresent(DataStructure.class)) {
-                return new ReflectionHexReaderWriter<>(type, repointStrategy);
+                return new ReflectionHexReaderWriter<>(type, repointStrategy, pkmnFramework);
             } else {
                 throw new IllegalArgumentException("Requested type " + type.getName() + " does not contain @DataStructure or an associated writer. Use PkmnFramework.addWriter() to add a class-writer association.");
             }
         }
+    }
+
+    private HexWriter<?> getHexWriterFor(Class<?> type) {
+        return getHexWriterFor(type, repointStrategy, pkmnFramework);
     }
 
     /**
@@ -299,75 +344,4 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
             return writers.values().stream().findFirst().orElse(null);
         }
     }
-
-
-//    /**
-//     * Annotation Function for the PointerField.
-//     * This is stored here because we need readers and writers.
-//     */
-//    private static class PointerObjectAnnotationFunction implements ReflectionAnnotationFunction{
-//
-//        @Override
-//        public void onRead(Object object, Field field, HexFieldIterator iterator) {
-//            try {
-//                PointerField pointerAnnotation = field.getAnnotation(PointerField.class);
-//                Class<? extends Pointer> ptrClass = pointerAnnotation.pointerType();
-//                Class<?> objClass = pointerAnnotation.objectType();
-//                Pointer ptr = (Pointer) getHexReaderFor(ptrClass).read(iterator);
-//                Object ptrObj = getHexReaderFor(objClass).read(iterator.copy(ptr.getLocation()));
-//                FieldUtils.writeField(field, object, new PointerObject<>(ptr, ptrObj), true);
-//            } catch (IllegalAccessException e) {
-//                throw new IllegalStateException(e);
-//            }
-//        }
-//
-//        @Override
-//        public void onWrite(Object object, Field field, HexFieldIterator iterator, RepointStrategy repointStrategy) {
-//            try{
-//                int offset = field.getAnnotation(StructField.class).offset();
-//                PointerField pointerAnnotation = field.getAnnotation(PointerField.class);
-//                PointerObject<? extends Pointer, ?> pointerObj = (PointerObject<? extends Pointer, ?>) FieldUtils.readField(field, object, true);
-//                Pointer repoint = repointStrategy.repoint(createRepointMetadata(pointerObj, getSize(pointerAnnotation.objectType(), pointerObj.getObject())));
-//                HexWriter<?> ptrWriter = getHexWriterFor(pointerAnnotation.pointerType(), repointStrategy);
-//                HexWriter<?> objWriter = getHexWriterFor(pointerAnnotation.objectType(), repointStrategy);
-//                ptrWriter.writeObject(repoint, iterator.copyRelative(offset));
-//                objWriter.writeObject(pointerObj.getObject(), iterator.copy(repoint.getLocation()));
-//            } catch (IllegalAccessException e) {
-//                throw new IllegalStateException(e);
-//            }
-//        }
-//
-//        private RepointStrategy.RepointMetadata createRepointMetadata(PointerObject<? extends Pointer, ?> pointerObject, int size) {
-//            return new RepointStrategy.RepointMetadata(pointerObject, size);
-//        }
-//
-//        /**
-//         * Get the size of the object attempting to repoint.
-//         * If the size is specified in teh DataStructure object, we return with it.
-//         * Variable sizes can be provided by annotating a method with @DataStructureSize in the object to observe, which
-//         * should take no parameters and return an integer.
-//         * @param objectClass The class of the object.
-//         * @param object The object itself.
-//         * @return
-//         */
-//        private int getSize(Class<?> objectClass, Object object) {
-//            if(objectClass.isAnnotationPresent(DataStructure.class)){
-//                DataStructure ds = objectClass.getAnnotation(DataStructure.class);
-//                if(ds.size() > 0){
-//                    return ds.size();
-//                }
-//            }
-//            List<Method> methods = MethodUtils.getMethodsListWithAnnotation(objectClass, DataStructureSize.class);
-//            if(methods.size() == 1){
-//                try{
-//                    return (int)MethodUtils.invokeMethod(object, true, methods.get(0).getName());
-//                } catch (Exception e) {
-//                    throw new IllegalArgumentException("Error invoking method " + methods.get(0).getName(), e);
-//                }
-//            } else if(methods.size() > 1){
-//                throw new IllegalArgumentException("Multiple methods with @DataStructureSize annotation specified. Please ensure there is only one.");
-//            }
-//            return -1;
-//        }
-//    }
 }

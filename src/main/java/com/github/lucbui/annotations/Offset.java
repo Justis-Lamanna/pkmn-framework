@@ -6,18 +6,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a field for the enclosed data structure.
+ * Marks an annotation for an arithmetic string that calculates an offset.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface StructField {
+public @interface Offset {
 
     /**
      * The offset of the field inside the raw data structure. For example, if size is set to 1, the matching field would
      * be parsed, starting at [pointer] + 1.
-     *
-     * If this is omitted, an @Offset annotation must be specified.
      * @return
      */
-    long offset();
+    String value();
 }
