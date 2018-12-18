@@ -3,6 +3,7 @@ package com.github.lucbui.config;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * A basic immutable configuration which is based on a HashMap
@@ -36,8 +37,8 @@ public class MapConfig implements Configuration {
     }
 
     @Override
-    public String get(String key) {
-        return internalMap.get(key);
+    public Optional<String> get(String key) {
+        return Optional.ofNullable(internalMap.get(key));
     }
 
     @Override

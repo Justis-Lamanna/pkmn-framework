@@ -9,6 +9,7 @@ import java.util.function.ToLongFunction;
 
 import com.github.lucbui.file.HexField;
 import com.github.lucbui.file.HexFieldIterator;
+import com.github.lucbui.file.Pointer;
 import com.github.lucbui.gba.exception.IllegalSizeException;
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -218,8 +219,8 @@ public class ByteWindow implements HexField {
     }
 
     @Override
-    public HexFieldIterator iterator(long position) {
-        return new ByteWindowHexFieldIterator(this, position);
+    public HexFieldIterator iterator(Pointer position) {
+        return new ByteWindowHexFieldIterator(this, position.getLocation());
     }
 
     private class ByteWindowHexFieldIterator implements HexFieldIterator {

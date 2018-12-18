@@ -5,6 +5,7 @@ import com.github.lucbui.annotations.StructField;
 import com.github.lucbui.bytes.UnsignedByte;
 import com.github.lucbui.framework.PkmnFramework;
 import com.github.lucbui.gba.GBAFrameworkFactory;
+import com.github.lucbui.gba.GBAPointer;
 import com.github.lucbui.gba.GBAUtils;
 import com.github.lucbui.gba.gfx.BitDepth;
 import com.github.lucbui.gba.gfx.GBASprite;
@@ -30,8 +31,8 @@ public class Main {
 
         BufferedImage img = GBAUtils.createImage(tiles, GBAUtils.VGA_COLORS);
         ImageIO.write(img, "png", new File("test.png"));*/
-        TestStructure ts = pkmnGame.read(0x70, TestStructure.class);
-        pkmnGame.write(0x70, ts);
+        TestStructure ts = pkmnGame.read(GBAPointer.valueOf(0x70), TestStructure.class);
+        pkmnGame.write(GBAPointer.valueOf(0x70), ts);
         System.out.println(ts);
     }
 

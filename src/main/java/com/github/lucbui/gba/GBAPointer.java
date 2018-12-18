@@ -48,6 +48,15 @@ public class GBAPointer implements Pointer, Comparable<GBAPointer>, Serializable
     }
 
     /**
+     * Create a pointer to GBA read-only memory
+     * @param position The position in memory to read from
+     * @return The created pointer.
+     */
+    public static GBAPointer valueOf(long position){
+        return valueOf(Type.ROM, position);
+    }
+
+    /**
      * Get a pointer from literal values.
      * @param type The type of memory address
      * @param position The position in that address

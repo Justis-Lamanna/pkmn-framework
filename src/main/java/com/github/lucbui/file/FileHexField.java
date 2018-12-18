@@ -40,8 +40,8 @@ public class FileHexField implements HexField {
     }
 
     @Override
-    public HexFieldIterator iterator(long position) {
-        return new Iterator(this, position);
+    public HexFieldIterator iterator(Pointer position) {
+        return new Iterator(this, position.getLocation());
     }
 
     /**

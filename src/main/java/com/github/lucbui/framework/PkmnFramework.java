@@ -7,6 +7,7 @@ import com.github.lucbui.config.MutableConfig;
 import com.github.lucbui.file.FileHexField;
 import com.github.lucbui.file.HexField;
 import com.github.lucbui.file.HexFieldIterator;
+import com.github.lucbui.file.Pointer;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +16,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -79,7 +81,7 @@ public class PkmnFramework {
      * @param <T> The object to extract
      * @return The extracted object.
      */
-    public <T> T read(long pointer, HexReader<T> reader){
+    public <T> T read(Pointer pointer, HexReader<T> reader){
         verifyFieldsPresent();
         return reader.read(hexField.iterator(pointer));
     }
@@ -91,7 +93,7 @@ public class PkmnFramework {
      * @param object The object to write.
      * @param <T> The object to write.
      */
-    public <T> void write(long pointer, HexWriter<T> writer, T object){
+    public <T> void write(Pointer pointer, HexWriter<T> writer, T object){
         verifyFieldsPresent();
         writer.write(object, hexField.iterator(pointer));
     }
@@ -103,7 +105,7 @@ public class PkmnFramework {
      * @param <T> The object to extract
      * @return The extracted object
      */
-    public <T> T read(long pointer, Class<T> clazz){
+    public <T> T read(Pointer pointer, Class<T> clazz){
         verifyFieldsPresent();
         return clazz.cast(ReflectionHexReaderWriter.getHexReaderFor(clazz, this).read(hexField.iterator(pointer)));
     }
@@ -116,7 +118,7 @@ public class PkmnFramework {
      * @param repointStrategy The strategy to use when repointing.
      * @param <T> The object to write
      */
-    public <T> void write(long pointer, T object, RepointStrategy repointStrategy) {
+    public <T> void write(Pointer pointer, T object, RepointStrategy repointStrategy) {
         verifyFieldsPresent();
         if(repointStrategy == null){
             repointStrategy = RepointUtils.disableRepointStrategy();
@@ -132,7 +134,7 @@ public class PkmnFramework {
      * @param object The object to write.
      * @param <T> The object to write
      */
-    public <T> void write(long pointer, T object) {
+    public <T> void write(Pointer pointer, T object) {
         write(pointer, object, RepointUtils.disableRepointStrategy());
     }
 
@@ -141,7 +143,7 @@ public class PkmnFramework {
      * @param position The position to start the iterator at.
      * @return An iterator.
      */
-    public HexFieldIterator getIterator(long position){
+    public HexFieldIterator getIterator(Pointer position){
         verifyFieldsPresent();
         return hexField.iterator(position);
     }
@@ -150,77 +152,10 @@ public class PkmnFramework {
      * Get a value from the configuration provided.
      * If no configuration was provided, the default is provided.
      * @param key The key to retrieve.
-     * @param def The default value.
      * @return The value corresponding to the provided key.
      */
-    public String getFromConfig(String key, String def){
-        return configuration == null ? def : configuration.get(key, def);
-    }
-
-    /**
-     * Get a value from the configuration provided.
-     * If no configuration was provided, the default is provided.
-     * @param key The key to retrieve.
-     * @param def The default value.
-     * @return The value corresponding to the provided key.
-     */
-    public byte getFromConfig(String key, byte def){
-        return configuration == null ? def : configuration.get(key, def);
-    }
-
-    /**
-     * Get a value from the configuration provided.
-     * If no configuration was provided, the default is provided.
-     * @param key The key to retrieve.
-     * @param def The default value.
-     * @return The value corresponding to the provided key.
-     */
-    public short getFromConfig(String key, short def){
-        return configuration == null ? def : configuration.get(key, def);
-    }
-
-    /**
-     * Get a value from the configuration provided.
-     * If no configuration was provided, the default is provided.
-     * @param key The key to retrieve.
-     * @param def The default value.
-     * @return The value corresponding to the provided key.
-     */
-    public int getFromConfig(String key, int def){
-        return configuration == null ? def : configuration.get(key, def);
-    }
-
-    /**
-     * Get a value from the configuration provided.
-     * If no configuration was provided, the default is provided.
-     * @param key The key to retrieve.
-     * @param def The default value.
-     * @return The value corresponding to the provided key.
-     */
-    public long getFromConfig(String key, long def){
-        return configuration == null ? def : configuration.get(key, def);
-    }
-
-    /**
-     * Get a value from the configuration provided.
-     * If no configuration was provided, the default is provided.
-     * @param key The key to retrieve.
-     * @param def The default value.
-     * @return The value corresponding to the provided key.
-     */
-    public float getFromConfig(String key, float def){
-        return configuration == null ? def : configuration.get(key, def);
-    }
-
-    /**
-     * Get a value from the configuration provided.
-     * If no configuration was provided, the default is provided.
-     * @param key The key to retrieve.
-     * @param def The default value.
-     * @return The value corresponding to the provided key.
-     */
-    public double getFromConfig(String key, double def){
-        return configuration == null ? def : configuration.get(key, def);
+    public Optional<String> getFromConfig(String key){
+        return configuration == null ? Optional.empty() : configuration.get(key);
     }
 
     /**
@@ -228,12 +163,11 @@ public class PkmnFramework {
      * If no configuration was provided, the default is provided.
      * @param key The key to retrieve.
      * @param converter A function that converts the value into the object T
-     * @param def The default value.
      * @return The value corresponding to the provided key.
      */
-    public <T> T getFromConfig(String key, Function<String, T> converter, T def){
+    public <T> Optional<T> getFromConfig(String key, Function<String, T> converter){
         Objects.requireNonNull(converter);
-        return (configuration == null || !configuration.has(key)) ? def : converter.apply(configuration.get(key));
+        return configuration == null ? Optional.empty() : configuration.get(key, converter);
     }
 
     /**
@@ -244,72 +178,7 @@ public class PkmnFramework {
      */
     public void setInConfig(String key, String value){
         verifySaving();
-        ((MutableConfig) configuration).set(key, value);
-    }
-
-    /**
-     * Set a value in the configuration.
-     * Throws an IllegalArgumentException is no saveable configuration is set.
-     * @param key The key
-     * @param value The value
-     */
-    public void setInConfig(String key, byte value){
-        verifySaving();
-        ((MutableConfig) configuration).set(key, value);
-    }
-
-    /**
-     * Set a value in the configuration.
-     * Throws an IllegalArgumentException is no saveable configuration is set.
-     * @param key The key
-     * @param value The value
-     */
-    public void setInConfig(String key, short value){
-        verifySaving();
-        ((MutableConfig) configuration).set(key, value);
-    }
-
-    /**
-     * Set a value in the configuration.
-     * Throws an IllegalArgumentException is no saveable configuration is set.
-     * @param key The key
-     * @param value The value
-     */
-    public void setInConfig(String key, int value){
-        verifySaving();
-        ((MutableConfig) configuration).set(key, value);
-    }
-
-    /**
-     * Set a value in the configuration.
-     * Throws an IllegalArgumentException is no saveable configuration is set.
-     * @param key The key
-     * @param value The value
-     */
-    public void setInConfig(String key, long value){
-        verifySaving();
-        ((MutableConfig) configuration).set(key, value);
-    }
-
-    /**
-     * Set a value in the configuration.
-     * Throws an IllegalArgumentException is no saveable configuration is set.
-     * @param key The key
-     * @param value The value
-     */
-    public void setInConfig(String key, float value){
-        verifySaving();
-        ((MutableConfig) configuration).set(key, value);
-    }
-
-    /**
-     * Set a value in the configuration.
-     * Throws an IllegalArgumentException is no saveable configuration is set.
-     * @param key The key
-     * @param value The value
-     */
-    public void setInConfig(String key, double value){
-        verifySaving();
+        Objects.requireNonNull(key); Objects.requireNonNull(value);
         ((MutableConfig) configuration).set(key, value);
     }
 
@@ -320,8 +189,11 @@ public class PkmnFramework {
      * @param value The value
      */
     public <T> void setInConfig(String key, T value, Function<T, String> converter){
-        verifySaving();
-        ((MutableConfig) configuration).set(key, value, converter);
+        Objects.requireNonNull(key);
+        Objects.requireNonNull(value);
+        if(verifySaving()) {
+            ((MutableConfig) configuration).set(key, value, converter);
+        }
     }
 
     /**
@@ -330,14 +202,14 @@ public class PkmnFramework {
      * @param os The place to save it.
      */
     public void saveConfig(OutputStream os){
-        verifySaving();
-        ((MutableConfig) configuration).save(os);
+        Objects.requireNonNull(os);
+        if(verifySaving()) {
+            ((MutableConfig) configuration).save(os);
+        }
     }
 
-    private void verifySaving(){
-        if(!(configuration instanceof MutableConfig)){
-            throw new IllegalArgumentException("No saveable configuration specified.");
-        }
+    private boolean verifySaving(){
+        return (configuration instanceof MutableConfig);
     }
 
     public static class Builder {

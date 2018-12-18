@@ -11,13 +11,13 @@ public interface HexField {
      * @param position The position to start the iterator at
      * @return A HexFieldIterator to iterate over.
      */
-    HexFieldIterator iterator(long position);
+    HexFieldIterator iterator(Pointer position);
 
     /**
      * Get an iterator to traverse this hex field.
      * @return A HexFieldIterator to iterate over.
      */
     default HexFieldIterator iterator(){
-        return iterator(0);
+        return iterator(Pointer.of(0));
     }
 }

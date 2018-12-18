@@ -3,6 +3,7 @@ package com.github.lucbui.config;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -47,8 +48,8 @@ public class PropertiesConfig implements Configuration{
     }
 
     @Override
-    public String get(String key) {
-        return properties.getProperty(key);
+    public Optional<String> get(String key) {
+        return Optional.ofNullable(properties.getProperty(key));
     }
 
     @Override
