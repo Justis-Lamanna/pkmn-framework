@@ -43,11 +43,12 @@ public class FrameworkEvaluator {
      */
     public long evaluateLong(String evalString){
         Objects.requireNonNull(evalString);
+        String evaluated = evaluate(evalString);
         if(evalString.startsWith("0x")){
-            return Long.parseLong(evalString, 16);
+            return Long.parseLong(evaluated, 16);
         } else if(evalString.startsWith("0b")){
-            return Long.parseLong(evalString, 2);
+            return Long.parseLong(evaluated, 2);
         }
-        return Long.parseLong(evalString);
+        return Long.parseLong(evaluated);
     }
 }

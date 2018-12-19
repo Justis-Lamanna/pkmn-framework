@@ -115,27 +115,11 @@ public class PkmnFramework {
      *
      * @param pointer The pointer to read.
      * @param object The object to write.
-     * @param repointStrategy The strategy to use when repointing.
-     * @param <T> The object to write
-     */
-    public <T> void write(Pointer pointer, T object, RepointStrategy repointStrategy) {
-        verifyFieldsPresent();
-        if(repointStrategy == null){
-            repointStrategy = RepointUtils.disableRepointStrategy();
-        }
-        ReflectionHexReaderWriter.getHexWriterFor(object.getClass(), repointStrategy, this).writeObject(object, hexField.iterator(pointer));
-    }
-
-    /**
-     * Write an object reflectively from a pointer.
-     * By default, if a PointerObject is encountered, an IllegalStateException will be thrown. To avoid this, supply
-     * a RepointStrategy.
-     * @param pointer The pointer to read.
-     * @param object The object to write.
      * @param <T> The object to write
      */
     public <T> void write(Pointer pointer, T object) {
-        write(pointer, object, RepointUtils.disableRepointStrategy());
+        verifyFieldsPresent();
+        ReflectionHexReaderWriter.getHexWriterFor(object.getClass(), this).writeObject(object, hexField.iterator(pointer));
     }
 
     /**
