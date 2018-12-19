@@ -170,48 +170,6 @@ public class PkmnFramework {
         return configuration == null ? Optional.empty() : configuration.get(key, converter);
     }
 
-    /**
-     * Set a value in the configuration.
-     * Throws an IllegalArgumentException is no saveable configuration is set.
-     * @param key The key
-     * @param value The value
-     */
-    public void setInConfig(String key, String value){
-        verifySaving();
-        Objects.requireNonNull(key); Objects.requireNonNull(value);
-        ((MutableConfig) configuration).set(key, value);
-    }
-
-    /**
-     * Set a value in the configuration.
-     * Throws an IllegalArgumentException is no saveable configuration is set.
-     * @param key The key
-     * @param value The value
-     */
-    public <T> void setInConfig(String key, T value, Function<T, String> converter){
-        Objects.requireNonNull(key);
-        Objects.requireNonNull(value);
-        if(verifySaving()) {
-            ((MutableConfig) configuration).set(key, value, converter);
-        }
-    }
-
-    /**
-     * Save the configuration.
-     * Throws an IllegalArgumentException is no saveable configuration is set.
-     * @param os The place to save it.
-     */
-    public void saveConfig(OutputStream os){
-        Objects.requireNonNull(os);
-        if(verifySaving()) {
-            ((MutableConfig) configuration).save(os);
-        }
-    }
-
-    private boolean verifySaving(){
-        return (configuration instanceof MutableConfig);
-    }
-
     public static class Builder {
         private File path;
         private HexField hexField;

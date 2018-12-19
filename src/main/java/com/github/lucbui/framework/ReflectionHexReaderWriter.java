@@ -76,19 +76,11 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
     }
 
     private final Class<T> clazz;
-    private final PkmnFramework pkmnFramework;
-    private final RepointStrategy repointStrategy;
+    private final FrameworkEvaluator pkmnFrameworkEvaluator;
 
-    private ReflectionHexReaderWriter(Class<T> clazz, PkmnFramework pkmnFramework){
+    private ReflectionHexReaderWriter(Class<T> clazz, FrameworkEvaluator frameworkEvaluator){
         this.clazz = clazz;
-        this.pkmnFramework = pkmnFramework;
-        this.repointStrategy = RepointUtils.disableRepointStrategy();
-    }
-
-    private ReflectionHexReaderWriter(Class<T> clazz, RepointStrategy strategy, PkmnFramework pkmnFramework){
-        this.clazz = clazz;
-        this.pkmnFramework = pkmnFramework;
-        this.repointStrategy = strategy;
+        this.pkmnFrameworkEvaluator = frameworkEvaluator;
     }
 
     /**
@@ -127,7 +119,7 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
                     offset = field.getAnnotation(StructField.class).offset();
                 } else if(field.isAnnotationPresent(Offset.class)){
                     Offset offsetAnnotation = field.getAnnotation(Offset.class);
-                    offset = new FrameworkEvaluator(pkmnFramework, startPosition).evaluate(offsetAnnotation.value());
+                    offset = pkmnFrameworkEvaluator.evaluateLong(offsetAnnotation.value());
                 } else {
                     throw new RuntimeException("Field encountered missing expected annotations: @StructField, @Offset");
                 }
@@ -179,6 +171,10 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
     }
 
     public static HexReader<?> getHexReaderFor(Class<?> type, PkmnFramework pkmnFramework) {
+        return getHexReaderFor(type, new FrameworkEvaluator(pkmnFramework));
+    }
+
+    public static HexReader<?> getHexReaderFor(Class<?> type, FrameworkEvaluator pkmnFramework) {
         HexReader<?> reader = findHexReaderInSubclasses(type);
         if(reader != null){
             return reader;
@@ -192,7 +188,7 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
     }
 
     private HexReader<?> getHexReaderFor(Class<?> type) {
-        return getHexReaderFor(type, pkmnFramework);
+        return getHexReaderFor(type, pkmnFrameworkEvaluator);
     }
 
     /**
@@ -247,7 +243,7 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
                     offset = field.getAnnotation(StructField.class).offset();
                 } else if(field.isAnnotationPresent(Offset.class)){
                     Offset offsetAnnotation = field.getAnnotation(Offset.class);
-                    offset = new FrameworkEvaluator(pkmnFramework, startPosition).evaluate(offsetAnnotation.value());
+                    offset = pkmnFrameworkEvaluator.evaluateLong(offsetAnnotation.value());
                 } else {
                     throw new RuntimeException("Field encountered missing expected annotations: @StructField, @Offset");
                 }
@@ -258,16 +254,22 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
 
                 if(field.isAnnotationPresent(PointerField.class) && field.getType().equals(PointerObject.class)){
                     PointerField ptrAnnotation = field.getAnnotation(PointerField.class);
+                    RepointStrategy repointStrategy;
+                    try {
+                        repointStrategy = ptrAnnotation.repointStrategy().newInstance();
+                    } catch (InstantiationException e) {
+                        throw new RuntimeException("Error instantiating repoint strategy. Does your RepointStrategy have an empty constructor?");
+                    }
                     PointerObject<? extends Pointer, ?> po = (PointerObject<? extends Pointer, ?>) writingObject;
                     Pointer ptr = repointStrategy.repoint(new RepointStrategy.RepointMetadata(po, getSize(ptrAnnotation.objectType(), po.getObject())));
-                    getHexWriterFor(ptrAnnotation.pointerType()).writeObject(ptr, fieldIterator);
+                    getHexWriterFor(ptrAnnotation.pointerType(), pkmnFrameworkEvaluator).writeObject(ptr, fieldIterator);
                     fieldIterator.advanceTo(ptr.getLocation());
                     writingObject = ((PointerObject<? extends Pointer, ?>) writingObject).getObject();
                     classToWrite = ptrAnnotation.objectType();
 
-                    getHexWriterFor(classToWrite).writeObject(writingObject, fieldIterator);
+                    getHexWriterFor(classToWrite, pkmnFrameworkEvaluator).writeObject(writingObject, fieldIterator);
                 } else {
-                    getHexWriterFor(classToWrite).writeObject(writingObject, fieldIterator);
+                    getHexWriterFor(classToWrite, pkmnFrameworkEvaluator).writeObject(writingObject, fieldIterator);
                 }
             }
             iterator.writeRelative(iterator.getPosition(), bw);
@@ -305,23 +307,27 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
             return -1;
         }
 
-    public static HexWriter<?> getHexWriterFor(Class<?> type, RepointStrategy repointStrategy, PkmnFramework pkmnFramework) {
+    public static HexWriter<?> getHexWriterFor(Class<?> type, PkmnFramework pkmnFramework) {
+        return getHexWriterFor(type, new FrameworkEvaluator(pkmnFramework));
+    }
+
+    public static HexWriter<?> getHexWriterFor(Class<?> type, FrameworkEvaluator pkmnFramework) {
         HexWriter<?> reader = findHexWriterInSubclasses(type);
         if(reader != null){
             return reader;
         } else {
             if(type.isAnnotationPresent(DataStructure.class)) {
-                return new ReflectionHexReaderWriter<>(type, repointStrategy, pkmnFramework);
+                return new ReflectionHexReaderWriter<>(type, pkmnFramework);
             } else {
                 throw new IllegalArgumentException("Requested type " + type.getName() + " does not contain @DataStructure or an associated writer. Use PkmnFramework.addWriter() to add a class-writer association.");
             }
         }
     }
-
+/*
     private HexWriter<?> getHexWriterFor(Class<?> type) {
-        return getHexWriterFor(type, repointStrategy, pkmnFramework);
+        return getHexWriterFor(type, repointStrategy, pkmnFrameworkEvaluator);
     }
-
+*/
     /**
      * Tries to find the best matching HexWriter for the provided type.
      * If the direct type provided is not associated to a writer, each registered writer is scanned. If

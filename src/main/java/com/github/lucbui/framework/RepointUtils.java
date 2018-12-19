@@ -13,9 +13,7 @@ public class RepointUtils {
      * If a repoint attempts to occur with this strategy, an IllegalStateException is thrown.
      */
     public static RepointStrategy disableRepointStrategy(){
-        return metadata -> {
-            throw new IllegalStateException("Cannot repoint.");
-        };
+        return new NoRepointStrategy();
     }
 
     /**

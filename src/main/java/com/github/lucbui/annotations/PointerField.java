@@ -1,6 +1,8 @@
 package com.github.lucbui.annotations;
 
 import com.github.lucbui.file.Pointer;
+import com.github.lucbui.framework.NoRepointStrategy;
+import com.github.lucbui.framework.RepointStrategy;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -25,4 +27,12 @@ public @interface PointerField {
      * @return
      */
     Class<? extends Object> objectType() default Void.class;
+
+    /**
+     * The repoint strategy to use.
+     * Default forbids repointing.
+     * Note that the specified class MUST have a default empty constructor.
+     * @return
+     */
+    Class<? extends RepointStrategy> repointStrategy() default NoRepointStrategy.class;
 }
