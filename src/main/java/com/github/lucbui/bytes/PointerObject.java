@@ -4,15 +4,14 @@ import com.github.lucbui.file.Pointer;
 
 /**
  * A class which encapsulates an object, and a pointer to that object.
- * @param <P> The Pointer class
  * @param <O> The Object class
  */
-public final class PointerObject <P extends Pointer, O> {
+public final class PointerObject <O> {
 
-    private P pointer;
+    private Pointer pointer;
     private O object;
 
-    public PointerObject(P pointer, O object) {
+    public PointerObject(Pointer pointer, O object) {
         this.pointer = pointer;
         this.object = object;
     }
@@ -21,7 +20,7 @@ public final class PointerObject <P extends Pointer, O> {
      * Get the pointer to the object.
      * @return
      */
-    public P getPointer() {
+    public Pointer getPointer() {
         return pointer;
     }
 

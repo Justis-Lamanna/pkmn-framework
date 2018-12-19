@@ -21,10 +21,10 @@ public interface RepointStrategy {
      * An object describing the state needed for repointing.
      */
     class RepointMetadata{
-        private PointerObject<? extends Pointer, ?> pointerObject;
+        private PointerObject<?> pointerObject;
         private int size;
 
-        RepointMetadata(PointerObject<? extends Pointer, ?> pointerObject, int size){
+        RepointMetadata(PointerObject<?> pointerObject, int size){
             this.size = size;
             this.pointerObject = pointerObject;
         }
@@ -38,7 +38,7 @@ public interface RepointStrategy {
             return this.size <= 0 ? OptionalInt.empty() : OptionalInt.of(this.size);
         }
 
-        public PointerObject<? extends Pointer, ?> getPointerObject() {
+        public PointerObject<?> getPointerObject() {
             return pointerObject;
         }
     }

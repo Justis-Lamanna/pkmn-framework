@@ -260,11 +260,11 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
                     } catch (InstantiationException e) {
                         throw new RuntimeException("Error instantiating repoint strategy. Does your RepointStrategy have an empty constructor?");
                     }
-                    PointerObject<? extends Pointer, ?> po = (PointerObject<? extends Pointer, ?>) writingObject;
+                    PointerObject<?> po = (PointerObject<?>) writingObject;
                     Pointer ptr = repointStrategy.repoint(new RepointStrategy.RepointMetadata(po, getSize(ptrAnnotation.objectType(), po.getObject())));
                     getHexWriterFor(ptrAnnotation.pointerType(), pkmnFrameworkEvaluator).writeObject(ptr, fieldIterator);
                     fieldIterator.advanceTo(ptr.getLocation());
-                    writingObject = ((PointerObject<? extends Pointer, ?>) writingObject).getObject();
+                    writingObject = ((PointerObject<?>) writingObject).getObject();
                     classToWrite = ptrAnnotation.objectType();
 
                     getHexWriterFor(classToWrite, pkmnFrameworkEvaluator).writeObject(writingObject, fieldIterator);

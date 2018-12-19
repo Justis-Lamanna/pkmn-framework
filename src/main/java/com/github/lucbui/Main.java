@@ -32,7 +32,7 @@ public class Main {
         BufferedImage img = GBAUtils.createImage(tiles, GBAUtils.VGA_COLORS);
         ImageIO.write(img, "png", new File("test.png"));*/
         TestStructure ts = pkmnGame.read(GBAPointer.valueOf(0x70), TestStructure.class);
-        pkmnGame.write(GBAPointer.valueOf(0x70), ts);
+        //pkmnGame.write(GBAPointer.valueOf(0x70), ts);
         System.out.println(ts);
     }
 
