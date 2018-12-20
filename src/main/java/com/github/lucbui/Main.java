@@ -1,19 +1,13 @@
 package com.github.lucbui;
 
+import com.github.lucbui.annotations.Absolute;
 import com.github.lucbui.annotations.DataStructure;
-import com.github.lucbui.annotations.StructField;
+import com.github.lucbui.annotations.Offset;
 import com.github.lucbui.bytes.UnsignedByte;
 import com.github.lucbui.framework.PkmnFramework;
 import com.github.lucbui.gba.GBAFrameworkFactory;
 import com.github.lucbui.gba.GBAPointer;
-import com.github.lucbui.gba.GBAUtils;
-import com.github.lucbui.gba.gfx.BitDepth;
-import com.github.lucbui.gba.gfx.GBASprite;
-import com.github.lucbui.gba.gfx.SpriteSize;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 
 public class Main {
@@ -38,10 +32,11 @@ public class Main {
 
     @DataStructure
     public static class TestStructure {
-        @StructField(offset = 0)
+        @Offset("0x0")
         public UnsignedByte b1;
 
-        @StructField(offset = 1)
+        @Offset("0x1")
+        @Absolute
         public UnsignedByte b2;
     }
 }

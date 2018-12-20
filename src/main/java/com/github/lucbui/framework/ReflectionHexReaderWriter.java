@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  */
 public class ReflectionHexReaderWriter<T> implements Hexer<T> {
 
-    public static final List<Class<? extends Annotation>> STRUCT_FIELD_MARKER_ANNOTATION_CLASSES = Arrays.asList(StructField.class, Offset.class);
+    public static final List<Class<? extends Annotation>> STRUCT_FIELD_MARKER_ANNOTATION_CLASSES = Arrays.asList(Offset.class);
 
     //A cache of readers, registered for reusing.
     static Map<Class<?>, Hexer<?>> HEXERS = new HashMap<>();
@@ -95,19 +95,17 @@ public class ReflectionHexReaderWriter<T> implements Hexer<T> {
                     .collect(Collectors.toList());
             for(Field field : fields){
                 long offset;
-                if(field.isAnnotationPresent(StructField.class)){
-                    offset = field.getAnnotation(StructField.class).offset();
-                } else if(field.isAnnotationPresent(Offset.class)){
+                if(field.isAnnotationPresent(Offset.class)){
                     Offset offsetAnnotation = field.getAnnotation(Offset.class);
                     offset = pkmnFrameworkEvaluator.evaluateLong(offsetAnnotation.value());
                 } else {
-                    throw new RuntimeException("Field encountered missing expected annotations: @StructField, @Offset");
+                    throw new RuntimeException("Field encountered missing expected annotations: @Offset");
                 }
 
                 Class<?> classToRead = field.getType(); //The class of this field. If it's a pointer object, this becomes the objectField.
 
                 HexFieldIterator fieldIterator;
-                if(field.isAnnotationPresent(AbsoluteOffset.class)){
+                if(field.isAnnotationPresent(Absolute.class)){
                     fieldIterator = iterator.copy(offset);
                 } else {
                     fieldIterator = iterator.copyRelative(offset); //An iterator starting at offset. If it's a pointer object, this moves to the pointed value.
@@ -117,8 +115,8 @@ public class ReflectionHexReaderWriter<T> implements Hexer<T> {
                     //Special support for Pointer objects, which store a pointer to themselves, as well as data poined to.
                     PointerField pointerAnnotation = field.getAnnotation(PointerField.class);
                     classToRead = pointerAnnotation.objectType();
-                    Pointer ptr = (Pointer) getHexReaderFor(pointerAnnotation.pointerType()).read(iterator);
-                    Object parsedObject = getHexReaderFor(classToRead).read(fieldIterator);; //The object read.
+                    Pointer ptr = (Pointer) getHexReaderFor(pointerAnnotation.pointerType()).read(fieldIterator);
+                    Object parsedObject = getHexReaderFor(classToRead).read(iterator.copy(ptr.getLocation())); //The object read.
 
                     FieldUtils.writeDeclaredField(object, field.getName(), new PointerObject<>(ptr, parsedObject), true);
                     fieldIterator.advanceTo(ptr.getLocation());
@@ -219,13 +217,11 @@ public class ReflectionHexReaderWriter<T> implements Hexer<T> {
             HexFieldIterator fieldIterator = bw.iterator();
             for (Field field : fields) {
                 long offset;
-                if(field.isAnnotationPresent(StructField.class)){
-                    offset = field.getAnnotation(StructField.class).offset();
-                } else if(field.isAnnotationPresent(Offset.class)){
+                if(field.isAnnotationPresent(Offset.class)){
                     Offset offsetAnnotation = field.getAnnotation(Offset.class);
                     offset = pkmnFrameworkEvaluator.evaluateLong(offsetAnnotation.value());
                 } else {
-                    throw new RuntimeException("Field encountered missing expected annotations: @StructField, @Offset");
+                    throw new RuntimeException("Field encountered missing expected annotations: @Offset");
                 }
 
                 fieldIterator.advanceTo(offset); //The iterator we're writing with.

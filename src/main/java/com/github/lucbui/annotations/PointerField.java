@@ -26,7 +26,7 @@ public @interface PointerField {
      * The type of object.
      * @return
      */
-    Class<? extends Object> objectType() default Void.class;
+    Class<? extends Object> objectType();
 
     /**
      * The repoint strategy to use.

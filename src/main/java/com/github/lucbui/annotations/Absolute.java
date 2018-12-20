@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
  * If this is present on a field, the offset calculated is absolute, rather than relative.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface AbsoluteOffset {
+@Target(ElementType.FIELD)
+public @interface Absolute {
 }
