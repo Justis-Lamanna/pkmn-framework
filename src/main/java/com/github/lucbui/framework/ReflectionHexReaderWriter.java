@@ -94,13 +94,8 @@ public class ReflectionHexReaderWriter<T> implements Hexer<T> {
                     .filter(i -> STRUCT_FIELD_MARKER_ANNOTATION_CLASSES.stream().anyMatch(i::isAnnotationPresent))
                     .collect(Collectors.toList());
             for(Field field : fields){
-                long offset;
-                if(field.isAnnotationPresent(Offset.class)){
-                    Offset offsetAnnotation = field.getAnnotation(Offset.class);
-                    offset = pkmnFrameworkEvaluator.evaluateLong(offsetAnnotation.value());
-                } else {
-                    throw new RuntimeException("Field encountered missing expected annotations: @Offset");
-                }
+                Offset offsetAnnotation = field.getAnnotation(Offset.class);
+                long offset = pkmnFrameworkEvaluator.evaluateLong(offsetAnnotation.value());
 
                 Class<?> classToRead = field.getType(); //The class of this field. If it's a pointer object, this becomes the objectField.
 
@@ -216,15 +211,16 @@ public class ReflectionHexReaderWriter<T> implements Hexer<T> {
             ByteWindow bw = new ByteWindow();
             HexFieldIterator fieldIterator = bw.iterator();
             for (Field field : fields) {
-                long offset;
-                if(field.isAnnotationPresent(Offset.class)){
-                    Offset offsetAnnotation = field.getAnnotation(Offset.class);
-                    offset = pkmnFrameworkEvaluator.evaluateLong(offsetAnnotation.value());
+
+                Offset offsetAnnotation = field.getAnnotation(Offset.class);
+                long offset = pkmnFrameworkEvaluator.evaluateLong(offsetAnnotation.value());
+
+                if(field.isAnnotationPresent(Absolute.class)){
+                    fieldIterator.advanceTo(offset);
                 } else {
-                    throw new RuntimeException("Field encountered missing expected annotations: @Offset");
+                    fieldIterator.advanceTo(startPosition + offset);
                 }
 
-                fieldIterator.advanceTo(offset); //The iterator we're writing with.
                 Object writingObject = FieldUtils.readDeclaredField(object, field.getName(), true); //The object we are writing.
                 Class<?> classToWrite = field.getType();
 
@@ -248,7 +244,7 @@ public class ReflectionHexReaderWriter<T> implements Hexer<T> {
                     getHexerFor(classToWrite, pkmnFrameworkEvaluator).writeObject(writingObject, fieldIterator);
                 }
             }
-            iterator.writeRelative(iterator.getPosition(), bw);
+            iterator.write(bw);
         } catch (IllegalAccessException ex){
             throw new IllegalArgumentException("Error writing object of type " + clazz.getName(), ex);
         }
