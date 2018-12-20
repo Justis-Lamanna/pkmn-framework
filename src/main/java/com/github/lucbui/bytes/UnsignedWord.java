@@ -1,6 +1,7 @@
 package com.github.lucbui.bytes;
 
 import com.github.lucbui.annotations.DataStructure;
+import com.github.lucbui.file.HexFieldIterator;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -13,14 +14,24 @@ public class UnsignedWord implements ByteObject<UnsignedWord>,Comparable<Unsigne
 
     static final long serialVersionUID = 42L;
     /**
-     * Dedicated HexReader for UnsignedWord
+     * Dedicated Hexer for UnsignedWord
      */
-    public static final HexReader<UnsignedWord> HEX_READER = iterator -> UnsignedWord.valueOf(iterator.get(4));
+    public static final Hexer<UnsignedWord> HEXER = new Hexer<UnsignedWord>() {
+        @Override
+        public int getSize(UnsignedWord object) {
+            return 4;
+        }
 
-    /**
-     * Dedicated HexWriter for UnsignedWord
-     */
-    public static final HexWriter<UnsignedWord> HEX_WRITER = (object, iterator) -> iterator.write(object.toByteWindow());
+        @Override
+        public UnsignedWord read(HexFieldIterator iterator) {
+            return UnsignedWord.valueOf(iterator.get(4));
+        }
+
+        @Override
+        public void write(UnsignedWord object, HexFieldIterator iterator) {
+            iterator.write(object.toByteWindow());
+        }
+    };
 
     //The value inside this short.
     long value;

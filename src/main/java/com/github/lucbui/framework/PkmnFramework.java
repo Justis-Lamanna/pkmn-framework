@@ -2,6 +2,7 @@ package com.github.lucbui.framework;
 
 import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.HexWriter;
+import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.config.Configuration;
 import com.github.lucbui.config.MutableConfig;
 import com.github.lucbui.file.FileHexField;
@@ -107,7 +108,7 @@ public class PkmnFramework {
      */
     public <T> T read(Pointer pointer, Class<T> clazz){
         verifyFieldsPresent();
-        return clazz.cast(ReflectionHexReaderWriter.getHexReaderFor(clazz, this).read(hexField.iterator(pointer)));
+        return clazz.cast(ReflectionHexReaderWriter.getHexerFor(clazz, this).read(hexField.iterator(pointer)));
     }
 
     /**
@@ -119,7 +120,7 @@ public class PkmnFramework {
      */
     public <T> void write(Pointer pointer, T object) {
         verifyFieldsPresent();
-        ReflectionHexReaderWriter.getHexWriterFor(object.getClass(), this).writeObject(object, hexField.iterator(pointer));
+        ReflectionHexReaderWriter.getHexerFor(object.getClass(), this).writeObject(object, hexField.iterator(pointer));
     }
 
     /**
@@ -159,12 +160,10 @@ public class PkmnFramework {
         private HexField hexField;
         private Configuration configuration;
 
-        Map<Class<?>, HexReader<?>> readers;
-        Map<Class<?>, HexWriter<?>> writers;
+        Map<Class<?>, Hexer<?>> hexers;
 
         private Builder(){
-            this.readers = new HashMap<>();
-            this.writers = new HashMap<>();
+            this.hexers = new HashMap<>();
         }
 
         public Builder setConfiguration(Configuration configuration){
@@ -175,52 +174,10 @@ public class PkmnFramework {
             return this;
         }
 
-        /**
-         * Adds a reader to the class hex parser.
-         * If ReflectionHexReaderWriter encounters a type listed in this reader, it will call the associated HexReader
-         * to parse it, rather than use reflection to do so.
-         * @param clazz The class to associate with.
-         * @param reader The reader to use.
-         * @param <T> The type created by the reader.
-         * @return This Builder for additional chaining.
-         */
-        public <T> Builder addReader(Class<T> clazz, HexReader<T> reader){
+        public <T> Builder addHexer(Class<T> clazz, Hexer<T> hexer){
             Objects.requireNonNull(clazz);
-            Objects.requireNonNull(reader);
-            readers.put(clazz, reader);
-            return this;
-        }
-
-        /**
-         * Adds a writer to the class hex parser.
-         * If ReflectionHexReaderWriter encounters a type listed in this writer, it will call the associated HexWriter
-         * to parse it, rather than use reflection to do so.
-         * @param clazz The class to associate with.
-         * @param writer The writer to use.
-         * @param <T> The type created by the writer.
-         * @return This Builder for additional chaining
-         */
-        public <T> Builder addWriter(Class<T> clazz, HexWriter<T> writer){
-            Objects.requireNonNull(clazz);
-            Objects.requireNonNull(writer);
-            writers.put(clazz, writer);
-            return this;
-        }
-
-        /**
-         * Adds a reader and a writer to the class hex parser.
-         * @param clazz The class to associate with.
-         * @param reader The reader to use.
-         * @param writer The writer to use.
-         * @param <T> The type created by the parsers.
-         * @return This Builder for additional chaining.
-         */
-        public <T> Builder addReaderWriter(Class<T> clazz, HexReader<T> reader, HexWriter<T> writer){
-            Objects.requireNonNull(clazz);
-            Objects.requireNonNull(reader);
-            Objects.requireNonNull(writer);
-            readers.put(clazz, reader);
-            writers.put(clazz, writer);
+            Objects.requireNonNull(hexer);
+            hexers.put(clazz, hexer);
             return this;
         }
 
@@ -242,10 +199,8 @@ public class PkmnFramework {
             } else {
                 framework.hexField = hexField;
             }
-            ReflectionHexReaderWriter.resetReaders();
-            ReflectionHexReaderWriter.addReaders(this.readers);
-            ReflectionHexReaderWriter.resetWriters();
-            ReflectionHexReaderWriter.addWriters(this.writers);
+            ReflectionHexReaderWriter.resetHexers();
+            ReflectionHexReaderWriter.addHexer(this.hexers);
             framework.configuration = configuration;
             return framework;
         }

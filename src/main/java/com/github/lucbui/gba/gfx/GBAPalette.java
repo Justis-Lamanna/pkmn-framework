@@ -2,6 +2,8 @@ package com.github.lucbui.gba.gfx;
 
 import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.HexWriter;
+import com.github.lucbui.bytes.Hexer;
+import com.github.lucbui.file.HexFieldIterator;
 
 import java.awt.*;
 import java.io.Serializable;
@@ -112,32 +114,38 @@ public class GBAPalette implements Iterable<GBAColor>, Serializable {
     }
 
     /**
-     * Get a hex reader to read a palette.
+     * Get a hexer to parse a palette.
      * @param numberOfColors The number of colors to read.
      * @return
      */
-    public static HexReader<GBAPalette> getHexReader(int numberOfColors){
-        return iterator -> {
-            List<GBAColor> colors = new ArrayList<>();
-            for(int count = 0; count < numberOfColors; count++){
-                colors.add(GBAColor.HEX_READER.read(iterator));
-                iterator.advanceRelative(2);
+     public static Hexer<GBAPalette> getHexer(int numberOfColors){
+        return new Hexer<GBAPalette>() {
+            @Override
+            public int getSize(GBAPalette object) {
+                //The size of a palette is equal to the size of each individual color.
+                return object.getColors()
+                        .stream()
+                        .mapToInt(i -> GBAColor.HEXER.getSize(i))
+                        .sum();
             }
-            return new GBAPalette(colors);
-        };
-    }
 
-    /**
-     * Get a hex writer to write a palette.
-     * @param numberOfColors The number of colors to read.
-     * @return
-     */
-    public static HexWriter<GBAPalette> getHexWriter(int numberOfColors){
-        return (object, iterator) -> {
-            for(int idx = 0; idx < numberOfColors; idx++){
-                GBAColor color = object.get(idx);
-                GBAColor.HEX_WRITER.write(color, iterator);
-                iterator.advanceRelative(2);
+            @Override
+            public GBAPalette read(HexFieldIterator iterator) {
+                List<GBAColor> colors = new ArrayList<>();
+                for(int count = 0; count < numberOfColors; count++){
+                    colors.add(GBAColor.HEXER.read(iterator));
+                    iterator.advanceRelative(GBAColor.HEXER.getSize(colors.get(count)));
+                }
+                return new GBAPalette(colors);
+            }
+
+            @Override
+            public void write(GBAPalette object, HexFieldIterator iterator) {
+                for(int idx = 0; idx < numberOfColors; idx++){
+                    GBAColor color = object.get(idx);
+                    GBAColor.HEXER.write(color, iterator);
+                    iterator.advanceRelative(GBAColor.HEXER.getSize(color));
+                }
             }
         };
     }

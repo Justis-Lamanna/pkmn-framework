@@ -1,0 +1,12 @@
+package com.github.lucbui.bytes;
+
+import com.github.lucbui.file.HexFieldIterator;
+
+public interface Hexer<T> extends HexReader<T>, HexWriter<T>{
+    /**
+     * Get the size of an object, in bytes.
+     * @param object The object to analyze.
+     * @return The number of bytes
+     */
+    int getSize(T object);
+}

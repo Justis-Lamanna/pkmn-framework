@@ -1,6 +1,7 @@
 package com.github.lucbui.gba.gfx;
 
 import com.github.lucbui.bytes.*;
+import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.gba.exception.IllegalSizeException;
 
 import java.io.Serializable;
@@ -81,68 +82,72 @@ public class GBATile implements GBAGraphic, Serializable {
     }
 
     /**
-     * A hex reader which reads a GBATile
-     * @param depth The bit depth to use.
-     * @return The Hex Reader to use.
-     * @throws NullPointerException depth is null.
+     * Get a Hexer that writes GBATiles
+     * @param depth The bitDepth to use.
+     * @return The created hexer
      */
-    public static HexReader<GBATile> getHexReader(BitDepth depth){
+    public static Hexer<GBATile> getHexer(BitDepth depth){
         Objects.requireNonNull(depth);
-        return iterator -> {
-            byte[] pixels = new byte[AREA_IN_PIXELS];
-            if(depth == BitDepth.FOUR){
-                //Each byte contains two pixels of info.
-                for(int idx = 0; idx < (AREA_IN_PIXELS / 2); idx++){
-                    byte bite = iterator.getRelative(0, 1).get(0);
-                    int leftPixel = LEFT_PIXEL_MASK.apply(bite);
-                    int rightPixel = RIGHT_PIXEL_MASK.apply(bite);
-                    pixels[idx * 2] = HexUtils.unsignedByteToByte(leftPixel);
-                    pixels[idx * 2 + 1] = HexUtils.unsignedByteToByte(rightPixel);
-                    iterator.advanceRelative(1);
+        return new Hexer<GBATile>() {
+            @Override
+            public int getSize(GBATile object) {
+                if(object.getBitDepth() == BitDepth.FOUR){
+                    return AREA_IN_PIXELS / 2;
+                } else {
+                    return AREA_IN_PIXELS;
                 }
-                return new GBATile(depth, pixels);
-            } else if(depth == BitDepth.EIGHT){
-                //Each bite contains only one pixel of info.
-                for(int idx = 0; idx < AREA_IN_PIXELS; idx++){
-                    pixels[idx] = iterator.getByte(0);
-                    iterator.advanceRelative(1);
-                }
-                return new GBATile(depth, pixels);
-            } else {
-                throw new IllegalArgumentException("Invalid depth specified:" + depth);
             }
-        };
-    }
 
-    /**
-     * A hex writer which can write a GBATile
-     * @return The Hex Writer to use.
-     * @throws NullPointerException depth is null.
-     */
-    public static HexWriter<GBATile> getHexWriter(BitDepth depth) {
-        Objects.requireNonNull(depth);
-        return (object, iterator) -> {
-            byte[] pixels = object.pixels;
-            ByteWindow window = new ByteWindow();
-            if (depth == BitDepth.FOUR) {
-                for (int idx = 0; idx < (AREA_IN_PIXELS / 2); idx++) {
-                    int pixl = Bitmask.merge()
-                            .with(LEFT_PIXEL_MASK, pixels[idx * 2])
-                            .with(RIGHT_PIXEL_MASK, pixels[idx * 2 + 1])
-                            .apply();
-                    byte bite = HexUtils.unsignedByteToByte(pixl);
-                    window.set(idx, bite);
+            @Override
+            public GBATile read(HexFieldIterator iterator) {
+                byte[] pixels = new byte[AREA_IN_PIXELS];
+                if(depth == BitDepth.FOUR){
+                    //Each byte contains two pixels of info.
+                    for(int idx = 0; idx < (AREA_IN_PIXELS / 2); idx++){
+                        byte bite = iterator.getRelative(0, 1).get(0);
+                        int leftPixel = LEFT_PIXEL_MASK.apply(bite);
+                        int rightPixel = RIGHT_PIXEL_MASK.apply(bite);
+                        pixels[idx * 2] = HexUtils.unsignedByteToByte(leftPixel);
+                        pixels[idx * 2 + 1] = HexUtils.unsignedByteToByte(rightPixel);
+                        iterator.advanceRelative(1);
+                    }
+                    return new GBATile(depth, pixels);
+                } else if(depth == BitDepth.EIGHT){
+                    //Each bite contains only one pixel of info.
+                    for(int idx = 0; idx < AREA_IN_PIXELS; idx++){
+                        pixels[idx] = iterator.getByte(0);
+                        iterator.advanceRelative(1);
+                    }
+                    return new GBATile(depth, pixels);
+                } else {
+                    throw new IllegalArgumentException("Invalid depth specified:" + depth);
                 }
-            } else if (depth == BitDepth.EIGHT) {
-                for (int idx = 0; idx < AREA_IN_PIXELS; idx++) {
-                    byte bite = HexUtils.unsignedByteToByte(pixels[idx]);
-                    window.set(idx, bite);
-                }
-            } else {
-                throw new IllegalArgumentException("Invalid depth specified:" + depth);
             }
-            iterator.write(window);
-            iterator.advanceRelative(window.getRange());
+
+            @Override
+            public void write(GBATile object, HexFieldIterator iterator) {
+                byte[] pixels = object.pixels;
+                ByteWindow window = new ByteWindow();
+                if (depth == BitDepth.FOUR) {
+                    for (int idx = 0; idx < (AREA_IN_PIXELS / 2); idx++) {
+                        int pixl = Bitmask.merge()
+                                .with(LEFT_PIXEL_MASK, pixels[idx * 2])
+                                .with(RIGHT_PIXEL_MASK, pixels[idx * 2 + 1])
+                                .apply();
+                        byte bite = HexUtils.unsignedByteToByte(pixl);
+                        window.set(idx, bite);
+                    }
+                } else if (depth == BitDepth.EIGHT) {
+                    for (int idx = 0; idx < AREA_IN_PIXELS; idx++) {
+                        byte bite = HexUtils.unsignedByteToByte(pixels[idx]);
+                        window.set(idx, bite);
+                    }
+                } else {
+                    throw new IllegalArgumentException("Invalid depth specified:" + depth);
+                }
+                iterator.write(window);
+                iterator.advanceRelative(window.getRange());
+            }
         };
     }
 

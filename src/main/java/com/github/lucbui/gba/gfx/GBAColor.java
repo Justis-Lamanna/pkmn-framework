@@ -1,6 +1,7 @@
 package com.github.lucbui.gba.gfx;
 
 import com.github.lucbui.bytes.*;
+import com.github.lucbui.file.HexFieldIterator;
 
 import java.awt.*;
 import java.io.Serializable;
@@ -21,19 +22,25 @@ public class GBAColor implements Serializable {
     private static final int MAX_COLOR = 31;
 
     /**
-     * A HexReader for reading GBAColors.
+     * A Hexer for reading GBAColors.
      */
-    public static final HexReader<GBAColor> HEX_READER = iterator -> {
-        int color = (int) UnsignedShort.valueOf(iterator.get(2)).getValue();
-        return new GBAColor(RED_BITMASK.apply(color), GREEN_BITMASK.apply(color), BLUE_BITMASK.apply(color));
-    };
+    public static final Hexer<GBAColor> HEXER = new Hexer<GBAColor>() {
+        @Override
+        public int getSize(GBAColor object) {
+            return 2;
+        }
 
-    /**
-     * A HexWriter for writing GBAColors.
-     */
-    public static final HexWriter<GBAColor> HEX_WRITER = (object, iterator) -> {
-        int color = Bitmask.merge().with(RED_BITMASK, object.red).with(GREEN_BITMASK, object.green).with(BLUE_BITMASK, object.blue).apply();
-        iterator.write(HexUtils.toByteWindow(color, color >>> 8));
+        @Override
+        public GBAColor read(HexFieldIterator iterator) {
+            int color = (int) UnsignedShort.valueOf(iterator.get(2)).getValue();
+            return new GBAColor(RED_BITMASK.apply(color), GREEN_BITMASK.apply(color), BLUE_BITMASK.apply(color));
+        }
+
+        @Override
+        public void write(GBAColor object, HexFieldIterator iterator) {
+            int color = Bitmask.merge().with(RED_BITMASK, object.red).with(GREEN_BITMASK, object.green).with(BLUE_BITMASK, object.blue).apply();
+            iterator.write(HexUtils.toByteWindow(color, color >>> 8));
+        }
     };
 
     public static GBAColor BLACK = new GBAColor(0, 0, 0);

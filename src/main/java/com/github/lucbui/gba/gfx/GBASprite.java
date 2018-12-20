@@ -2,6 +2,8 @@ package com.github.lucbui.gba.gfx;
 
 import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.HexWriter;
+import com.github.lucbui.bytes.Hexer;
+import com.github.lucbui.file.HexFieldIterator;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -135,40 +137,43 @@ public class GBASprite implements GBAGraphic, Serializable {
     }
 
     /**
-     * Get a hex reader to read a GBASprite
-     * @param bitDepth The bit depth to read as.
-     * @param spriteSize The sprite size to use.
-     * @return A hex reader that can read the specified type of object.
-     * @throws NullPointerException bitDepth or spriteSize is null.
+     * Get a hexer that writes GBA Sprites
+     * @param bitDepth The bit depth to use.
+     * @param spriteSize The sprite size to read.
+     * @return The created Hexer
      */
-    public static HexReader<GBASprite> getHexReader(BitDepth bitDepth, SpriteSize spriteSize){
+    public static Hexer<GBASprite> getHexer(BitDepth bitDepth, SpriteSize spriteSize){
         Objects.requireNonNull(bitDepth);
         Objects.requireNonNull(spriteSize);
-        return iterator -> {
-            int numberOfTiles = spriteSize.getArea();
-            GBATile[] tiles = new GBATile[numberOfTiles];
-            for(int idx = 0; idx < numberOfTiles; idx++){
-                GBATile tile = GBATile.getHexReader(bitDepth).read(iterator);
-                tiles[idx] = tile;
-            }
-            return new GBASprite(tiles, spriteSize);
-        };
-    }
+        return new Hexer<GBASprite>() {
 
-    /**
-     * Get a hex writer to write a GBASprite
-     * @param bitDepth The bit depth to write as.
-     * @param spriteSize The sprite size to use.
-     * @return A hex writer that can write the specified type of object.
-     * @throws NullPointerException bitDepth or spriteSize is null.
-     */
-    public static HexWriter<GBASprite> getHexWriter(BitDepth bitDepth, SpriteSize spriteSize){
-        Objects.requireNonNull(bitDepth);
-        Objects.requireNonNull(spriteSize);
-        return (object, iterator) -> {
-            int numberOfTiles = spriteSize.getArea();
-            for(int idx = 0; idx < numberOfTiles; idx++){
-                GBATile.getHexWriter(bitDepth).write(object.getTile(idx), iterator);
+            Hexer<GBATile> gbaTileHexer = GBATile.getHexer(bitDepth);
+
+            @Override
+            public int getSize(GBASprite object) {
+                //The size is the sum of all the tiles sizes
+                return Arrays.stream(object.tiles)
+                        .mapToInt(i -> gbaTileHexer.getSize(i))
+                        .sum();
+            }
+
+            @Override
+            public GBASprite read(HexFieldIterator iterator) {
+                int numberOfTiles = spriteSize.getArea();
+                GBATile[] tiles = new GBATile[numberOfTiles];
+                for(int idx = 0; idx < numberOfTiles; idx++){
+                    GBATile tile = gbaTileHexer.read(iterator);
+                    tiles[idx] = tile;
+                }
+                return new GBASprite(tiles, spriteSize);
+            }
+
+            @Override
+            public void write(GBASprite object, HexFieldIterator iterator) {
+                int numberOfTiles = spriteSize.getArea();
+                for(int idx = 0; idx < numberOfTiles; idx++){
+                    gbaTileHexer.write(object.getTile(idx), iterator);
+                }
             }
         };
     }

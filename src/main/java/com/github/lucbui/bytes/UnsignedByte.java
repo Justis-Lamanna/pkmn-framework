@@ -1,6 +1,7 @@
 package com.github.lucbui.bytes;
 
 import com.github.lucbui.annotations.DataStructure;
+import com.github.lucbui.file.HexFieldIterator;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -18,15 +19,26 @@ import java.util.Objects;
 public class UnsignedByte implements ByteObject<UnsignedByte>, Comparable<UnsignedByte>, Serializable {
 
     static final long serialVersionUID = 42L;
-    /**
-     * Dedicated HexReader for UnsignedByte
-     */
-    public static final HexReader<UnsignedByte> HEX_READER = iterator -> UnsignedByte.valueOf(iterator.get(1));
 
     /**
-     * Dedicated HexWriter for UnsignedByte
+     * Dedicated Hexer for UnsignedByte
      */
-    public static final HexWriter<UnsignedByte> HEX_WRITER = (object, iterator) -> iterator.write(object.toByteWindow());
+    public static final Hexer<UnsignedByte> HEXER = new Hexer<UnsignedByte>() {
+        @Override
+        public int getSize(UnsignedByte object) {
+            return 1;
+        }
+
+        @Override
+        public UnsignedByte read(HexFieldIterator iterator) {
+            return UnsignedByte.valueOf(iterator.get(1));
+        }
+
+        @Override
+        public void write(UnsignedByte object, HexFieldIterator iterator) {
+            iterator.write(object.toByteWindow());
+        }
+    };
 
     //The value inside this byte.
     int value;

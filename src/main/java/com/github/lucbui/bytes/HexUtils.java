@@ -1,5 +1,8 @@
 package com.github.lucbui.bytes;
 
+import com.github.lucbui.file.HexFieldIterator;
+import com.github.lucbui.gba.exception.IllegalSizeException;
+
 import java.nio.ByteBuffer;
 
 /**

@@ -1,10 +1,8 @@
 package com.github.lucbui.gba;
 
 import com.github.lucbui.annotations.DataStructure;
-import com.github.lucbui.bytes.ByteWindow;
-import com.github.lucbui.bytes.HexReader;
-import com.github.lucbui.bytes.HexUtils;
-import com.github.lucbui.bytes.HexWriter;
+import com.github.lucbui.bytes.*;
+import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
 
 import java.io.Serializable;
@@ -24,14 +22,24 @@ public class GBAPointer implements Pointer, Comparable<GBAPointer>, Serializable
     static final long serialVersionUID = 42L;
 
     /**
-     * A Hex Reader which can read out a GBAPointer
+     * A Hexer which can read out a GBAPointer
      */
-    public static final HexReader<GBAPointer> HEX_READER = iterator -> GBAPointer.valueOf(iterator.get(4));
+    public static final Hexer<GBAPointer> HEXER = new Hexer<GBAPointer>() {
+        @Override
+        public int getSize(GBAPointer object) {
+            return 4;
+        }
 
-    /**
-     * A Hex Writer which can write our a GBAPointer
-     */
-    public static final HexWriter<GBAPointer> HEX_WRITER = (object, iterator) -> iterator.write(object.toByteWindow());
+        @Override
+        public GBAPointer read(HexFieldIterator iterator) {
+            return GBAPointer.valueOf(iterator.get(4));
+        }
+
+        @Override
+        public void write(GBAPointer object, HexFieldIterator iterator) {
+            iterator.write(object.toByteWindow());
+        }
+    };
 
     private final Type type;
     private final long position;

@@ -27,52 +27,32 @@ import java.util.stream.Collectors;
  * If a write fails, the structure will *not* be written to disk.
  * @param <T>
  */
-public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> {
+public class ReflectionHexReaderWriter<T> implements Hexer<T> {
 
     public static final List<Class<? extends Annotation>> STRUCT_FIELD_MARKER_ANNOTATION_CLASSES = Arrays.asList(StructField.class, Offset.class);
 
     //A cache of readers, registered for reusing.
-    static Map<Class<?>, HexReader<?>> READERS = new HashMap<>();
-    static Map<Class<?>, HexWriter<?>> WRITERS = new HashMap<>();
+    static Map<Class<?>, Hexer<?>> HEXERS = new HashMap<>();
     static {
-        resetReaders();
-        resetWriters();
+        resetHexers();
     }
 
     /**
      * Reset Readers to the default.
      */
-    public static void resetReaders(){
-        READERS.clear();
-        READERS.put(UnsignedByte.class, UnsignedByte.HEX_READER);
-        READERS.put(UnsignedShort.class, UnsignedShort.HEX_READER);
-        READERS.put(UnsignedWord.class, UnsignedWord.HEX_READER);
+    public static void resetHexers(){
+        HEXERS.clear();
+        HEXERS.put(UnsignedByte.class, UnsignedByte.HEXER);
+        HEXERS.put(UnsignedWord.class, UnsignedWord.HEXER);
+        HEXERS.put(UnsignedShort.class, UnsignedShort.HEXER);
     }
 
     /**
      * Register a number of readers.
      * @param readers The readers to add.
      */
-    public static void addReaders(Map<Class<?>, HexReader<?>> readers){
-        READERS.putAll(readers);
-    }
-
-    /**
-     * Reset Writers to the default.
-     */
-    public static void resetWriters(){
-        WRITERS.clear();
-        WRITERS.put(UnsignedByte.class, UnsignedByte.HEX_WRITER);
-        WRITERS.put(UnsignedShort.class, UnsignedShort.HEX_WRITER);
-        WRITERS.put(UnsignedWord.class, UnsignedWord.HEX_WRITER);
-    }
-
-    /**
-     * Register a number of writers.
-     * @param writers The writers to add.
-     */
-    public static void addWriters(Map<Class<?>, HexWriter<?>> writers){
-        WRITERS.putAll(writers);
+    public static void addHexer(Map<Class<?>, Hexer<?>> readers){
+        HEXERS.putAll(readers);
     }
 
     private final Class<T> clazz;
@@ -170,12 +150,12 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
         return clazz.newInstance();
     }
 
-    public static HexReader<?> getHexReaderFor(Class<?> type, PkmnFramework pkmnFramework) {
-        return getHexReaderFor(type, new FrameworkEvaluator(pkmnFramework));
+    public static Hexer<?> getHexerFor(Class<?> type, PkmnFramework pkmnFramework) {
+        return getHexerFor(type, new FrameworkEvaluator(pkmnFramework));
     }
 
-    public static HexReader<?> getHexReaderFor(Class<?> type, FrameworkEvaluator pkmnFramework) {
-        HexReader<?> reader = findHexReaderInSubclasses(type);
+    public static Hexer<?> getHexerFor(Class<?> type, FrameworkEvaluator pkmnFramework) {
+        Hexer<?> reader = findHexerInSubclasses(type);
         if(reader != null){
             return reader;
         } else {
@@ -187,8 +167,8 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
         }
     }
 
-    private HexReader<?> getHexReaderFor(Class<?> type) {
-        return getHexReaderFor(type, pkmnFrameworkEvaluator);
+    private Hexer<?> getHexReaderFor(Class<?> type) {
+        return getHexerFor(type, pkmnFrameworkEvaluator);
     }
 
     /**
@@ -198,19 +178,19 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
      * @param type
      * @return
      */
-    private static HexReader<?> findHexReaderInSubclasses(Class<?> type) {
-        if(ReflectionHexReaderWriter.READERS.containsKey(type)){
-            return ReflectionHexReaderWriter.READERS.get(type);
+    private static Hexer<?> findHexerInSubclasses(Class<?> type) {
+        if(ReflectionHexReaderWriter.HEXERS.containsKey(type)){
+            return ReflectionHexReaderWriter.HEXERS.get(type);
         }
-        Map<Class<?>, HexReader<?>> readers = ReflectionHexReaderWriter.READERS.keySet().stream()
+        Map<Class<?>, Hexer<?>> readers = ReflectionHexReaderWriter.HEXERS.keySet().stream()
                 .filter(type::isAssignableFrom)
-                .collect(Collectors.toMap(Function.identity(), ReflectionHexReaderWriter.READERS::get));
+                .collect(Collectors.toMap(Function.identity(), ReflectionHexReaderWriter.HEXERS::get));
         if(readers.isEmpty()){
             return null;
         } else if(readers.size() > 1){
             throw new IllegalArgumentException("Error finding reader: " + type + " matches: " + readers.keySet() + ". Please disambiguate the reader.");
         } else {
-            return readers.values().stream().findFirst().orElse(null);
+            return readers.values().stream().findFirst().orElseThrow(RuntimeException::new);
         }
     }
 
@@ -262,14 +242,14 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
                     }
                     PointerObject<?> po = (PointerObject<?>) writingObject;
                     Pointer ptr = repointStrategy.repoint(new RepointStrategy.RepointMetadata(po, getSize(ptrAnnotation.objectType(), po.getObject())));
-                    getHexWriterFor(ptrAnnotation.pointerType(), pkmnFrameworkEvaluator).writeObject(ptr, fieldIterator);
+                    getHexerFor(ptrAnnotation.pointerType(), pkmnFrameworkEvaluator).writeObject(ptr, fieldIterator);
                     fieldIterator.advanceTo(ptr.getLocation());
                     writingObject = ((PointerObject<?>) writingObject).getObject();
                     classToWrite = ptrAnnotation.objectType();
 
-                    getHexWriterFor(classToWrite, pkmnFrameworkEvaluator).writeObject(writingObject, fieldIterator);
+                    getHexerFor(classToWrite, pkmnFrameworkEvaluator).writeObject(writingObject, fieldIterator);
                 } else {
-                    getHexWriterFor(classToWrite, pkmnFrameworkEvaluator).writeObject(writingObject, fieldIterator);
+                    getHexerFor(classToWrite, pkmnFrameworkEvaluator).writeObject(writingObject, fieldIterator);
                 }
             }
             iterator.writeRelative(iterator.getPosition(), bw);
@@ -278,76 +258,37 @@ public class ReflectionHexReaderWriter<T> implements HexReader<T>, HexWriter<T> 
         }
     }
 
-        /**
-        * Get the size of the object attempting to repoint.
-        * If the size is specified in teh DataStructure object, we return with it.
-        * Variable sizes can be provided by annotating a method with @DataStructureSize in the object to observe, which
-        * should take no parameters and return an integer.
-        * @param objectClass The class of the object.
-        * @param object The object itself.
-        * @return
-        */
-        private int getSize(Class<?> objectClass, Object object) {
-            if(objectClass.isAnnotationPresent(DataStructure.class)){
-                DataStructure ds = objectClass.getAnnotation(DataStructure.class);
-                if(ds.size() > 0){
-                    return ds.size();
-                }
-            }
-            List<Method> methods = MethodUtils.getMethodsListWithAnnotation(objectClass, DataStructureSize.class);
-            if(methods.size() == 1){
-                try{
-                    return (int)MethodUtils.invokeMethod(object, true, methods.get(0).getName());
-                } catch (Exception e) {
-                    throw new IllegalArgumentException("Error invoking method " + methods.get(0).getName(), e);
-                }
-            } else if(methods.size() > 1){
-                throw new IllegalArgumentException("Multiple methods with @DataStructureSize annotation specified. Please ensure there is only one.");
-            }
-            return -1;
-        }
-
-    public static HexWriter<?> getHexWriterFor(Class<?> type, PkmnFramework pkmnFramework) {
-        return getHexWriterFor(type, new FrameworkEvaluator(pkmnFramework));
-    }
-
-    public static HexWriter<?> getHexWriterFor(Class<?> type, FrameworkEvaluator pkmnFramework) {
-        HexWriter<?> reader = findHexWriterInSubclasses(type);
-        if(reader != null){
-            return reader;
-        } else {
-            if(type.isAnnotationPresent(DataStructure.class)) {
-                return new ReflectionHexReaderWriter<>(type, pkmnFramework);
-            } else {
-                throw new IllegalArgumentException("Requested type " + type.getName() + " does not contain @DataStructure or an associated writer. Use PkmnFramework.addWriter() to add a class-writer association.");
-            }
-        }
-    }
-/*
-    private HexWriter<?> getHexWriterFor(Class<?> type) {
-        return getHexWriterFor(type, repointStrategy, pkmnFrameworkEvaluator);
-    }
-*/
     /**
-     * Tries to find the best matching HexWriter for the provided type.
-     * If the direct type provided is not associated to a writer, each registered writer is scanned. If
-     * an appropriate writer matches a subclass of the specified type, it is used instead.
-     * @param type
-     * @return
-     */
-    private static HexWriter<?> findHexWriterInSubclasses(Class<?> type) {
-        if(ReflectionHexReaderWriter.WRITERS.containsKey(type)){
-            return ReflectionHexReaderWriter.WRITERS.get(type);
+    * Get the size of the object attempting to repoint.
+    * If the size is specified in teh DataStructure object, we return with it.
+    * Variable sizes can be provided by annotating a method with @DataStructureSize in the object to observe, which
+    * should take no parameters and return an integer.
+    * @param objectClass The class of the object.
+    * @param object The object itself.
+    * @return
+    */
+    private int getSize(Class<?> objectClass, Object object) {
+        if(objectClass.isAnnotationPresent(DataStructure.class)){
+            DataStructure ds = objectClass.getAnnotation(DataStructure.class);
+            if(ds.size() > 0){
+                return ds.size();
+            }
         }
-        Map<Class<?>, HexWriter<?>> writers = ReflectionHexReaderWriter.WRITERS.keySet().stream()
-                .filter(type::isAssignableFrom)
-                .collect(Collectors.toMap(Function.identity(), ReflectionHexReaderWriter.WRITERS::get));
-        if(writers.isEmpty()){
-            return null;
-        } else if(writers.size() > 1){
-            throw new IllegalArgumentException("Error finding writer: " + type + " matches: " + writers.keySet() + ". Please disambiguate the writer.");
-        } else {
-            return writers.values().stream().findFirst().orElse(null);
+        List<Method> methods = MethodUtils.getMethodsListWithAnnotation(objectClass, DataStructureSize.class);
+        if(methods.size() == 1){
+            try{
+                return (int)MethodUtils.invokeMethod(object, true, methods.get(0).getName());
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Error invoking method " + methods.get(0).getName(), e);
+            }
+        } else if(methods.size() > 1){
+            throw new IllegalArgumentException("Multiple methods with @DataStructureSize annotation specified. Please ensure there is only one.");
         }
+        throw new IllegalArgumentException("No way to get size. Please provide a @DataStructure size, or @DataStructureSize annotation");
+    }
+
+    @Override
+    public int getSize(T object) {
+        return getSize(object.getClass(), object);
     }
 }

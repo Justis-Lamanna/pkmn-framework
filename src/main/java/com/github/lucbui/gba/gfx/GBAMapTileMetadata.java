@@ -1,6 +1,7 @@
 package com.github.lucbui.gba.gfx;
 
 import com.github.lucbui.bytes.*;
+import com.github.lucbui.file.HexFieldIterator;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -21,9 +22,16 @@ public class GBAMapTileMetadata implements Serializable {
     public static final int HIGHEST_PALETTE_NUMBER = 16;
 
     /**
-     * Get a Hex Reader that reads a GBAMapTileMetadata
+     * Get a Hexer that reads a GBAMapTileMetadata
      */
-    public static final HexReader<GBAMapTileMetadata> HEX_READER = iterator -> {
+    public static final Hexer<GBAMapTileMetadata> HEXER = new Hexer<GBAMapTileMetadata>() {
+        @Override
+        public int getSize(GBAMapTileMetadata object) {
+            return 2;
+        }
+
+        @Override
+        public GBAMapTileMetadata read(HexFieldIterator iterator) {
             ByteWindow bb = iterator.get(2); iterator.advanceRelative(2);
             int val = HexUtils.byteToUnsignedByte(bb.get(0)) * 0x100 + HexUtils.byteToUnsignedByte(bb.get(1));
             short tileNumber = (short)verifyInRange("tileNumber", TILE_NUMBER_MASK.apply(val), 0, HIGHEST_TILE_NUMBER);
@@ -31,12 +39,10 @@ public class GBAMapTileMetadata implements Serializable {
             boolean verticalFlip = VERTICAL_FLIP_MASK.apply(val) == 1;
             byte paletteNumber = (byte)verifyInRange("paletteNumber", PALETTE_NUMBER_MASK.apply(val), 0, HIGHEST_PALETTE_NUMBER);
             return new GBAMapTileMetadata(tileNumber, horizontalFlip, verticalFlip, paletteNumber);
-        };
+        }
 
-    /**
-     * Get a Hex Writer that writes a GBAMapTileMetadata
-     */
-    public static final HexWriter<GBAMapTileMetadata> HEX_WRITER = (object, iterator) -> {
+        @Override
+        public void write(GBAMapTileMetadata object, HexFieldIterator iterator) {
             int val = Bitmask.merge()
                     .with(TILE_NUMBER_MASK, object.getTileNumber())
                     .with(HORIZONTAL_FLIP_MASK, object.isHorizontalFlip() ? 1 : 0)
@@ -44,7 +50,8 @@ public class GBAMapTileMetadata implements Serializable {
                     .with(PALETTE_NUMBER_MASK, object.getPaletteNumber())
                     .apply();
             iterator.write(HexUtils.toByteWindow(val, val >>> 8));
-        };
+        }
+    };
 
     private short tileNumber;
     private boolean horizontalFlip;
