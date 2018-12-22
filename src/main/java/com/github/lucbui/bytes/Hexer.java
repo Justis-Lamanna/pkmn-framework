@@ -9,4 +9,13 @@ public interface Hexer<T> extends HexReader<T>, HexWriter<T>{
      * @return The number of bytes
      */
     int getSize(T object);
+
+    /**
+     * Get the size of an object, coercing into T
+     * @param obj
+     * @return
+     */
+    default int getSizeAsObject(Object obj){
+        return getSize((T)obj);
+    }
 }

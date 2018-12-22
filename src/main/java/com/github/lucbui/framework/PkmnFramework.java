@@ -1,5 +1,6 @@
 package com.github.lucbui.framework;
 
+import com.github.lucbui.annotations.FromConfig;
 import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.HexWriter;
 import com.github.lucbui.bytes.Hexer;
@@ -9,15 +10,14 @@ import com.github.lucbui.file.FileHexField;
 import com.github.lucbui.file.HexField;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
+import org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
 import java.nio.file.StandardOpenOption;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -32,6 +32,7 @@ public class PkmnFramework {
 
     private HexField hexField = null;
     private Configuration configuration = null;
+    private Evaluator evaluator = null;
 
     /**
      * Start creating the framework.
@@ -69,12 +70,6 @@ public class PkmnFramework {
         return b;
     }
 
-    private void verifyFieldsPresent(){
-        if(hexField == null){
-            throw new IllegalStateException("PkmnFramework has not been initialized! Use .init() and .start() to initialize.");
-        }
-    }
-
     /**
      * Read an object from a pointer
      * @param pointer The pointer to read.
@@ -83,7 +78,6 @@ public class PkmnFramework {
      * @return The extracted object.
      */
     public <T> T read(Pointer pointer, HexReader<T> reader){
-        verifyFieldsPresent();
         return reader.read(hexField.iterator(pointer));
     }
 
@@ -95,7 +89,6 @@ public class PkmnFramework {
      * @param <T> The object to write.
      */
     public <T> void write(Pointer pointer, HexWriter<T> writer, T object){
-        verifyFieldsPresent();
         writer.write(object, hexField.iterator(pointer));
     }
 
@@ -107,8 +100,7 @@ public class PkmnFramework {
      * @return The extracted object
      */
     public <T> T read(Pointer pointer, Class<T> clazz){
-        verifyFieldsPresent();
-        return clazz.cast(ReflectionHexReaderWriter.getHexerFor(clazz, this).read(hexField.iterator(pointer)));
+        return clazz.cast(ReflectionHexReaderWriter.getHexerFor(clazz, evaluator).read(hexField.iterator(pointer)));
     }
 
     /**
@@ -119,8 +111,31 @@ public class PkmnFramework {
      * @param <T> The object to write
      */
     public <T> void write(Pointer pointer, T object) {
-        verifyFieldsPresent();
-        ReflectionHexReaderWriter.getHexerFor(object.getClass(), this).writeObject(object, hexField.iterator(pointer));
+        ReflectionHexReaderWriter.getHexerFor(object.getClass(), evaluator).writeObject(object, hexField.iterator(pointer));
+    }
+
+    /**
+     * Read an object reflectively from a pointer.
+     * @param pointer The pointer to read.
+     * @param evaluator The evaluator to use.
+     * @param clazz The reader to use.
+     * @param <T> The object to extract
+     * @return The extracted object
+     */
+    public <T> T read(Pointer pointer, Evaluator evaluator, Class<T> clazz){
+        return clazz.cast(ReflectionHexReaderWriter.getHexerFor(clazz, evaluator).read(hexField.iterator(pointer)));
+    }
+
+    /**
+     * Write an object reflectively from a pointer.
+     *
+     * @param pointer The pointer to read.
+     * @param evaluator The evaluator to use.
+     * @param object The object to write.
+     * @param <T> The object to write
+     */
+    public <T> void write(Pointer pointer, Evaluator evaluator, T object) {
+        ReflectionHexReaderWriter.getHexerFor(object.getClass(), evaluator).writeObject(object, hexField.iterator(pointer));
     }
 
     /**
@@ -129,7 +144,6 @@ public class PkmnFramework {
      * @return An iterator.
      */
     public HexFieldIterator getIterator(Pointer position){
-        verifyFieldsPresent();
         return hexField.iterator(position);
     }
 
@@ -159,6 +173,7 @@ public class PkmnFramework {
         private File path;
         private HexField hexField;
         private Configuration configuration;
+        private Evaluator evaluator;
 
         Map<Class<?>, Hexer<?>> hexers;
 
@@ -178,6 +193,18 @@ public class PkmnFramework {
             Objects.requireNonNull(clazz);
             Objects.requireNonNull(hexer);
             hexers.put(clazz, hexer);
+            return this;
+        }
+
+        /**
+         * Set the default Evaluator to use when parsing out class objects.
+         * If an Evaluator is not used, but a Configuration is provided, a ConfigurationEvaluator is used.
+         * @param evaluator The evaluator to use.
+         * @return
+         */
+        public Builder setEvaluator(Evaluator evaluator){
+            Objects.requireNonNull(evaluator);
+            this.evaluator = evaluator;
             return this;
         }
 
@@ -202,6 +229,13 @@ public class PkmnFramework {
             ReflectionHexReaderWriter.resetHexers();
             ReflectionHexReaderWriter.addHexer(this.hexers);
             framework.configuration = configuration;
+            if(evaluator == null) {
+                if(configuration == null){
+                    framework.evaluator = new IdentityEvaluator();
+                } else {
+                    framework.evaluator = new ConfigurationEvaluator(configuration);
+                }
+            }
             return framework;
         }
     }

@@ -11,10 +11,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -56,11 +53,17 @@ public class ReflectionHexReaderWriter<T> implements Hexer<T> {
     }
 
     private final Class<T> clazz;
-    private final FrameworkEvaluator pkmnFrameworkEvaluator;
+    private final Evaluator evaluator;
 
-    private ReflectionHexReaderWriter(Class<T> clazz, FrameworkEvaluator frameworkEvaluator){
+    private ReflectionHexReaderWriter(Class<T> clazz, Evaluator evaluator){
         this.clazz = clazz;
-        this.pkmnFrameworkEvaluator = frameworkEvaluator;
+        this.evaluator = evaluator;
+    }
+
+    private List<Field> getStructFields(Class<?> clazz){
+        return FieldUtils.getAllFieldsList(clazz).stream()
+                .filter(i -> STRUCT_FIELD_MARKER_ANNOTATION_CLASSES.stream().anyMatch(i::isAnnotationPresent))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -90,12 +93,10 @@ public class ReflectionHexReaderWriter<T> implements Hexer<T> {
         try {
             T object = invokeConstructor(clazz);
             //Fill in fields.
-            List<Field> fields = FieldUtils.getAllFieldsList(clazz).stream()
-                    .filter(i -> STRUCT_FIELD_MARKER_ANNOTATION_CLASSES.stream().anyMatch(i::isAnnotationPresent))
-                    .collect(Collectors.toList());
+            List<Field> fields = getStructFields(clazz);
             for(Field field : fields){
                 Offset offsetAnnotation = field.getAnnotation(Offset.class);
-                long offset = pkmnFrameworkEvaluator.evaluateLong(offsetAnnotation.value());
+                long offset = evaluator.evaluateLong(offsetAnnotation.value()).orElseThrow(RuntimeException::new);
 
                 Class<?> classToRead = field.getType(); //The class of this field. If it's a pointer object, this becomes the objectField.
 
@@ -143,17 +144,13 @@ public class ReflectionHexReaderWriter<T> implements Hexer<T> {
         return clazz.newInstance();
     }
 
-    public static Hexer<?> getHexerFor(Class<?> type, PkmnFramework pkmnFramework) {
-        return getHexerFor(type, new FrameworkEvaluator(pkmnFramework));
-    }
-
-    public static Hexer<?> getHexerFor(Class<?> type, FrameworkEvaluator pkmnFramework) {
+    public static Hexer<?> getHexerFor(Class<?> type, Evaluator evaluator) {
         Hexer<?> reader = findHexerInSubclasses(type);
         if(reader != null){
             return reader;
         } else {
             if(type.isAnnotationPresent(DataStructure.class)) {
-                return new ReflectionHexReaderWriter<>(type, pkmnFramework);
+                return new ReflectionHexReaderWriter<>(type, evaluator);
             } else {
                 throw new IllegalArgumentException("Requested type " + type.getName() + " does not contain @DataStructure or an associated reader. Use PkmnFramework.addReader() to add a class-reader association.");
             }
@@ -161,7 +158,7 @@ public class ReflectionHexReaderWriter<T> implements Hexer<T> {
     }
 
     private Hexer<?> getHexReaderFor(Class<?> type) {
-        return getHexerFor(type, pkmnFrameworkEvaluator);
+        return getHexerFor(type, evaluator);
     }
 
     /**
@@ -205,15 +202,13 @@ public class ReflectionHexReaderWriter<T> implements Hexer<T> {
 
         try {
             //Get all StructFields that aren't read only.
-            List<Field> fields = FieldUtils.getAllFieldsList(clazz).stream()
-                    .filter(i -> STRUCT_FIELD_MARKER_ANNOTATION_CLASSES.stream().anyMatch(i::isAnnotationPresent))
-                    .collect(Collectors.toList());
+            List<Field> fields = getStructFields(clazz);
             ByteWindow bw = new ByteWindow();
             HexFieldIterator fieldIterator = bw.iterator();
             for (Field field : fields) {
 
                 Offset offsetAnnotation = field.getAnnotation(Offset.class);
-                long offset = pkmnFrameworkEvaluator.evaluateLong(offsetAnnotation.value());
+                long offset = evaluator.evaluateLong(offsetAnnotation.value()).orElseThrow(RuntimeException::new);
 
                 if(field.isAnnotationPresent(Absolute.class)){
                     fieldIterator.advanceTo(offset);
@@ -234,14 +229,14 @@ public class ReflectionHexReaderWriter<T> implements Hexer<T> {
                     }
                     PointerObject<?> po = (PointerObject<?>) writingObject;
                     Pointer ptr = repointStrategy.repoint(new RepointStrategy.RepointMetadata(po, getSize(ptrAnnotation.objectType(), po.getObject())));
-                    getHexerFor(ptrAnnotation.pointerType(), pkmnFrameworkEvaluator).writeObject(ptr, fieldIterator);
+                    getHexerFor(ptrAnnotation.pointerType(), evaluator).writeObject(ptr, fieldIterator);
                     fieldIterator.advanceTo(ptr.getLocation());
                     writingObject = ((PointerObject<?>) writingObject).getObject();
                     classToWrite = ptrAnnotation.objectType();
 
-                    getHexerFor(classToWrite, pkmnFrameworkEvaluator).writeObject(writingObject, fieldIterator);
+                    getHexerFor(classToWrite, evaluator).writeObject(writingObject, fieldIterator);
                 } else {
-                    getHexerFor(classToWrite, pkmnFrameworkEvaluator).writeObject(writingObject, fieldIterator);
+                    getHexerFor(classToWrite, evaluator).writeObject(writingObject, fieldIterator);
                 }
             }
             iterator.write(bw);
@@ -251,32 +246,30 @@ public class ReflectionHexReaderWriter<T> implements Hexer<T> {
     }
 
     /**
-    * Get the size of the object attempting to repoint.
-    * If the size is specified in teh DataStructure object, we return with it.
-    * Variable sizes can be provided by annotating a method with @DataStructureSize in the object to observe, which
-    * should take no parameters and return an integer.
+    * Get the size of the object.
+     * This is calculated by adding the size of every field in the structure together, recursively if necessary.
     * @param objectClass The class of the object.
     * @param object The object itself.
     * @return
     */
     private int getSize(Class<?> objectClass, Object object) {
-        if(objectClass.isAnnotationPresent(DataStructure.class)){
-            DataStructure ds = objectClass.getAnnotation(DataStructure.class);
-            if(ds.size() > 0){
-                return ds.size();
-            }
+        Map<Boolean, List<OptionalInt>> sizes = getStructFields(objectClass).stream()
+                .map(field ->
+                {
+                    try {
+                        int size = getHexerFor(field.getType(), evaluator)
+                                .getSizeAsObject(FieldUtils.readDeclaredField(object, field.getName(), true));
+                        return OptionalInt.of(size);
+                    } catch (Exception ex) {
+                        return OptionalInt.empty();
+                    }
+                })
+                .collect(Collectors.partitioningBy(OptionalInt::isPresent));
+        if(sizes.get(false).isEmpty()){
+            return sizes.get(true).stream().mapToInt(OptionalInt::getAsInt).sum();
+        } else {
+            return -1;
         }
-        List<Method> methods = MethodUtils.getMethodsListWithAnnotation(objectClass, DataStructureSize.class);
-        if(methods.size() == 1){
-            try{
-                return (int)MethodUtils.invokeMethod(object, true, methods.get(0).getName());
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Error invoking method " + methods.get(0).getName(), e);
-            }
-        } else if(methods.size() > 1){
-            throw new IllegalArgumentException("Multiple methods with @DataStructureSize annotation specified. Please ensure there is only one.");
-        }
-        throw new IllegalArgumentException("No way to get size. Please provide a @DataStructure size, or @DataStructureSize annotation");
     }
 
     @Override
