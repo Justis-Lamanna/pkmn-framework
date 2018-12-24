@@ -1,32 +1,22 @@
 package com.github.lucbui.framework;
 
-import com.github.lucbui.annotations.FromConfig;
 import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.HexWriter;
 import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.config.Configuration;
-import com.github.lucbui.config.MutableConfig;
 import com.github.lucbui.file.FileHexField;
 import com.github.lucbui.file.HexField;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
-import org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.reflect.Field;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.function.Function;
 
 /**
  * A PKMN Framework, which facilitates easier parsing of hex files.
- *
- * To use, call PkmnFramework.init(), and pass a file path. You can then chain additional properties onto it.
- * Changes only take effect when start() is called at the end of the chain.
- *
- * PkmnFramework will then contain static helper methods that can be used to read and write to hex files, by using recursion.
  */
 public class PkmnFramework {
 

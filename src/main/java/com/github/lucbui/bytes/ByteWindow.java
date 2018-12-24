@@ -235,7 +235,7 @@ public class ByteWindow implements HexField {
 
         @Override
         public HexFieldIterator copy() {
-            return new ByteWindowHexFieldIterator(byteWindow.copy(), current);
+            return new ByteWindowHexFieldIterator(byteWindow, current);
         }
 
         @Override

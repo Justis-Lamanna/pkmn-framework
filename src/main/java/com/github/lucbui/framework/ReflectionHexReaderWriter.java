@@ -4,13 +4,13 @@ import com.github.lucbui.annotations.*;
 import com.github.lucbui.bytes.*;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
+import com.github.lucbui.utility.ListOptionalToOptionalListCollector;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -66,6 +66,17 @@ public class ReflectionHexReaderWriter<T> implements Hexer<T> {
                 .collect(Collectors.toList());
     }
 
+    HexFieldIterator getIteratorFor(Field field, HexFieldIterator source){
+        Offset offsetAnnotation = field.getAnnotation(Offset.class);
+        long offset = evaluator.evaluateLong(offsetAnnotation.value()).orElseThrow(RuntimeException::new);
+
+        if(field.isAnnotationPresent(Absolute.class)){
+            return source.copy(offset);
+        } else {
+           return source.copyRelative(offset); //An iterator starting at offset. If it's a pointer object, this moves to the pointed value.
+        }
+    }
+
     /**
      * Reflexively and recursively build an object from its annotations.
      * Processing occurs like so:
@@ -95,30 +106,20 @@ public class ReflectionHexReaderWriter<T> implements Hexer<T> {
             //Fill in fields.
             List<Field> fields = getStructFields(clazz);
             for(Field field : fields){
-                Offset offsetAnnotation = field.getAnnotation(Offset.class);
-                long offset = evaluator.evaluateLong(offsetAnnotation.value()).orElseThrow(RuntimeException::new);
-
-                Class<?> classToRead = field.getType(); //The class of this field. If it's a pointer object, this becomes the objectField.
-
-                HexFieldIterator fieldIterator;
-                if(field.isAnnotationPresent(Absolute.class)){
-                    fieldIterator = iterator.copy(offset);
-                } else {
-                    fieldIterator = iterator.copyRelative(offset); //An iterator starting at offset. If it's a pointer object, this moves to the pointed value.
-                }
+                HexFieldIterator fieldIterator = getIteratorFor(field, iterator);
 
                 if(field.isAnnotationPresent(PointerField.class) && field.getType().equals(PointerObject.class)){
                     //Special support for Pointer objects, which store a pointer to themselves, as well as data poined to.
                     PointerField pointerAnnotation = field.getAnnotation(PointerField.class);
-                    classToRead = pointerAnnotation.objectType();
                     Pointer ptr = (Pointer) getHexReaderFor(pointerAnnotation.pointerType()).read(fieldIterator);
-                    Object parsedObject = getHexReaderFor(classToRead).read(iterator.copy(ptr.getLocation())); //The object read.
+                    Object parsedObject = getHexReaderFor(pointerAnnotation.objectType())
+                            .read(iterator.copy(ptr.getLocation())); //The object read.
 
                     FieldUtils.writeDeclaredField(object, field.getName(), new PointerObject<>(ptr, parsedObject), true);
                     fieldIterator.advanceTo(ptr.getLocation());
                 } else {
                     //No special modifications necessary.
-                    Object parsedObject = getHexReaderFor(classToRead).read(fieldIterator);
+                    Object parsedObject = getHexReaderFor(field.getType()).read(fieldIterator);
 
                     FieldUtils.writeDeclaredField(object, field.getName(), parsedObject, true);
                 }
@@ -206,15 +207,7 @@ public class ReflectionHexReaderWriter<T> implements Hexer<T> {
             ByteWindow bw = new ByteWindow();
             HexFieldIterator fieldIterator = bw.iterator();
             for (Field field : fields) {
-
-                Offset offsetAnnotation = field.getAnnotation(Offset.class);
-                long offset = evaluator.evaluateLong(offsetAnnotation.value()).orElseThrow(RuntimeException::new);
-
-                if(field.isAnnotationPresent(Absolute.class)){
-                    fieldIterator.advanceTo(offset);
-                } else {
-                    fieldIterator.advanceTo(startPosition + offset);
-                }
+                HexFieldIterator otherIterator = getIteratorFor(field, fieldIterator);
 
                 Object writingObject = FieldUtils.readDeclaredField(object, field.getName(), true); //The object we are writing.
                 Class<?> classToWrite = field.getType();
@@ -229,14 +222,14 @@ public class ReflectionHexReaderWriter<T> implements Hexer<T> {
                     }
                     PointerObject<?> po = (PointerObject<?>) writingObject;
                     Pointer ptr = repointStrategy.repoint(new RepointStrategy.RepointMetadata(po, getSize(ptrAnnotation.objectType(), po.getObject())));
-                    getHexerFor(ptrAnnotation.pointerType(), evaluator).writeObject(ptr, fieldIterator);
-                    fieldIterator.advanceTo(ptr.getLocation());
+                    getHexerFor(ptrAnnotation.pointerType(), evaluator).writeObject(ptr, otherIterator);
+                    otherIterator.advanceTo(ptr.getLocation());
                     writingObject = ((PointerObject<?>) writingObject).getObject();
                     classToWrite = ptrAnnotation.objectType();
 
-                    getHexerFor(classToWrite, evaluator).writeObject(writingObject, fieldIterator);
+                    getHexerFor(classToWrite, evaluator).writeObject(writingObject, otherIterator);
                 } else {
-                    getHexerFor(classToWrite, evaluator).writeObject(writingObject, fieldIterator);
+                    getHexerFor(classToWrite, evaluator).writeObject(writingObject, otherIterator);
                 }
             }
             iterator.write(bw);
@@ -253,23 +246,22 @@ public class ReflectionHexReaderWriter<T> implements Hexer<T> {
     * @return
     */
     private int getSize(Class<?> objectClass, Object object) {
-        Map<Boolean, List<OptionalInt>> sizes = getStructFields(objectClass).stream()
+        return getStructFields(objectClass).stream()
                 .map(field ->
                 {
                     try {
                         int size = getHexerFor(field.getType(), evaluator)
                                 .getSizeAsObject(FieldUtils.readDeclaredField(object, field.getName(), true));
-                        return OptionalInt.of(size);
+                        return size < 0 ? Optional.<Integer>empty() : Optional.of(size);
                     } catch (Exception ex) {
-                        return OptionalInt.empty();
+                        return Optional.<Integer>empty();
                     }
-                })
-                .collect(Collectors.partitioningBy(OptionalInt::isPresent));
-        if(sizes.get(false).isEmpty()){
-            return sizes.get(true).stream().mapToInt(OptionalInt::getAsInt).sum();
-        } else {
-            return -1;
-        }
+                }).collect(new ListOptionalToOptionalListCollector<>())
+                .map(i -> i
+                        .stream()
+                        .mapToInt(element -> element)
+                        .sum())
+                .orElse(-1);
     }
 
     @Override
