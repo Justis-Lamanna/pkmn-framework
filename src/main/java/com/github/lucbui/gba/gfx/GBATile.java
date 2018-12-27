@@ -3,9 +3,9 @@ package com.github.lucbui.gba.gfx;
 import com.github.lucbui.bytes.*;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.gba.exception.IllegalSizeException;
+import com.github.lucbui.utility.HexUtils;
 
 import java.io.Serializable;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Objects;
 

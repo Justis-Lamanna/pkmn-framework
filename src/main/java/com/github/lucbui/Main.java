@@ -4,11 +4,19 @@ import com.github.lucbui.annotations.Absolute;
 import com.github.lucbui.annotations.DataStructure;
 import com.github.lucbui.annotations.Offset;
 import com.github.lucbui.bytes.UnsignedByte;
+import com.github.lucbui.config.MapConfig;
+import com.github.lucbui.file.Pointer;
+import com.github.lucbui.framework.ConfigurationEvaluator;
 import com.github.lucbui.framework.PkmnFramework;
 import com.github.lucbui.gba.GBAFrameworkFactory;
 import com.github.lucbui.gba.GBAPointer;
+import com.github.lucbui.pipeline.LinearPipeline;
+import com.github.lucbui.pipeline.Pipeline;
+import com.github.lucbui.pipeline.pipes.EmptyConstructorCreatePipe;
+import com.github.lucbui.pipeline.pipes.OffsetReadPipe;
 
 import java.io.IOException;
+import java.util.Collections;
 
 public class Main {
 
@@ -17,16 +25,7 @@ public class Main {
                 .init("C:\\Users\\laman\\Desktop\\Procession of Glazed\\ROMs\\Um\\Glazed2.gba")
                 .frameworkFactory(new GBAFrameworkFactory())
                 .start();
-
-        /*long ptr = 0x4975F8;
-        GBASprite tiles = pkmnGame.read(ptr, GBASprite.getHexReader(BitDepth.FOUR, SpriteSize.VERTICAL_2));
-
-        tiles = tiles.modify().setPixel(10, 5, 10).create();
-
-        BufferedImage img = GBAUtils.createImage(tiles, GBAUtils.VGA_COLORS);
-        ImageIO.write(img, "png", new File("test.png"));*/
         TestStructure ts = pkmnGame.read(GBAPointer.valueOf(0x70), TestStructure.class);
-        //pkmnGame.write(GBAPointer.valueOf(0x70), ts);
         System.out.println(ts);
     }
 
@@ -38,5 +37,13 @@ public class Main {
         @Offset("0x1")
         @Absolute
         public UnsignedByte b2;
+
+        @Override
+        public String toString() {
+            return "TestStructure{" +
+                    "b1=" + b1 +
+                    ", b2=" + b2 +
+                    '}';
+        }
     }
 }

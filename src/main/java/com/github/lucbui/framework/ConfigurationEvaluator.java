@@ -17,7 +17,7 @@ public class ConfigurationEvaluator implements Evaluator{
     private Configuration configuration;
     private static final Pattern matchPattern = Pattern.compile("\\$\\{([A-Za-z0-9.]+)(?:\\|([A-Za-z0-9.]+))?}");
 
-    ConfigurationEvaluator(Configuration configuration){
+    public ConfigurationEvaluator(Configuration configuration){
         this.configuration = configuration;
     }
 

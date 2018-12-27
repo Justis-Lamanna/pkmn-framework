@@ -2,6 +2,7 @@ package com.github.lucbui.gba.gfx;
 
 import com.github.lucbui.bytes.*;
 import com.github.lucbui.file.HexFieldIterator;
+import com.github.lucbui.utility.HexUtils;
 
 import java.awt.*;
 import java.io.Serializable;

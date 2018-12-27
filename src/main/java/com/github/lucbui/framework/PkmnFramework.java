@@ -4,10 +4,14 @@ import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.HexWriter;
 import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.config.Configuration;
+import com.github.lucbui.config.MapConfig;
 import com.github.lucbui.file.FileHexField;
 import com.github.lucbui.file.HexField;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
+import com.github.lucbui.pipeline.LinearPipeline;
+import com.github.lucbui.pipeline.Pipeline;
+import com.github.lucbui.pipeline.pipes.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,6 +27,7 @@ public class PkmnFramework {
     private HexField hexField = null;
     private Configuration configuration = null;
     private Evaluator evaluator = null;
+    private Pipeline pipeline = null;
 
     /**
      * Start creating the framework.
@@ -90,42 +95,33 @@ public class PkmnFramework {
      * @return The extracted object
      */
     public <T> T read(Pointer pointer, Class<T> clazz){
-        return clazz.cast(ReflectionHexReaderWriter.getHexerFor(clazz, evaluator).read(hexField.iterator(pointer)));
+        return pipeline.read(hexField.iterator(pointer), clazz);
     }
 
     /**
      * Write an object reflectively from a pointer.
+     *
+     * If a PointerObject with annotation is encountered, an exception is thrown. Please pass a repoint strategy
+     * if you need to do repointing.
      *
      * @param pointer The pointer to read.
      * @param object The object to write.
      * @param <T> The object to write
      */
     public <T> void write(Pointer pointer, T object) {
-        ReflectionHexReaderWriter.getHexerFor(object.getClass(), evaluator).writeObject(object, hexField.iterator(pointer));
-    }
-
-    /**
-     * Read an object reflectively from a pointer.
-     * @param pointer The pointer to read.
-     * @param evaluator The evaluator to use.
-     * @param clazz The reader to use.
-     * @param <T> The object to extract
-     * @return The extracted object
-     */
-    public <T> T read(Pointer pointer, Evaluator evaluator, Class<T> clazz){
-        return clazz.cast(ReflectionHexReaderWriter.getHexerFor(clazz, evaluator).read(hexField.iterator(pointer)));
+        pipeline.write(hexField.iterator(pointer), object, RepointUtils.disableRepointStrategy());
     }
 
     /**
      * Write an object reflectively from a pointer.
      *
      * @param pointer The pointer to read.
-     * @param evaluator The evaluator to use.
+     * @param repointStrategy The repoint strategy to use.
      * @param object The object to write.
      * @param <T> The object to write
      */
-    public <T> void write(Pointer pointer, Evaluator evaluator, T object) {
-        ReflectionHexReaderWriter.getHexerFor(object.getClass(), evaluator).writeObject(object, hexField.iterator(pointer));
+    public <T> void write(Pointer pointer, RepointStrategy repointStrategy, T object) {
+        pipeline.write(hexField.iterator(pointer), object, repointStrategy);
     }
 
     /**
@@ -164,6 +160,7 @@ public class PkmnFramework {
         private HexField hexField;
         private Configuration configuration;
         private Evaluator evaluator;
+        private Pipeline pipeline;
 
         Map<Class<?>, Hexer<?>> hexers;
 
@@ -209,6 +206,12 @@ public class PkmnFramework {
             return this;
         }
 
+        public Builder setPipeline(Pipeline pipeline){
+            Objects.requireNonNull(pipeline);
+            this.pipeline = pipeline;
+            return this;
+        }
+
         public PkmnFramework start() throws IOException {
             PkmnFramework framework = new PkmnFramework();
             if(hexField == null) {
@@ -216,16 +219,28 @@ public class PkmnFramework {
             } else {
                 framework.hexField = hexField;
             }
-            ReflectionHexReaderWriter.resetHexers();
-            ReflectionHexReaderWriter.addHexer(this.hexers);
+            if(configuration == null){
+                configuration = new MapConfig();
+            }
             framework.configuration = configuration;
             if(evaluator == null) {
-                if(configuration == null){
-                    framework.evaluator = new IdentityEvaluator();
-                } else {
-                    framework.evaluator = new ConfigurationEvaluator(configuration);
-                }
+                evaluator = new ConfigurationEvaluator(configuration);
             }
+            framework.evaluator = evaluator;
+            if(pipeline == null){
+                pipeline = LinearPipeline.create(new EmptyConstructorCreatePipe())
+                        .evaluator(evaluator)
+                        .hexers(this.hexers)
+                        .read(new PointerObjectReadPipe())
+                            .then(new OffsetReadPipe())
+                            .then(new AfterReadPipe())
+                            .end()
+                        .write(new OffsetWritePipe())
+                            .then(new BeforeWritePipe())
+                            .end()
+                        .build();
+            }
+            framework.pipeline = pipeline;
             return framework;
         }
     }

@@ -4,6 +4,7 @@ import com.github.lucbui.annotations.DataStructure;
 import com.github.lucbui.bytes.*;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
+import com.github.lucbui.utility.HexUtils;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;

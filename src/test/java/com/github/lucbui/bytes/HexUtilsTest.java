@@ -1,5 +1,6 @@
 package com.github.lucbui.bytes;
 
+import com.github.lucbui.utility.HexUtils;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;

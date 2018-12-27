@@ -1,5 +1,6 @@
-package com.github.lucbui.bytes;
+package com.github.lucbui.utility;
 
+import com.github.lucbui.bytes.ByteWindow;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.gba.exception.IllegalSizeException;
 

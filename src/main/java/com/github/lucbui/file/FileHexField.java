@@ -1,7 +1,7 @@
 package com.github.lucbui.file;
 
 import com.github.lucbui.bytes.ByteWindow;
-import com.github.lucbui.bytes.HexUtils;
+import com.github.lucbui.utility.HexUtils;
 
 import java.io.File;
 import java.io.IOException;
