@@ -20,7 +20,6 @@ public interface Pipeline {
      * Write an instance of the specified object to an iterator
      * @param iterator The iterator to use
      * @param obj The object to write
-     * @param repointStrategy Repoint strategy to use when writing PointerObjects
      */
-    void write(HexFieldIterator iterator, Object obj, RepointStrategy repointStrategy);
+    void write(HexFieldIterator iterator, Object obj);
 }

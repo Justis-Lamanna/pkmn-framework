@@ -11,7 +11,9 @@ import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
 import com.github.lucbui.pipeline.LinearPipeline;
 import com.github.lucbui.pipeline.Pipeline;
+import com.github.lucbui.pipeline.WritePipe;
 import com.github.lucbui.pipeline.pipes.*;
+import com.github.lucbui.utility.HexerUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +30,7 @@ public class PkmnFramework {
     private Configuration configuration = null;
     private Evaluator evaluator = null;
     private Pipeline pipeline = null;
+    private Map<Class<?>, Hexer<?>> hexers;
 
     /**
      * Start creating the framework.
@@ -109,19 +112,7 @@ public class PkmnFramework {
      * @param <T> The object to write
      */
     public <T> void write(Pointer pointer, T object) {
-        pipeline.write(hexField.iterator(pointer), object, RepointUtils.disableRepointStrategy());
-    }
-
-    /**
-     * Write an object reflectively from a pointer.
-     *
-     * @param pointer The pointer to read.
-     * @param repointStrategy The repoint strategy to use.
-     * @param object The object to write.
-     * @param <T> The object to write
-     */
-    public <T> void write(Pointer pointer, RepointStrategy repointStrategy, T object) {
-        pipeline.write(hexField.iterator(pointer), object, repointStrategy);
+        pipeline.write(hexField.iterator(pointer), object);
     }
 
     /**
@@ -144,6 +135,25 @@ public class PkmnFramework {
     }
 
     /**
+     * Get a hexer registered, if present
+     * @param clazz The class to search
+     * @param <T> The type to read out
+     * @return A Hexer, if present
+     */
+    public <T> Optional<Hexer<T>> getHexerFor(Class<T> clazz){
+        return HexerUtils.getHexerFor(hexers, clazz);
+    }
+
+    /**
+     * Calculate the size of an object
+     * @param obj The object to calculate
+     * @return The size, or an empty OptionalInt if the size was undetermined.
+     */
+    public OptionalInt getSize(Object obj){
+        return HexerUtils.calculateSizeOfObject(this, obj);
+    }
+
+    /**
      * Get a value from the configuration provided.
      * If no configuration was provided, the default is provided.
      * @param key The key to retrieve.
@@ -153,6 +163,30 @@ public class PkmnFramework {
     public <T> Optional<T> getFromConfig(String key, Function<String, T> converter){
         Objects.requireNonNull(converter);
         return configuration == null ? Optional.empty() : configuration.get(key, converter);
+    }
+
+    /**
+     * Get the evaluator used in this framework.
+     * @return
+     */
+    public Evaluator getEvaluator() {
+        return evaluator;
+    }
+
+    /**
+     * Get the hexers registered to this framework.
+     * @return
+     */
+    public Map<Class<?>, Hexer<?>> getHexers() {
+        return hexers;
+    }
+
+    /**
+     * Get the pipeline used for this framework.
+     * @return
+     */
+    public Pipeline getPipeline() {
+        return pipeline;
     }
 
     public static class Builder {
@@ -214,6 +248,7 @@ public class PkmnFramework {
 
         public PkmnFramework start() throws IOException {
             PkmnFramework framework = new PkmnFramework();
+            framework.hexers = Collections.unmodifiableMap(hexers);
             if(hexField == null) {
                 framework.hexField = new FileHexField(path, StandardOpenOption.READ, StandardOpenOption.WRITE);
             } else {
@@ -229,8 +264,7 @@ public class PkmnFramework {
             framework.evaluator = evaluator;
             if(pipeline == null){
                 pipeline = LinearPipeline.create(new EmptyConstructorCreatePipe())
-                        .evaluator(evaluator)
-                        .hexers(this.hexers)
+                        .framework(framework)
                         .read(new PointerObjectReadPipe())
                             .then(new OffsetReadPipe())
                             .then(new AfterReadPipe())

@@ -46,7 +46,7 @@ public class RepointUtils {
      */
     public static <T> HexWriter<PointerObject<T>> writeWithRepoint(Hexer<T> hexer, RepointStrategy repointStrategy){
         return (object, iterator) -> {
-            RepointStrategy.RepointMetadata repointMetadata = new RepointStrategy.RepointMetadata(object, hexer.getSize((T)object));
+            RepointMetadata repointMetadata = new RepointMetadata(object);
             Pointer ptr = repointStrategy.repoint(repointMetadata);
             hexer.write(object.getObject(), iterator.copy(ptr.getLocation()));
         };

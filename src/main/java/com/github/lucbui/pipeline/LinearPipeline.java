@@ -3,6 +3,7 @@ package com.github.lucbui.pipeline;
 import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.framework.Evaluator;
+import com.github.lucbui.framework.PkmnFramework;
 import com.github.lucbui.framework.RepointStrategy;
 
 import java.util.*;
@@ -12,42 +13,32 @@ import java.util.*;
  * Objects simply travel in a straight line, through either the readPipe or the writePipe. No branching
  * or early pipe termination can be used with this; thus, it is the simplest type of pipeline.
  */
-public class LinearPipeline implements Pipeline{
-    private final Map<Class<?>, Hexer<?>> hexers;
+public class LinearPipeline implements Pipeline {
     private CreatePipe createPipe;
     private List<ReadPipe> readPipes;
     private List<WritePipe> writePipes;
-    private Evaluator evaluator;
+    private PkmnFramework pkmnFramework;
 
-    private LinearPipeline(CreatePipe createPipe, List<ReadPipe> readPipes, List<WritePipe> writePipes, Evaluator evaluator, Map<Class<?>, Hexer<?>> hexers){
+    private LinearPipeline(CreatePipe createPipe, List<ReadPipe> readPipes, List<WritePipe> writePipes, PkmnFramework pkmnFramework){
         this.createPipe = createPipe;
         this.readPipes = readPipes;
         this.writePipes = writePipes;
-        this.evaluator = evaluator;
-        this.hexers = hexers;
-    }
-
-    public Evaluator getEvaluator(){
-        return evaluator;
-    }
-
-    public Map<Class<?>, Hexer<?>> getHexers() {
-        return hexers;
+        this.pkmnFramework = pkmnFramework;
     }
 
     @Override
     public <T> T read(HexFieldIterator iterator, Class<T> clazz){
         T obj = createPipe.create(clazz);
         for(ReadPipe readPipe : readPipes){
-            readPipe.read(obj, iterator, this);
+            readPipe.read(obj, iterator, pkmnFramework);
         }
         return obj;
     }
 
     @Override
-    public void write(HexFieldIterator iterator, Object obj, RepointStrategy repointStrategy) {
+    public void write(HexFieldIterator iterator, Object obj) {
         for(WritePipe writePipe : writePipes){
-            writePipe.write(iterator, obj, repointStrategy, this);
+            writePipe.write(iterator, obj, pkmnFramework);
         }
     }
 
@@ -65,8 +56,7 @@ public class LinearPipeline implements Pipeline{
         private CreatePipe createPipe;
         private List<ReadPipe> readPipes;
         private List<WritePipe> writePipes;
-        private Evaluator evaluator;
-        private Map<Class<?>, Hexer<?>> hexers;
+        private PkmnFramework pkmnFramework;
 
         private Builder(CreatePipe createPipe){
             this.createPipe = createPipe;
@@ -85,16 +75,11 @@ public class LinearPipeline implements Pipeline{
         }
 
         public LinearPipeline build(){
-            return new LinearPipeline(createPipe, readPipes, writePipes, evaluator, Collections.unmodifiableMap(hexers));
+            return new LinearPipeline(createPipe, readPipes, writePipes, pkmnFramework);
         }
 
-        public Builder evaluator(Evaluator evaluator) {
-            this.evaluator = evaluator;
-            return this;
-        }
-
-        public Builder hexers(Map<Class<?>, Hexer<?>> hexers){
-            this.hexers = hexers;
+        public Builder framework(PkmnFramework pkmnFramework){
+            this.pkmnFramework = pkmnFramework;
             return this;
         }
     }

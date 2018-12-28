@@ -2,6 +2,7 @@ package com.github.lucbui.pipeline.pipes;
 
 import com.github.lucbui.annotations.BeforeWrite;
 import com.github.lucbui.file.HexFieldIterator;
+import com.github.lucbui.framework.PkmnFramework;
 import com.github.lucbui.framework.RepointStrategy;
 import com.github.lucbui.pipeline.LinearPipeline;
 import com.github.lucbui.pipeline.WritePipe;
@@ -15,7 +16,7 @@ import java.util.List;
 
 public class BeforeWritePipe implements WritePipe {
     @Override
-    public void write(HexFieldIterator iterator, Object object, RepointStrategy repointStrategy, LinearPipeline pipeline) {
+    public void write(HexFieldIterator iterator, Object object, PkmnFramework pkmnFramework) {
         List<Method> methods = MethodUtils.getMethodsListWithAnnotation(object.getClass(), BeforeWrite.class);
         for(Method method : methods){
             try {

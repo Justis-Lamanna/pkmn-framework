@@ -16,30 +16,4 @@ public interface RepointStrategy {
      * @return The position to repoint to.
      */
     Pointer repoint(RepointMetadata metadata);
-
-    /**
-     * An object describing the state needed for repointing.
-     */
-    class RepointMetadata{
-        private PointerObject<?> pointerObject;
-        private int size;
-
-        RepointMetadata(PointerObject<?> pointerObject, int size){
-            this.size = size;
-            this.pointerObject = pointerObject;
-        }
-
-        /**
-         * Get the size of the data to be repointed.
-         * If the size is indeterminate, an empty OptionalInt is returned.
-         * @return An OptionalInt that is empty if the size is indeterminate, or contains the size of the data to repoint.
-         */
-        public OptionalInt getSize(){
-            return this.size <= 0 ? OptionalInt.empty() : OptionalInt.of(this.size);
-        }
-
-        public PointerObject<?> getPointerObject() {
-            return pointerObject;
-        }
-    }
 }

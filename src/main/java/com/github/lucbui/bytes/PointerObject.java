@@ -1,19 +1,44 @@
 package com.github.lucbui.bytes;
 
 import com.github.lucbui.file.Pointer;
+import com.github.lucbui.framework.RepointStrategy;
+import com.github.lucbui.framework.RepointUtils;
+
+import java.util.Objects;
 
 /**
- * A class which encapsulates an object, and a pointer to that object.
+ * A "fat pointer" which encapsulates an object, and a pointer to that object.
  * @param <O> The Object class
  */
 public final class PointerObject <O> {
 
     private Pointer pointer;
     private O object;
+    private RepointStrategy repointStrategy;
 
+    /**
+     * Create a PointerObject
+     * By default, a disabling RepointStrategy is used. Attempting to write such an object will
+     * result in an exception being thrown. It is necessary to specify a
+     * @param pointer The pointer to the object
+     * @param object The object itself
+     */
     public PointerObject(Pointer pointer, O object) {
-        this.pointer = pointer;
-        this.object = object;
+        this.pointer = Objects.requireNonNull(pointer);
+        this.object = Objects.requireNonNull(object);
+        this.repointStrategy = RepointUtils.disableRepointStrategy();
+    }
+
+    /**
+     * Creates a PointerObject with specified RepointStrategy
+     * @param pointer The pointer to the object
+     * @param object The object itself
+     * @param repointStrategy The RepointStrategy to use during write.
+     */
+    public PointerObject(Pointer pointer, O object, RepointStrategy repointStrategy){
+        this.pointer = Objects.requireNonNull(pointer);
+        this.object = Objects.requireNonNull(object);
+        this.repointStrategy = Objects.requireNonNull(repointStrategy);
     }
 
     /**
@@ -30,6 +55,23 @@ public final class PointerObject <O> {
      */
     public O getObject() {
         return object;
+    }
+
+    /**
+     * Get the RepointStrategy to be used for writing this object.
+     * @return
+     */
+    public RepointStrategy getRepointStrategy() {
+        return repointStrategy;
+    }
+
+    /**
+     * Set the RepointStrategy to be used for writing this object.
+     * @param repointStrategy The repointStrategy to use.
+     */
+    public void setRepointStrategy(RepointStrategy repointStrategy) {
+        Objects.requireNonNull(repointStrategy);
+        this.repointStrategy = repointStrategy;
     }
 
     @Override

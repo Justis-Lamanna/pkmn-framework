@@ -6,8 +6,8 @@ import com.github.lucbui.annotations.PointerField;
 import com.github.lucbui.bytes.PointerObject;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
+import com.github.lucbui.framework.PkmnFramework;
 import com.github.lucbui.pipeline.LinearPipeline;
-import com.github.lucbui.pipeline.LinearPipelineParams;
 import com.github.lucbui.pipeline.ReadPipe;
 import com.github.lucbui.pipeline.exceptions.ReadPipeException;
 import com.github.lucbui.utility.HexerUtils;
@@ -25,7 +25,7 @@ import java.util.List;
 public class PointerObjectReadPipe implements ReadPipe {
 
     @Override
-    public void read(Object object, HexFieldIterator iterator, LinearPipeline pipeline) {
+    public void read(Object object, HexFieldIterator iterator, PkmnFramework pkmnFramework) {
         List<Field> fields = PipeUtils.getNullAnnotatedFields(object, PointerField.class);
         for(Field field : fields){
             if(!field.isAnnotationPresent(Offset.class)){
@@ -33,18 +33,18 @@ public class PointerObjectReadPipe implements ReadPipe {
             }
             PointerField pointerField = field.getAnnotation(PointerField.class);
             Offset offset = field.getAnnotation(Offset.class);
-            long offsetAsLong = pipeline.getEvaluator().evaluateLong(offset.value()).orElseThrow(ReadPipeException::new);
+            long offsetAsLong = pkmnFramework.getEvaluator().evaluateLong(offset.value()).orElseThrow(ReadPipeException::new);
             HexFieldIterator iteratorForField =
                     field.isAnnotationPresent(Absolute.class) ?
                             iterator.copy(offsetAsLong) :
                             iterator.copyRelative(offsetAsLong);
 
-            Pointer ptr = HexerUtils.getHexerFor(pipeline.getHexers(), Pointer.class)
+            Pointer ptr = HexerUtils.getHexerFor(pkmnFramework.getHexers(), Pointer.class)
                     .map(hexer -> hexer.read(iteratorForField))
                     .orElseThrow(ReadPipeException::new);
 
             HexFieldIterator iteratorForNestedObject = iterator.copy(ptr.getLocation());
-            Object obj = HexerUtils.getHexerFor(pipeline.getHexers(), pointerField.objectType())
+            Object obj = HexerUtils.getHexerFor(pkmnFramework.getHexers(), pointerField.objectType())
                     .map(hexer -> hexer.read(iteratorForNestedObject))
                     .orElseThrow(ReadPipeException::new);
 

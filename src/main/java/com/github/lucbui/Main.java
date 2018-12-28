@@ -2,6 +2,7 @@ package com.github.lucbui;
 
 import com.github.lucbui.annotations.Absolute;
 import com.github.lucbui.annotations.DataStructure;
+import com.github.lucbui.annotations.DataStructureSize;
 import com.github.lucbui.annotations.Offset;
 import com.github.lucbui.bytes.UnsignedByte;
 import com.github.lucbui.config.MapConfig;
@@ -14,6 +15,7 @@ import com.github.lucbui.pipeline.LinearPipeline;
 import com.github.lucbui.pipeline.Pipeline;
 import com.github.lucbui.pipeline.pipes.EmptyConstructorCreatePipe;
 import com.github.lucbui.pipeline.pipes.OffsetReadPipe;
+import com.github.lucbui.utility.HexerUtils;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -27,6 +29,7 @@ public class Main {
                 .start();
         TestStructure ts = pkmnGame.read(GBAPointer.valueOf(0x70), TestStructure.class);
         System.out.println(ts);
+        System.out.println(pkmnGame.getSize(ts));
     }
 
     @DataStructure

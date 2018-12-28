@@ -6,6 +6,7 @@ import com.github.lucbui.annotations.Offset;
 import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.framework.Evaluator;
+import com.github.lucbui.framework.PkmnFramework;
 import com.github.lucbui.framework.RepointStrategy;
 import com.github.lucbui.pipeline.LinearPipeline;
 import com.github.lucbui.pipeline.Pipeline;
@@ -23,25 +24,25 @@ import java.util.Optional;
 public class OffsetWritePipe implements WritePipe {
 
     @Override
-    public void write(HexFieldIterator iterator, Object object, RepointStrategy repointStrategy, LinearPipeline pipeline) {
+    public void write(HexFieldIterator iterator, Object object, PkmnFramework pkmnFramework) {
         List<Field> fields = FieldUtils.getFieldsListWithAnnotation(object.getClass(), Offset.class);
         for(Field field : fields){
             try {
                 Object fieldObject = FieldUtils.readDeclaredField(object, field.getName(), true);
 
                 Offset offset = field.getAnnotation(Offset.class);
-                long offsetAsLong = pipeline.getEvaluator().evaluateLong(offset.value()).orElseThrow(ReadPipeException::new);
+                long offsetAsLong = pkmnFramework.getEvaluator().evaluateLong(offset.value()).orElseThrow(ReadPipeException::new);
                 HexFieldIterator iteratorForField =
                         field.isAnnotationPresent(Absolute.class) ?
                                 iterator.copy(offsetAsLong) :
                                 iterator.copyRelative(offsetAsLong);
 
-                Optional<? extends Hexer<?>> hexer = HexerUtils.getHexerFor(pipeline.getHexers(), field.getType());
+                Optional<? extends Hexer<?>> hexer = HexerUtils.getHexerFor(pkmnFramework.getHexers(), field.getType());
                 if(hexer.isPresent()){
                     hexer.get().writeObject(fieldObject, iteratorForField);
                 } else {
                     if(field.isAnnotationPresent(DataStructure.class)){
-                        pipeline.write(iteratorForField, field.getType(), repointStrategy);
+                        pkmnFramework.getPipeline().write(iteratorForField, field.getType());
                     } else {
                         throw new ReadPipeException("Encountered object of type " + field.getType().getName() +
                                 " which does not have an associated hexer, and is not marked @DataStructure.");

@@ -4,8 +4,8 @@ import com.github.lucbui.annotations.Absolute;
 import com.github.lucbui.annotations.DataStructure;
 import com.github.lucbui.annotations.Offset;
 import com.github.lucbui.file.HexFieldIterator;
+import com.github.lucbui.framework.PkmnFramework;
 import com.github.lucbui.pipeline.LinearPipeline;
-import com.github.lucbui.pipeline.LinearPipelineParams;
 import com.github.lucbui.pipeline.ReadPipe;
 import com.github.lucbui.pipeline.exceptions.ReadPipeException;
 import com.github.lucbui.utility.HexerUtils;
@@ -24,21 +24,21 @@ import java.util.List;
 public class OffsetReadPipe implements ReadPipe {
 
     @Override
-    public void read(Object object, HexFieldIterator iterator, LinearPipeline pipeline) {
+    public void read(Object object, HexFieldIterator iterator, PkmnFramework pkmnFramework) {
         List<Field> fields = PipeUtils.getNullAnnotatedFields(object, Offset.class);
         for(Field field : fields){
             Offset offset = field.getAnnotation(Offset.class);
-            long offsetAsLong = pipeline.getEvaluator().evaluateLong(offset.value()).orElseThrow(ReadPipeException::new);
+            long offsetAsLong = pkmnFramework.getEvaluator().evaluateLong(offset.value()).orElseThrow(ReadPipeException::new);
             HexFieldIterator iteratorForField =
                     field.isAnnotationPresent(Absolute.class) ?
                             iterator.copy(offsetAsLong) :
                             iterator.copyRelative(offsetAsLong);
 
-            Object readObject = HexerUtils.getHexerFor(pipeline.getHexers(), field.getType())
+            Object readObject = HexerUtils.getHexerFor(pkmnFramework.getHexers(), field.getType())
                     .map(hexer -> (Object)hexer.read(iteratorForField))
                     .orElseGet(() -> {
                         if(field.isAnnotationPresent(DataStructure.class)){
-                            return pipeline.read(iteratorForField, field.getType());
+                            return pkmnFramework.getPipeline().read(iteratorForField, field.getType());
                         } else {
                             return null;
                         }
