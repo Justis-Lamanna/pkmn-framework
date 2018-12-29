@@ -3,7 +3,6 @@ package com.github.lucbui.framework;
 import com.github.lucbui.bytes.HexWriter;
 import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.bytes.PointerObject;
-import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
 import org.apache.commons.lang3.NotImplementedException;
 

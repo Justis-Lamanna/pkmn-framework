@@ -5,11 +5,7 @@ import com.github.lucbui.annotations.DataStructure;
 import com.github.lucbui.annotations.Offset;
 import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.file.HexFieldIterator;
-import com.github.lucbui.framework.Evaluator;
 import com.github.lucbui.framework.PkmnFramework;
-import com.github.lucbui.framework.RepointStrategy;
-import com.github.lucbui.pipeline.LinearPipeline;
-import com.github.lucbui.pipeline.Pipeline;
 import com.github.lucbui.pipeline.WritePipe;
 import com.github.lucbui.pipeline.exceptions.ReadPipeException;
 import com.github.lucbui.pipeline.exceptions.WritePipeException;
@@ -18,7 +14,6 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public class OffsetWritePipe implements WritePipe {

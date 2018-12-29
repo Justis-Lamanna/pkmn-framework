@@ -2,7 +2,6 @@ package com.github.lucbui.pipeline;
 
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.framework.PkmnFramework;
-import com.github.lucbui.framework.RepointStrategy;
 
 /**
  * A pipe which modifies a hex value, through usage of a HexFieldIterator

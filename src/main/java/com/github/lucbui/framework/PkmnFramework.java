@@ -11,7 +11,6 @@ import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
 import com.github.lucbui.pipeline.LinearPipeline;
 import com.github.lucbui.pipeline.Pipeline;
-import com.github.lucbui.pipeline.WritePipe;
 import com.github.lucbui.pipeline.pipes.*;
 import com.github.lucbui.utility.HexerUtils;
 

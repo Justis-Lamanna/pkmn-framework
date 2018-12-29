@@ -6,16 +6,16 @@ import com.github.lucbui.annotations.DataStructureSize;
 import com.github.lucbui.annotations.Offset;
 import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.framework.PkmnFramework;
-import com.github.lucbui.gba.exception.IllegalSizeException;
-import jdk.nashorn.internal.runtime.regexp.joni.encoding.ObjPtr;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
-import javax.swing.text.html.Option;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 

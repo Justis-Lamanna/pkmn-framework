@@ -1,7 +1,5 @@
 package com.github.lucbui.gba.gfx;
 
-import com.github.lucbui.bytes.HexReader;
-import com.github.lucbui.bytes.HexWriter;
 import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.file.HexFieldIterator;
 

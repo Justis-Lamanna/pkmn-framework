@@ -7,7 +7,6 @@ import com.github.lucbui.bytes.PointerObject;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
 import com.github.lucbui.framework.PkmnFramework;
-import com.github.lucbui.pipeline.LinearPipeline;
 import com.github.lucbui.pipeline.ReadPipe;
 import com.github.lucbui.pipeline.exceptions.ReadPipeException;
 import com.github.lucbui.utility.HexerUtils;

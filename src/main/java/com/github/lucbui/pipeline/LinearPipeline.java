@@ -1,12 +1,11 @@
 package com.github.lucbui.pipeline;
 
-import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.file.HexFieldIterator;
-import com.github.lucbui.framework.Evaluator;
 import com.github.lucbui.framework.PkmnFramework;
-import com.github.lucbui.framework.RepointStrategy;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Encapsulates a linear read-write pipeline for populating objects.

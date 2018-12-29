@@ -2,8 +2,6 @@ package com.github.lucbui.framework;
 
 import com.github.lucbui.bytes.PointerObject;
 
-import java.util.OptionalInt;
-
 /**
  * An object describing the state needed for repointing.
  */

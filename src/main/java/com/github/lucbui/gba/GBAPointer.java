@@ -1,7 +1,8 @@
 package com.github.lucbui.gba;
 
 import com.github.lucbui.annotations.DataStructure;
-import com.github.lucbui.bytes.*;
+import com.github.lucbui.bytes.ByteWindow;
+import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
 import com.github.lucbui.utility.HexUtils;

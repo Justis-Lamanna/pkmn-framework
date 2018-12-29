@@ -1,9 +1,6 @@
 package com.github.lucbui.framework;
 
-import com.github.lucbui.bytes.PointerObject;
 import com.github.lucbui.file.Pointer;
-
-import java.util.OptionalInt;
 
 /**
  * A strategy that describes how to repoint data in case of write.
