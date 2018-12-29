@@ -7,16 +7,15 @@ import com.github.lucbui.pipeline.WritePipe;
 
 /**
  * A simple pipe which prints the object being passed through it.
- * @param <T>
  */
-public class PrintPipe<T> implements ReadPipe<T>, WritePipe<T> {
+public class PrintPipe implements ReadPipe<Object>, WritePipe<Object> {
     @Override
-    public void read(T object, HexFieldIterator iterator, PkmnFramework pkmnFramework) {
+    public void read(Object object, HexFieldIterator iterator, PkmnFramework pkmnFramework) {
         System.out.println(object.toString());
     }
 
     @Override
-    public void write(HexFieldIterator iterator, T object, PkmnFramework pkmnFramework) {
+    public void write(HexFieldIterator iterator, Object object, PkmnFramework pkmnFramework) {
         System.out.println(object.toString());
     }
 }

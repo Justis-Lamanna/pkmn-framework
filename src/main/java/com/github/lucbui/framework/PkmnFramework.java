@@ -284,12 +284,10 @@ public class PkmnFramework {
                         .read(new PointerObjectPipe())
                             .then(new OffsetPipe())
                             .then(new AfterReadPipe())
-                            .then(new PrintPipe<>())
                             .end()
                         .write(new BeforeWritePipe())
                             .then(new PointerObjectPipe())
                             .then(new OffsetPipe())
-                            .then(new PrintPipe<>())
                             .end()
                         .build();
             }

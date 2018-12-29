@@ -13,11 +13,11 @@ import java.util.Objects;
  * or early pipe termination can be used with this; thus, it is the simplest type of pipeline.
  */
 public class LinearPipeline<T> implements Pipeline<T> {
-    private List<ReadPipe<T>> readPipes;
-    private List<WritePipe<T>> writePipes;
+    private List<ReadPipe<? super T>> readPipes;
+    private List<WritePipe<? super T>> writePipes;
     private PkmnFramework pkmnFramework;
 
-    private LinearPipeline(List<ReadPipe<T>> readPipes, List<WritePipe<T>> writePipes, PkmnFramework pkmnFramework){
+    private LinearPipeline(List<ReadPipe<? super T>> readPipes, List<WritePipe<? super T>> writePipes, PkmnFramework pkmnFramework){
         this.readPipes = readPipes;
         this.writePipes = writePipes;
         this.pkmnFramework = pkmnFramework;
@@ -25,14 +25,14 @@ public class LinearPipeline<T> implements Pipeline<T> {
 
     @Override
     public void write(HexFieldIterator iterator, T obj) {
-        for(WritePipe<T> writePipe : writePipes){
+        for(WritePipe<? super T> writePipe : writePipes){
             writePipe.write(iterator, obj, pkmnFramework);
         }
     }
 
     @Override
     public void modify(HexFieldIterator iterator, T obj){
-        for(ReadPipe<T> readPipe : readPipes){
+        for(ReadPipe<? super T> readPipe : readPipes){
             readPipe.read(obj, iterator, pkmnFramework);
         }
     }
@@ -46,8 +46,8 @@ public class LinearPipeline<T> implements Pipeline<T> {
     }
 
     public static class Builder<B> {
-        private List<ReadPipe<B>> readPipes;
-        private List<WritePipe<B>> writePipes;
+        private List<ReadPipe<? super B>> readPipes;
+        private List<WritePipe<? super B>> writePipes;
         private PkmnFramework pkmnFramework;
 
         private Builder(){
@@ -55,12 +55,12 @@ public class LinearPipeline<T> implements Pipeline<T> {
             this.writePipes = new ArrayList<>();
         }
 
-        public ReaderBuilder<B> read(ReadPipe<B> readPipe){
+        public ReaderBuilder<B> read(ReadPipe<? super B> readPipe){
             Objects.requireNonNull(readPipe);
             return new ReaderBuilder<>(this).then(readPipe);
         }
 
-        public WriterBuilder<B> write(WritePipe<B> writePipe){
+        public WriterBuilder<B> write(WritePipe<? super B> writePipe){
             Objects.requireNonNull(writePipe);
             return new WriterBuilder<>(this).then(writePipe);
         }
@@ -77,14 +77,14 @@ public class LinearPipeline<T> implements Pipeline<T> {
 
     public static class ReaderBuilder<B> {
         private Builder<B> baseBuilder;
-        private List<ReadPipe<B>> readPipes;
+        private List<ReadPipe<? super B>> readPipes;
 
         private ReaderBuilder(Builder<B> baseBuilder){
             this.baseBuilder = baseBuilder;
             this.readPipes = new ArrayList<>();
         }
 
-        public ReaderBuilder<B> then(ReadPipe<B> readPipe){
+        public ReaderBuilder<B> then(ReadPipe<? super B> readPipe){
             Objects.requireNonNull(readPipe);
             this.readPipes.add(readPipe);
             return this;
@@ -98,14 +98,14 @@ public class LinearPipeline<T> implements Pipeline<T> {
 
     public static class WriterBuilder<B> {
         private Builder<B> baseBuilder;
-        private List<WritePipe<B>> writePipes;
+        private List<WritePipe<? super B>> writePipes;
 
         private WriterBuilder(Builder<B> baseBuilder){
             this.baseBuilder = baseBuilder;
             this.writePipes = new ArrayList<>();
         }
 
-        public WriterBuilder<B> then(WritePipe<B> writePipe){
+        public WriterBuilder<B> then(WritePipe<? super B> writePipe){
             Objects.requireNonNull(writePipe);
             this.writePipes.add(writePipe);
             return this;
