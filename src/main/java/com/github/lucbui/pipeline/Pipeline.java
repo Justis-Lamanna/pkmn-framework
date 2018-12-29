@@ -4,21 +4,20 @@ import com.github.lucbui.file.HexFieldIterator;
 
 /**
  * An abstraction of a pipeline, which translates an object to and from bytes in some way
+ * @param <T> The type of object to create
  */
-public interface Pipeline {
+public interface Pipeline<T> {
     /**
-     * Read an instance of the specified object.
-     * @param iterator The iterator to use.
-     * @param clazz The class of object to create
-     * @param <T> The type of object to create
-     * @return The created object
+     * Modify an existing object through the pipeline
+     * @param iterator The iterator to use
+     * @param obj The object to modify
      */
-    <T> T read(HexFieldIterator iterator, Class<T> clazz);
+    void modify(HexFieldIterator iterator, T obj);
 
     /**
      * Write an instance of the specified object to an iterator
      * @param iterator The iterator to use
      * @param obj The object to write
      */
-    void write(HexFieldIterator iterator, Object obj);
+    void write(HexFieldIterator iterator, T obj);
 }

@@ -10,8 +10,13 @@ import com.github.lucbui.file.HexField;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
 import com.github.lucbui.pipeline.LinearPipeline;
+import com.github.lucbui.pipeline.pipes.AfterReadPipe;
+import com.github.lucbui.pipeline.pipes.BeforeWritePipe;
+import com.github.lucbui.pipeline.pipes.OffsetPipe;
+import com.github.lucbui.pipeline.pipes.PointerObjectPipe;
+import com.github.lucbui.strategy.CreateStrategy;
 import com.github.lucbui.pipeline.Pipeline;
-import com.github.lucbui.pipeline.pipes.*;
+import com.github.lucbui.strategy.EmptyConstructorCreateStrategy;
 import com.github.lucbui.utility.HexerUtils;
 
 import java.io.File;
@@ -25,10 +30,11 @@ import java.util.function.Function;
  */
 public class PkmnFramework {
 
+    private CreateStrategy createStrategy = null;
     private HexField hexField = null;
     private Configuration configuration = null;
     private Evaluator evaluator = null;
-    private Pipeline pipeline = null;
+    private Pipeline<Object> pipeline = null;
     private Map<Class<?>, Hexer<?>> hexers;
 
     /**
@@ -97,7 +103,9 @@ public class PkmnFramework {
      * @return The extracted object
      */
     public <T> T read(Pointer pointer, Class<T> clazz){
-        return pipeline.read(hexField.iterator(pointer), clazz);
+        T object = createStrategy.create(clazz);
+        pipeline.modify(hexField.iterator(pointer), object);
+        return object;
     }
 
     /**
@@ -184,8 +192,16 @@ public class PkmnFramework {
      * Get the pipeline used for this framework.
      * @return
      */
-    public Pipeline getPipeline() {
+    public Pipeline<Object> getPipeline() {
         return pipeline;
+    }
+
+    /**
+     * Get the createstrategy of this framework.
+     * @return
+     */
+    public CreateStrategy getCreateStrategy() {
+        return createStrategy;
     }
 
     public static class Builder {
@@ -193,7 +209,8 @@ public class PkmnFramework {
         private HexField hexField;
         private Configuration configuration;
         private Evaluator evaluator;
-        private Pipeline pipeline;
+        private Pipeline<Object> pipeline;
+        private CreateStrategy createStrategy;
 
         Map<Class<?>, Hexer<?>> hexers;
 
@@ -213,6 +230,11 @@ public class PkmnFramework {
             Objects.requireNonNull(clazz);
             Objects.requireNonNull(hexer);
             hexers.put(clazz, hexer);
+            return this;
+        }
+
+        public Builder createFactory(CreateStrategy createStrategy){
+            this.createStrategy = createStrategy;
             return this;
         }
 
@@ -239,12 +261,6 @@ public class PkmnFramework {
             return this;
         }
 
-        public Builder setPipeline(Pipeline pipeline){
-            Objects.requireNonNull(pipeline);
-            this.pipeline = pipeline;
-            return this;
-        }
-
         public PkmnFramework start() throws IOException {
             PkmnFramework framework = new PkmnFramework();
             framework.hexers = Collections.unmodifiableMap(hexers);
@@ -261,19 +277,24 @@ public class PkmnFramework {
                 evaluator = new ConfigurationEvaluator(configuration);
             }
             framework.evaluator = evaluator;
-            if(pipeline == null){
-                pipeline = LinearPipeline.create(new EmptyConstructorCreatePipe())
+            if(pipeline == null) {
+                pipeline = LinearPipeline.create()
                         .framework(framework)
-                        .read(new PointerObjectReadPipe())
-                            .then(new OffsetReadPipe())
+                        .read(new PointerObjectPipe())
+                            .then(new OffsetPipe())
                             .then(new AfterReadPipe())
                             .end()
-                        .write(new OffsetWritePipe())
+                        .write(new PointerObjectPipe())
+                            .then(new OffsetPipe())
                             .then(new BeforeWritePipe())
                             .end()
                         .build();
             }
             framework.pipeline = pipeline;
+            if(createStrategy == null){
+                createStrategy = new EmptyConstructorCreateStrategy();
+            }
+            framework.createStrategy = createStrategy;
             return framework;
         }
     }

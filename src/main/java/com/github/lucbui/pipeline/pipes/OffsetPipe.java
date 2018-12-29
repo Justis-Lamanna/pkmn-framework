@@ -6,6 +6,7 @@ import com.github.lucbui.annotations.Offset;
 import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.framework.PkmnFramework;
+import com.github.lucbui.pipeline.ReadPipe;
 import com.github.lucbui.pipeline.WritePipe;
 import com.github.lucbui.pipeline.exceptions.ReadPipeException;
 import com.github.lucbui.pipeline.exceptions.WritePipeException;
@@ -16,7 +17,44 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 
-public class OffsetWritePipe implements WritePipe {
+/**
+ * A pipe which reads raw @Offset annotations.
+ * A field with an @Offset annotation must be of a type with either a registered hexer, or is annotated @DataStructure.
+ * If annotated with @DataStructure, the sub-object is created through the same pipeline creating this object.
+ *
+ * If a field is populated, it is not modified.
+ */
+public class OffsetPipe implements ReadPipe<Object>, WritePipe<Object> {
+
+    @Override
+    public void read(Object object, HexFieldIterator iterator, PkmnFramework pkmnFramework) {
+        List<Field> fields = PipeUtils.getNullAnnotatedFields(object, Offset.class);
+        for(Field field : fields){
+            Offset offset = field.getAnnotation(Offset.class);
+            long offsetAsLong = pkmnFramework.getEvaluator().evaluateLong(offset.value()).orElseThrow(ReadPipeException::new);
+            HexFieldIterator iteratorForField =
+                    field.isAnnotationPresent(Absolute.class) ?
+                            iterator.copy(offsetAsLong) :
+                            iterator.copyRelative(offsetAsLong);
+
+            Object readObject = HexerUtils.getHexerFor(pkmnFramework.getHexers(), field.getType())
+                    .map(hexer -> (Object)hexer.read(iteratorForField))
+                    .orElseGet(() -> {
+                        if(field.isAnnotationPresent(DataStructure.class)){
+                            Object obj = pkmnFramework.getCreateStrategy().create(field.getType());
+                            pkmnFramework.getPipeline().modify(iteratorForField, obj);
+                            return obj;
+                        } else {
+                            return null;
+                        }
+                    });
+            try {
+                FieldUtils.writeDeclaredField(object, field.getName(), readObject, true);
+            } catch (IllegalAccessException e) {
+                throw new ReadPipeException("Error writing field", e);
+            }
+        }
+    }
 
     @Override
     public void write(HexFieldIterator iterator, Object object, PkmnFramework pkmnFramework) {

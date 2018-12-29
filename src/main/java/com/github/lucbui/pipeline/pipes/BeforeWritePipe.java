@@ -12,7 +12,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
-public class BeforeWritePipe implements WritePipe {
+public class BeforeWritePipe implements WritePipe<Object> {
     @Override
     public void write(HexFieldIterator iterator, Object object, PkmnFramework pkmnFramework) {
         List<Method> methods = MethodUtils.getMethodsListWithAnnotation(object.getClass(), BeforeWrite.class);

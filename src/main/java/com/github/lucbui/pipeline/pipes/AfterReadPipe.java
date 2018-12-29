@@ -11,7 +11,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
-public class AfterReadPipe implements ReadPipe {
+public class AfterReadPipe implements ReadPipe<Object> {
     @Override
     public void read(Object object, HexFieldIterator iterator, PkmnFramework pkmnFramework) {
         List<Method> methods = MethodUtils.getMethodsListWithAnnotation(object.getClass(), AfterRead.class);

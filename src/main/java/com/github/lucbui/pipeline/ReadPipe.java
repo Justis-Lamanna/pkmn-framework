@@ -6,11 +6,11 @@ import com.github.lucbui.framework.PkmnFramework;
 /**
  * A pipe which modifies an object, through usage of a HexFieldIterator
  */
-public interface ReadPipe {
+public interface ReadPipe<T> {
     /**
      * Modify an instance of an object, using a HexFieldIterator
      * @param object The object to modify
      * @param iterator The iterator to read from
      */
-    void read(Object object, HexFieldIterator iterator, PkmnFramework pkmnFramework);
+    void read(T object, HexFieldIterator iterator, PkmnFramework pkmnFramework);
 }

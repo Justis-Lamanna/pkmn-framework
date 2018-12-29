@@ -1,9 +1,11 @@
-package com.github.lucbui.pipeline.pipes;
+package com.github.lucbui.strategy;
 
-import com.github.lucbui.pipeline.CreatePipe;
 import com.github.lucbui.pipeline.exceptions.CreatePipeException;
 
-public class EmptyConstructorCreatePipe implements CreatePipe {
+/**
+ * A creation strategy that creates an object using an empty constructor.
+ */
+public class EmptyConstructorCreateStrategy implements CreateStrategy {
 
     @Override
     public <T> T create(Class<T> clazz) {

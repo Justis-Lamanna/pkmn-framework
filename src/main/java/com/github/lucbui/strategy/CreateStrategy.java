@@ -1,9 +1,9 @@
-package com.github.lucbui.pipeline;
+package com.github.lucbui.strategy;
 
 /**
  * A pipe which creates an instance of a specified class
  */
-public interface CreatePipe {
+public interface CreateStrategy {
 
     /**
      * Create an object of the given class

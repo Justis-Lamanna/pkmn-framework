@@ -12,114 +12,106 @@ import java.util.Objects;
  * Objects simply travel in a straight line, through either the readPipe or the writePipe. No branching
  * or early pipe termination can be used with this; thus, it is the simplest type of pipeline.
  */
-public class LinearPipeline implements Pipeline {
-    private CreatePipe createPipe;
-    private List<ReadPipe> readPipes;
-    private List<WritePipe> writePipes;
+public class LinearPipeline<T> implements Pipeline<T> {
+    private List<ReadPipe<T>> readPipes;
+    private List<WritePipe<T>> writePipes;
     private PkmnFramework pkmnFramework;
 
-    private LinearPipeline(CreatePipe createPipe, List<ReadPipe> readPipes, List<WritePipe> writePipes, PkmnFramework pkmnFramework){
-        this.createPipe = createPipe;
+    private LinearPipeline(List<ReadPipe<T>> readPipes, List<WritePipe<T>> writePipes, PkmnFramework pkmnFramework){
         this.readPipes = readPipes;
         this.writePipes = writePipes;
         this.pkmnFramework = pkmnFramework;
     }
 
     @Override
-    public <T> T read(HexFieldIterator iterator, Class<T> clazz){
-        T obj = createPipe.create(clazz);
-        for(ReadPipe readPipe : readPipes){
-            readPipe.read(obj, iterator, pkmnFramework);
+    public void write(HexFieldIterator iterator, T obj) {
+        for(WritePipe<T> writePipe : writePipes){
+            writePipe.write(iterator, obj, pkmnFramework);
         }
-        return obj;
     }
 
     @Override
-    public void write(HexFieldIterator iterator, Object obj) {
-        for(WritePipe writePipe : writePipes){
-            writePipe.write(iterator, obj, pkmnFramework);
+    public void modify(HexFieldIterator iterator, T obj){
+        for(ReadPipe<T> readPipe : readPipes){
+            readPipe.read(obj, iterator, pkmnFramework);
         }
     }
 
     /**
      * Build a LinearPipeline using a Builder
-     * @param createPipe The CreatePipe to use.
      * @return A builder to continue chaining objects to.
      */
-    public static Builder create(CreatePipe createPipe){
-        Objects.requireNonNull(createPipe);
-        return new Builder(createPipe);
+    public static <T> Builder<T> create(){
+        return new Builder<>();
     }
 
-    public static class Builder {
-        private CreatePipe createPipe;
-        private List<ReadPipe> readPipes;
-        private List<WritePipe> writePipes;
+    public static class Builder<B> {
+        private List<ReadPipe<B>> readPipes;
+        private List<WritePipe<B>> writePipes;
         private PkmnFramework pkmnFramework;
 
-        private Builder(CreatePipe createPipe){
-            this.createPipe = createPipe;
+        private Builder(){
             this.readPipes = new ArrayList<>();
             this.writePipes = new ArrayList<>();
         }
 
-        public ReaderBuilder read(ReadPipe readPipe){
+        public ReaderBuilder<B> read(ReadPipe<B> readPipe){
             Objects.requireNonNull(readPipe);
-            return new ReaderBuilder(this).then(readPipe);
+            return new ReaderBuilder<>(this).then(readPipe);
         }
 
-        public WriterBuilder write(WritePipe writePipe){
+        public WriterBuilder<B> write(WritePipe<B> writePipe){
             Objects.requireNonNull(writePipe);
-            return new WriterBuilder(this).then(writePipe);
+            return new WriterBuilder<>(this).then(writePipe);
         }
 
-        public LinearPipeline build(){
-            return new LinearPipeline(createPipe, readPipes, writePipes, pkmnFramework);
+        public LinearPipeline<B> build(){
+            return new LinearPipeline<>(readPipes, writePipes, pkmnFramework);
         }
 
-        public Builder framework(PkmnFramework pkmnFramework){
+        public Builder<B> framework(PkmnFramework pkmnFramework){
             this.pkmnFramework = pkmnFramework;
             return this;
         }
     }
 
-    public static class ReaderBuilder {
-        private Builder baseBuilder;
-        private List<ReadPipe> readPipes;
+    public static class ReaderBuilder<B> {
+        private Builder<B> baseBuilder;
+        private List<ReadPipe<B>> readPipes;
 
-        private ReaderBuilder(Builder baseBuilder){
+        private ReaderBuilder(Builder<B> baseBuilder){
             this.baseBuilder = baseBuilder;
             this.readPipes = new ArrayList<>();
         }
 
-        public ReaderBuilder then(ReadPipe readPipe){
+        public ReaderBuilder<B> then(ReadPipe<B> readPipe){
             Objects.requireNonNull(readPipe);
             this.readPipes.add(readPipe);
             return this;
         }
 
-        public Builder end(){
+        public Builder<B> end(){
             baseBuilder.readPipes = this.readPipes;
             return baseBuilder;
         }
     }
 
-    public static class WriterBuilder {
-        private Builder baseBuilder;
-        private List<WritePipe> writePipes;
+    public static class WriterBuilder<B> {
+        private Builder<B> baseBuilder;
+        private List<WritePipe<B>> writePipes;
 
-        private WriterBuilder(Builder baseBuilder){
+        private WriterBuilder(Builder<B> baseBuilder){
             this.baseBuilder = baseBuilder;
             this.writePipes = new ArrayList<>();
         }
 
-        public WriterBuilder then(WritePipe writePipe){
+        public WriterBuilder<B> then(WritePipe<B> writePipe){
             Objects.requireNonNull(writePipe);
             this.writePipes.add(writePipe);
             return this;
         }
 
-        public Builder end(){
+        public Builder<B> end(){
             baseBuilder.writePipes = this.writePipes;
             return baseBuilder;
         }
