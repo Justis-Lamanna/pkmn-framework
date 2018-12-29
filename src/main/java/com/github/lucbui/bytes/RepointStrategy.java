@@ -1,4 +1,4 @@
-package com.github.lucbui.framework;
+package com.github.lucbui.bytes;
 
 import com.github.lucbui.file.Pointer;
 

@@ -1,6 +1,7 @@
 package com.github.lucbui.framework;
 
 import com.github.lucbui.config.Configuration;
+import com.github.lucbui.evaluator.Evaluator;
 import com.github.lucbui.utility.ParseUtils;
 
 import java.util.Objects;
@@ -12,7 +13,7 @@ import java.util.regex.Pattern;
 /**
  * An evaluator which evaluates based on a configuration.
  */
-public class ConfigurationEvaluator implements Evaluator{
+public class ConfigurationEvaluator implements Evaluator {
 
     private Configuration configuration;
     private static final Pattern matchPattern = Pattern.compile("\\$\\{([A-Za-z0-9.]+)(?:\\|([A-Za-z0-9.]+))?}");

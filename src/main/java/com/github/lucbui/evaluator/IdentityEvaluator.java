@@ -1,4 +1,4 @@
-package com.github.lucbui.framework;
+package com.github.lucbui.evaluator;
 
 public class IdentityEvaluator implements Evaluator {
     @Override

@@ -18,8 +18,6 @@ public class Main {
                 .frameworkFactory(new GBAFrameworkFactory())
                 .start();
         TestStructure ts = pkmnGame.read(GBAPointer.valueOf(0x70), TestStructure.class);
-        System.out.println(ts);
-        System.out.println(pkmnGame.getSize(ts));
     }
 
     @DataStructure

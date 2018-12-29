@@ -1,23 +1,24 @@
 package com.github.lucbui.framework;
 
+import com.github.lucbui.annotations.Offset;
 import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.HexWriter;
 import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.config.Configuration;
 import com.github.lucbui.config.MapConfig;
+import com.github.lucbui.evaluator.Evaluator;
 import com.github.lucbui.file.FileHexField;
 import com.github.lucbui.file.HexField;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
 import com.github.lucbui.pipeline.LinearPipeline;
-import com.github.lucbui.pipeline.pipes.AfterReadPipe;
-import com.github.lucbui.pipeline.pipes.BeforeWritePipe;
-import com.github.lucbui.pipeline.pipes.OffsetPipe;
-import com.github.lucbui.pipeline.pipes.PointerObjectPipe;
+import com.github.lucbui.pipeline.ReadPipe;
+import com.github.lucbui.pipeline.pipes.*;
 import com.github.lucbui.strategy.CreateStrategy;
 import com.github.lucbui.pipeline.Pipeline;
 import com.github.lucbui.strategy.EmptyConstructorCreateStrategy;
 import com.github.lucbui.utility.HexerUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -283,10 +284,12 @@ public class PkmnFramework {
                         .read(new PointerObjectPipe())
                             .then(new OffsetPipe())
                             .then(new AfterReadPipe())
+                            .then(new PrintPipe<>())
                             .end()
-                        .write(new PointerObjectPipe())
+                        .write(new BeforeWritePipe())
+                            .then(new PointerObjectPipe())
                             .then(new OffsetPipe())
-                            .then(new BeforeWritePipe())
+                            .then(new PrintPipe<>())
                             .end()
                         .build();
             }

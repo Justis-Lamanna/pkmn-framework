@@ -1,8 +1,7 @@
 package com.github.lucbui.bytes;
 
 import com.github.lucbui.file.Pointer;
-import com.github.lucbui.framework.RepointStrategy;
-import com.github.lucbui.framework.RepointUtils;
+import com.github.lucbui.utility.RepointUtils;
 
 import java.util.Objects;
 
