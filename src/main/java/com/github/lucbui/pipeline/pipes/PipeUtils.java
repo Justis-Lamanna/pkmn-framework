@@ -59,6 +59,10 @@ public class PipeUtils {
                 .then(new PointerObjectPipe())
                 .then(new OffsetPipe())
                 .end()
+            .forEach(o -> PipeUtils.getAnnotatedFieldObject(o, Offset.class))
+                .read(new PrintPipe()).end()
+                .write(new PrintPipe()).end()
+                .build()
             .build();
     }
 }

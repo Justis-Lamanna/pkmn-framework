@@ -12,10 +12,10 @@ import java.util.stream.Stream;
 
 public class ForEachPipe<O, S> implements ReadPipe<O>, WritePipe<O> {
 
-    private Function<O, Stream<S>> converter;
-    private Pipeline<S> subPipeline;
+    private Function<? super O, Stream<? extends S>> converter;
+    private Pipeline<? super S> subPipeline;
 
-    public ForEachPipe(Function<O, Stream<S>> converter, Pipeline<S> subPipeline){
+    public ForEachPipe(Function<? super O, Stream<? extends S>> converter, Pipeline<S> subPipeline){
         this.converter = Objects.requireNonNull(converter);
         this.subPipeline = Objects.requireNonNull(subPipeline);
     }

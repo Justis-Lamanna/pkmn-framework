@@ -17,7 +17,7 @@ public class LinearPipeline<T> implements Pipeline<T> {
     private List<ReadPipe<? super T>> readPipes;
     private List<WritePipe<? super T>> writePipes;
 
-    LinearPipeline(List<ReadPipe<? super T>> readPipes, List<WritePipe<? super T>> writePipes){
+    private LinearPipeline(List<ReadPipe<? super T>> readPipes, List<WritePipe<? super T>> writePipes){
         this.readPipes = readPipes;
         this.writePipes = writePipes;
     }
@@ -37,17 +37,21 @@ public class LinearPipeline<T> implements Pipeline<T> {
     }
 
     /**
-     * Build a LinearPipeline using a Builder
+     * Build a LinearPipeline using a LinearPipelineBuilder
      * @return A builder to continue chaining objects to.
      */
-    public static <T> Builder<T> create(){
-        return new Builder<>();
+    public static <T> LinearPipelineBuilder<T> create(){
+        return new LinearPipelineBuilder<>();
     }
 
-    public static class Builder<B> extends PipelineBuilder<Builder<B>, LinearPipeline<B>, ReadPipe<? super B>, WritePipe<? super B>>{
+    /**
+     * A builder class which creates a LinearPipeline
+     * @param <B> The type going through the pipeline
+     */
+    public static class LinearPipelineBuilder<B> extends PipelineBuilder<LinearPipelineBuilder<B>, LinearPipeline<B>, ReadPipe<? super B>, WritePipe<? super B>>{
 
         @Override
-        protected Builder<B> self() {
+        protected LinearPipelineBuilder<B> self() {
             return this;
         }
 
@@ -56,20 +60,30 @@ public class LinearPipeline<T> implements Pipeline<T> {
             return new LinearPipeline<>(readers, writers);
         }
 
-        public <O> ForEachPipelineBuilder<O> forEach(Function<B, Stream<O>> forEachFunction){
+        /**
+         * Creates a ForEach pipeline
+         * @param forEachFunction The function to evaluate into the input object into a stream of sub-objects
+         * @param <O> The type output by the stream
+         * @return A ForEachPipelineBuilder to build out the for-each pipeline.
+         */
+        public <O> ForEachPipelineBuilder<O> forEach(Function<? super B, Stream<? extends O>> forEachFunction){
             return new ForEachPipelineBuilder<>(this, forEachFunction);
         }
 
+        /**
+         * Builds a for-each pipeline
+         * @param <O> The type processed by the stream
+         */
         public class ForEachPipelineBuilder<O> extends PipelineBuilder<
                 ForEachPipelineBuilder<O>,
-                Builder<B>,
+                LinearPipelineBuilder<B>,
                 ReadPipe<? super O>,
                 WritePipe<? super O>>{
 
-            private final Builder<B> base;
-            private Function<B, Stream<O>> forEachFunction;
+            private final LinearPipelineBuilder<B> base;
+            private Function<? super B, Stream<? extends O>> forEachFunction;
 
-            private ForEachPipelineBuilder(Builder<B> base, Function<B, Stream<O>> forEachFunction){
+            private ForEachPipelineBuilder(LinearPipelineBuilder<B> base, Function<? super B, Stream<? extends O>> forEachFunction){
                 this.base = base;
                 this.forEachFunction = forEachFunction;
             }
@@ -80,7 +94,7 @@ public class LinearPipeline<T> implements Pipeline<T> {
             }
 
             @Override
-            public Builder<B> build() {
+            public LinearPipelineBuilder<B> build() {
                 Pipeline<O> pipeline = new LinearPipeline<>(this.readers, this.writers);
                 base.readers.add(new ForEachPipe<>(this.forEachFunction, pipeline));
                 base.writers.add(new ForEachPipe<>(this.forEachFunction, pipeline));

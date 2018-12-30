@@ -28,53 +28,36 @@ public abstract class PipelineBuilder<
         this.writers = new ArrayList<>();
     }
 
+    /**
+     * Returns the implementor.
+     * This should simply returns "this".
+     * @return This object.
+     */
     protected abstract SELF self();
 
-    public SubPipeBuilder<READPIPE> read(READPIPE pipe){
+    /**
+     * Create the built object.
+     * @return The built object BUILD.
+     */
+    public abstract BUILD build();
+
+    /**
+     * Build out the READ subpipe
+     * @param pipe The first pipe in the subpipe
+     * @return A SubPipeBuilder to add more pipes.
+     */
+    public SubPipeBuilder<SELF, READPIPE> read(READPIPE pipe){
         Objects.requireNonNull(pipe);
         return new SubPipeBuilder<>(self(), readers).then(pipe);
     }
 
-    public SubPipeBuilder<WRITEPIPE> write(WRITEPIPE pipe){
+    /**
+     * Build out the WRITE subpipe
+     * @param pipe The first pipe in the subpipe
+     * @return A SubPipeBuilder to add more pipes.
+     */
+    public SubPipeBuilder<SELF, WRITEPIPE> write(WRITEPIPE pipe){
         Objects.requireNonNull(pipe);
         return new SubPipeBuilder<>(self(), writers).then(pipe);
-    }
-
-    public abstract BUILD build();
-
-    public class SubPipeBuilder<SUBPIPE> {
-        protected SELF baseBuilder;
-        protected List<SUBPIPE> oldPipe;
-        protected List<SUBPIPE> newPipe;
-
-        /**
-         * Initialize a SubPipelineBuilder
-         * @param base The base builder to use
-         */
-        protected SubPipeBuilder(SELF base, List<SUBPIPE> parentPipe){
-            this.baseBuilder = base;
-            this.oldPipe = parentPipe;
-            this.newPipe = new ArrayList<>();
-        }
-
-        /**
-         * Add a pipe to this builder
-         * @param pipe The pipe to add
-         * @return This instance
-         */
-        public SubPipeBuilder<SUBPIPE> then(SUBPIPE pipe){
-            newPipe.add(pipe);
-            return this;
-        }
-
-        /**
-         * Wrap up building and return the base builder back
-         * @return The base builder instance
-         */
-        public SELF end(){
-            oldPipe.clear();
-            oldPipe.addAll(newPipe);
-            return baseBuilder;
-        }
     }
 }
