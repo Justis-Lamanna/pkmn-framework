@@ -18,6 +18,7 @@ public class Main {
                 .frameworkFactory(new GBAFrameworkFactory())
                 .start();
         TestStructure ts = pkmnGame.read(GBAPointer.valueOf(0x70), TestStructure.class);
+        System.out.println(ts);
     }
 
     @DataStructure
@@ -28,6 +29,8 @@ public class Main {
         @Offset("0x1")
         @Absolute
         public UnsignedByte b2;
+
+        public String ignoreMe;
 
         @Override
         public String toString() {

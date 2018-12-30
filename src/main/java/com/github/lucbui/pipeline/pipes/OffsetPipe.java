@@ -42,7 +42,7 @@ public class OffsetPipe implements ReadPipe<Object>, WritePipe<Object> {
                     .orElseGet(() -> {
                         if(field.isAnnotationPresent(DataStructure.class)){
                             Object obj = pkmnFramework.getCreateStrategy().create(field.getType());
-                            pkmnFramework.getPipeline().modify(iteratorForField, obj);
+                            pkmnFramework.getPipeline().modify(iteratorForField, obj, pkmnFramework);
                             return obj;
                         } else {
                             return null;
@@ -75,7 +75,7 @@ public class OffsetPipe implements ReadPipe<Object>, WritePipe<Object> {
                     hexer.get().writeObject(fieldObject, iteratorForField);
                 } else {
                     if(field.isAnnotationPresent(DataStructure.class)){
-                        pkmnFramework.getPipeline().write(iteratorForField, field.getType());
+                        pkmnFramework.getPipeline().write(iteratorForField, field.getType(), pkmnFramework);
                     } else {
                         throw new ReadPipeException("Encountered object of type " + field.getType().getName() +
                                 " which does not have an associated hexer, and is not marked @DataStructure.");

@@ -2,10 +2,11 @@ package com.github.lucbui.pipeline;
 
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.framework.PkmnFramework;
+import com.github.lucbui.pipeline.pipes.ForEachPipe;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * Encapsulates a linear read-write pipeline for populating objects.
@@ -15,23 +16,21 @@ import java.util.Objects;
 public class LinearPipeline<T> implements Pipeline<T> {
     private List<ReadPipe<? super T>> readPipes;
     private List<WritePipe<? super T>> writePipes;
-    private PkmnFramework pkmnFramework;
 
-    private LinearPipeline(List<ReadPipe<? super T>> readPipes, List<WritePipe<? super T>> writePipes, PkmnFramework pkmnFramework){
+    LinearPipeline(List<ReadPipe<? super T>> readPipes, List<WritePipe<? super T>> writePipes){
         this.readPipes = readPipes;
         this.writePipes = writePipes;
-        this.pkmnFramework = pkmnFramework;
     }
 
     @Override
-    public void write(HexFieldIterator iterator, T obj) {
+    public void write(HexFieldIterator iterator, T obj, PkmnFramework pkmnFramework) {
         for(WritePipe<? super T> writePipe : writePipes){
             writePipe.write(iterator, obj, pkmnFramework);
         }
     }
 
     @Override
-    public void modify(HexFieldIterator iterator, T obj){
+    public void modify(HexFieldIterator iterator, T obj, PkmnFramework pkmnFramework){
         for(ReadPipe<? super T> readPipe : readPipes){
             readPipe.read(obj, iterator, pkmnFramework);
         }
@@ -45,75 +44,48 @@ public class LinearPipeline<T> implements Pipeline<T> {
         return new Builder<>();
     }
 
-    public static class Builder<B> {
-        private List<ReadPipe<? super B>> readPipes;
-        private List<WritePipe<? super B>> writePipes;
-        private PkmnFramework pkmnFramework;
+    public static class Builder<B> extends PipelineBuilder<Builder<B>, LinearPipeline<B>, ReadPipe<? super B>, WritePipe<? super B>>{
 
-        private Builder(){
-            this.readPipes = new ArrayList<>();
-            this.writePipes = new ArrayList<>();
-        }
-
-        public ReaderBuilder<B> read(ReadPipe<? super B> readPipe){
-            Objects.requireNonNull(readPipe);
-            return new ReaderBuilder<>(this).then(readPipe);
-        }
-
-        public WriterBuilder<B> write(WritePipe<? super B> writePipe){
-            Objects.requireNonNull(writePipe);
-            return new WriterBuilder<>(this).then(writePipe);
-        }
-
-        public LinearPipeline<B> build(){
-            return new LinearPipeline<>(readPipes, writePipes, pkmnFramework);
-        }
-
-        public Builder<B> framework(PkmnFramework pkmnFramework){
-            this.pkmnFramework = pkmnFramework;
-            return this;
-        }
-    }
-
-    public static class ReaderBuilder<B> {
-        private Builder<B> baseBuilder;
-        private List<ReadPipe<? super B>> readPipes;
-
-        private ReaderBuilder(Builder<B> baseBuilder){
-            this.baseBuilder = baseBuilder;
-            this.readPipes = new ArrayList<>();
-        }
-
-        public ReaderBuilder<B> then(ReadPipe<? super B> readPipe){
-            Objects.requireNonNull(readPipe);
-            this.readPipes.add(readPipe);
+        @Override
+        protected Builder<B> self() {
             return this;
         }
 
-        public Builder<B> end(){
-            baseBuilder.readPipes = this.readPipes;
-            return baseBuilder;
-        }
-    }
-
-    public static class WriterBuilder<B> {
-        private Builder<B> baseBuilder;
-        private List<WritePipe<? super B>> writePipes;
-
-        private WriterBuilder(Builder<B> baseBuilder){
-            this.baseBuilder = baseBuilder;
-            this.writePipes = new ArrayList<>();
+        @Override
+        public LinearPipeline<B> build() {
+            return new LinearPipeline<>(readers, writers);
         }
 
-        public WriterBuilder<B> then(WritePipe<? super B> writePipe){
-            Objects.requireNonNull(writePipe);
-            this.writePipes.add(writePipe);
-            return this;
+        public <O> ForEachPipelineBuilder<O> forEach(Function<B, Stream<O>> forEachFunction){
+            return new ForEachPipelineBuilder<>(this, forEachFunction);
         }
 
-        public Builder<B> end(){
-            baseBuilder.writePipes = this.writePipes;
-            return baseBuilder;
+        public class ForEachPipelineBuilder<O> extends PipelineBuilder<
+                ForEachPipelineBuilder<O>,
+                Builder<B>,
+                ReadPipe<? super O>,
+                WritePipe<? super O>>{
+
+            private final Builder<B> base;
+            private Function<B, Stream<O>> forEachFunction;
+
+            private ForEachPipelineBuilder(Builder<B> base, Function<B, Stream<O>> forEachFunction){
+                this.base = base;
+                this.forEachFunction = forEachFunction;
+            }
+
+            @Override
+            protected ForEachPipelineBuilder<O> self() {
+                return this;
+            }
+
+            @Override
+            public Builder<B> build() {
+                Pipeline<O> pipeline = new LinearPipeline<>(this.readers, this.writers);
+                base.readers.add(new ForEachPipe<>(this.forEachFunction, pipeline));
+                base.writers.add(new ForEachPipe<>(this.forEachFunction, pipeline));
+                return base;
+            }
         }
     }
 }

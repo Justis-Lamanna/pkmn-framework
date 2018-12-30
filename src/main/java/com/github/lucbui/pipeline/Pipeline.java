@@ -1,6 +1,7 @@
 package com.github.lucbui.pipeline;
 
 import com.github.lucbui.file.HexFieldIterator;
+import com.github.lucbui.framework.PkmnFramework;
 
 /**
  * An abstraction of a pipeline, which translates an object to and from bytes in some way
@@ -12,12 +13,12 @@ public interface Pipeline<T> {
      * @param iterator The iterator to use
      * @param obj The object to modify
      */
-    void modify(HexFieldIterator iterator, T obj);
+    void modify(HexFieldIterator iterator, T obj, PkmnFramework pkmnFramework);
 
     /**
      * Write an instance of the specified object to an iterator
      * @param iterator The iterator to use
      * @param obj The object to write
      */
-    void write(HexFieldIterator iterator, T obj);
+    void write(HexFieldIterator iterator, T obj, PkmnFramework pkmnFramework);
 }

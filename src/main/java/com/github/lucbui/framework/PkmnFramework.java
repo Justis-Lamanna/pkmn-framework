@@ -105,7 +105,7 @@ public class PkmnFramework {
      */
     public <T> T read(Pointer pointer, Class<T> clazz){
         T object = createStrategy.create(clazz);
-        pipeline.modify(hexField.iterator(pointer), object);
+        pipeline.modify(hexField.iterator(pointer), object, this);
         return object;
     }
 
@@ -120,7 +120,7 @@ public class PkmnFramework {
      * @param <T> The object to write
      */
     public <T> void write(Pointer pointer, T object) {
-        pipeline.write(hexField.iterator(pointer), object);
+        pipeline.write(hexField.iterator(pointer), object, this);
     }
 
     /**
@@ -279,17 +279,7 @@ public class PkmnFramework {
             }
             framework.evaluator = evaluator;
             if(pipeline == null) {
-                pipeline = LinearPipeline.create()
-                        .framework(framework)
-                        .read(new PointerObjectPipe())
-                            .then(new OffsetPipe())
-                            .then(new AfterReadPipe())
-                            .end()
-                        .write(new BeforeWritePipe())
-                            .then(new PointerObjectPipe())
-                            .then(new OffsetPipe())
-                            .end()
-                        .build();
+                pipeline = PipeUtils.getDefaultPipeline();
             }
             framework.pipeline = pipeline;
             if(createStrategy == null){

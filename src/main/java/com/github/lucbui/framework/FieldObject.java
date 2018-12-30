@@ -36,4 +36,12 @@ public class FieldObject {
     public Object getReferent() {
         return referent;
     }
+
+    @Override
+    public String toString() {
+        return "FieldObject{" +
+                "field=" + field.getName() +
+                ", referent=" + referent +
+                '}';
+    }
 }

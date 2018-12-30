@@ -1,6 +1,9 @@
 package com.github.lucbui.pipeline.pipes;
 
+import com.github.lucbui.annotations.Offset;
 import com.github.lucbui.framework.FieldObject;
+import com.github.lucbui.pipeline.LinearPipeline;
+import com.github.lucbui.pipeline.Pipeline;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.lang.annotation.Annotation;
@@ -31,8 +34,31 @@ public class PipeUtils {
                 }).collect(Collectors.toList());
     }
 
+    /**
+     * Get a Stream of FieldObjects, each representing a specifically-annotated field in an object.
+     * @param obj The object to parse fields out of
+     * @param annotationClass The annotation to search for
+     * @return A stream of FieldObjects, Each containing the field and its corresponding object value in the object.
+     */
     public static Stream<FieldObject> getAnnotatedFieldObject(Object obj, Class<? extends Annotation> annotationClass){
         return FieldUtils.getFieldsListWithAnnotation(obj.getClass(), annotationClass).stream()
                 .map(f -> FieldObject.get(obj, f).orElseThrow(IllegalArgumentException::new));
+    }
+
+    /**
+     * Get the default pipeline
+     * @return The default pipeline to use
+     */
+    public static Pipeline<Object> getDefaultPipeline(){
+        return LinearPipeline.create()
+            .read(new PointerObjectPipe())
+                .then(new OffsetPipe())
+                .then(new AfterReadPipe())
+                .end()
+            .write(new BeforeWritePipe())
+                .then(new PointerObjectPipe())
+                .then(new OffsetPipe())
+                .end()
+            .build();
     }
 }

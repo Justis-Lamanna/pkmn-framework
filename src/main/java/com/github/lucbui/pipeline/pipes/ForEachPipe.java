@@ -22,11 +22,11 @@ public class ForEachPipe<O, S> implements ReadPipe<O>, WritePipe<O> {
 
     @Override
     public void read(O object, HexFieldIterator iterator, PkmnFramework pkmnFramework) {
-        converter.apply(object).forEach(i -> subPipeline.modify(iterator, i));
+        converter.apply(object).forEach(i -> subPipeline.modify(iterator, i, pkmnFramework));
     }
 
     @Override
     public void write(HexFieldIterator iterator, O object, PkmnFramework pkmnFramework) {
-        converter.apply(object).forEach(i -> subPipeline.write(iterator, i));
+        converter.apply(object).forEach(i -> subPipeline.write(iterator, i, pkmnFramework));
     }
 }
