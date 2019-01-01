@@ -2,6 +2,7 @@ package com.github.lucbui.pipeline.pipes;
 
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.framework.PkmnFramework;
+import com.github.lucbui.pipeline.DoublePipe;
 import com.github.lucbui.pipeline.Pipeline;
 import com.github.lucbui.pipeline.ReadPipe;
 import com.github.lucbui.pipeline.WritePipe;
@@ -15,7 +16,7 @@ import java.util.function.Predicate;
  * A pipe which goes down one of several pipelines depending on the outcome of a Predicate
  * @param <T>
  */
-public class SwitchPipe<T> implements ReadPipe<T>, WritePipe<T> {
+public class SwitchPipe<T> implements DoublePipe<T> {
 
     private List<SwitchCase<? super T>> cases;
 

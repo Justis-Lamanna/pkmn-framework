@@ -9,6 +9,7 @@ import com.github.lucbui.file.Pointer;
 import com.github.lucbui.framework.PkmnFramework;
 import com.github.lucbui.bytes.RepointMetadata;
 import com.github.lucbui.bytes.RepointStrategy;
+import com.github.lucbui.pipeline.DoublePipe;
 import com.github.lucbui.pipeline.ReadPipe;
 import com.github.lucbui.pipeline.WritePipe;
 import com.github.lucbui.pipeline.exceptions.ReadPipeException;
@@ -24,7 +25,7 @@ import java.util.List;
  *
  * If a field is populated, it is not modified.
  */
-public class PointerObjectPipe implements ReadPipe<Object>, WritePipe<Object> {
+public class PointerObjectPipe implements DoublePipe<Object> {
 
     @Override
     public void read(Object object, HexFieldIterator iterator, PkmnFramework pkmnFramework) {

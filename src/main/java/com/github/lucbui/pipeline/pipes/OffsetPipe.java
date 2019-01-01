@@ -6,6 +6,7 @@ import com.github.lucbui.annotations.Offset;
 import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.framework.PkmnFramework;
+import com.github.lucbui.pipeline.DoublePipe;
 import com.github.lucbui.pipeline.ReadPipe;
 import com.github.lucbui.pipeline.WritePipe;
 import com.github.lucbui.pipeline.exceptions.ReadPipeException;
@@ -24,7 +25,7 @@ import java.util.Optional;
  *
  * If a field is populated, it is not modified.
  */
-public class OffsetPipe implements ReadPipe<Object>, WritePipe<Object> {
+public class OffsetPipe implements DoublePipe<Object> {
 
     @Override
     public void read(Object object, HexFieldIterator iterator, PkmnFramework pkmnFramework) {

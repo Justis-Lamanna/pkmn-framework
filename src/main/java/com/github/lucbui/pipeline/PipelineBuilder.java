@@ -44,20 +44,36 @@ public abstract class PipelineBuilder<
     /**
      * Build out the READ subpipe
      * @param pipe The first pipe in the subpipe
-     * @return A SubPipeBuilder to add more pipes.
+     * @return This instance for further chaining
      */
-    public SubPipeBuilder<SELF, READPIPE> read(READPIPE pipe){
+    public SELF read(READPIPE pipe){
         Objects.requireNonNull(pipe);
-        return new SubPipeBuilder<>(self(), readers).then(pipe);
+        this.readers.add(pipe);
+        return self();
     }
 
     /**
      * Build out the WRITE subpipe
      * @param pipe The first pipe in the subpipe
-     * @return A SubPipeBuilder to add more pipes.
+     * @return This instance for further chaining
      */
-    public SubPipeBuilder<SELF, WRITEPIPE> write(WRITEPIPE pipe){
+    public SELF write(WRITEPIPE pipe){
         Objects.requireNonNull(pipe);
-        return new SubPipeBuilder<>(self(), writers).then(pipe);
+        this.writers.add(pipe);
+        return self();
+    }
+
+    /**
+     * Add a reader and writer both.
+     * @param readPipe THe reader to add
+     * @param writePipe The writer to add.
+     * @return
+     */
+    public SELF pipe(READPIPE readPipe, WRITEPIPE writePipe){
+        Objects.requireNonNull(readPipe);
+        Objects.requireNonNull(writePipe);
+        this.readers.add(readPipe);
+        this.writers.add(writePipe);
+        return self();
     }
 }

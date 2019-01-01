@@ -38,7 +38,6 @@ public class SubPipeBuilder<PARENT, SUBPIPE> {
      * @return The base builder instance
      */
     public PARENT end(){
-        oldPipe.clear();
         oldPipe.addAll(newPipe);
         return baseBuilder;
     }

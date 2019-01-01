@@ -6,6 +6,7 @@ import com.github.lucbui.pipeline.pipes.ForEachPipe;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -17,7 +18,7 @@ public class LinearPipeline<T> implements Pipeline<T> {
     private List<ReadPipe<? super T>> readPipes;
     private List<WritePipe<? super T>> writePipes;
 
-    private LinearPipeline(List<ReadPipe<? super T>> readPipes, List<WritePipe<? super T>> writePipes){
+    public LinearPipeline(List<ReadPipe<? super T>> readPipes, List<WritePipe<? super T>> writePipes){
         this.readPipes = readPipes;
         this.writePipes = writePipes;
     }
@@ -34,6 +35,22 @@ public class LinearPipeline<T> implements Pipeline<T> {
         for(ReadPipe<? super T> readPipe : readPipes){
             readPipe.read(obj, iterator, pkmnFramework);
         }
+    }
+
+    /**
+     * Debug-friendly string for displaying pipelines
+     * @return The pipeline as a string.
+     */
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("READ:\n")
+            .append("\t")
+                .append(readPipes.stream().map(Object::toString).collect(Collectors.joining("->\n\t")))
+            .append("\nWRITE:\n")
+            .append("\t")
+                .append(writePipes.stream().map(Object::toString).collect(Collectors.joining("->\n\t")));
+        return sb.toString();
     }
 
     /**
@@ -61,45 +78,14 @@ public class LinearPipeline<T> implements Pipeline<T> {
         }
 
         /**
-         * Creates a ForEach pipeline
-         * @param forEachFunction The function to evaluate into the input object into a stream of sub-objects
-         * @param <O> The type output by the stream
-         * @return A ForEachPipelineBuilder to build out the for-each pipeline.
+         * Attach a doublepipe
+         * @param doublePipe The doublepipe to use
+         * @return
          */
-        public <O> ForEachPipelineBuilder<O> forEach(Function<? super B, Stream<? extends O>> forEachFunction){
-            return new ForEachPipelineBuilder<>(this, forEachFunction);
-        }
-
-        /**
-         * Builds a for-each pipeline
-         * @param <O> The type processed by the stream
-         */
-        public class ForEachPipelineBuilder<O> extends PipelineBuilder<
-                ForEachPipelineBuilder<O>,
-                LinearPipelineBuilder<B>,
-                ReadPipe<? super O>,
-                WritePipe<? super O>>{
-
-            private final LinearPipelineBuilder<B> base;
-            private Function<? super B, Stream<? extends O>> forEachFunction;
-
-            private ForEachPipelineBuilder(LinearPipelineBuilder<B> base, Function<? super B, Stream<? extends O>> forEachFunction){
-                this.base = base;
-                this.forEachFunction = forEachFunction;
-            }
-
-            @Override
-            protected ForEachPipelineBuilder<O> self() {
-                return this;
-            }
-
-            @Override
-            public LinearPipelineBuilder<B> build() {
-                Pipeline<O> pipeline = new LinearPipeline<>(this.readers, this.writers);
-                base.readers.add(new ForEachPipe<>(this.forEachFunction, pipeline));
-                base.writers.add(new ForEachPipe<>(this.forEachFunction, pipeline));
-                return base;
-            }
+        public LinearPipelineBuilder<B> pipe(DoublePipe<? super B> doublePipe){
+            this.readers.add(doublePipe);
+            this.writers.add(doublePipe);
+            return self();
         }
     }
 }

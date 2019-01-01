@@ -51,18 +51,13 @@ public class PipeUtils {
      */
     public static Pipeline<Object> getDefaultPipeline(){
         return LinearPipeline.create()
-            .read(new PointerObjectPipe())
-                .then(new OffsetPipe())
-                .then(new AfterReadPipe())
-                .end()
-            .write(new BeforeWritePipe())
-                .then(new PointerObjectPipe())
-                .then(new OffsetPipe())
-                .end()
-            .forEach(o -> PipeUtils.getAnnotatedFieldObject(o, Offset.class))
-                .read(new PrintPipe()).end()
-                .write(new PrintPipe()).end()
-                .build()
-            .build();
+                .write(new BeforeWritePipe())
+                .pipe(new PointerObjectPipe())
+                .pipe(new OffsetPipe())
+                .read(new AfterReadPipe())
+                .pipe(ForEachPipe.create(o -> PipeUtils.getAnnotatedFieldObject(o, Offset.class))
+                    .pipe(new PrintPipe()).build()
+                )
+                .build();
     }
 }
