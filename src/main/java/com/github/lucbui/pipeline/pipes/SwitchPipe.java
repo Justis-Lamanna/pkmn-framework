@@ -139,7 +139,7 @@ public class SwitchPipe<T> implements DoublePipe<T> {
          * @param doublePipe The doublepipe to use
          * @return
          */
-        public BuilderIf<T> pipe(DoublePipe<T> doublePipe){
+        public BuilderIf<T> pipe(DoublePipe<? super T> doublePipe){
             return pipe(doublePipe, doublePipe);
         }
     }

@@ -21,11 +21,11 @@ import java.util.stream.Collectors;
 
 public class HexerUtils {
     /**
-     *
-     * @param hexers
-     * @param type
-     * @param <T>
-     * @return
+     * Search a map of hexers for an appropriate one for a given class
+     * @param hexers The hexers to search
+     * @param type The type to search for
+     * @param <T> The type to search for
+     * @return An Optional containing a Hexer, if found, or an empty Optional if none were found
      */
     public static <T> Optional<Hexer<T>> getHexerFor(Map<Class<?>, Hexer<?>> hexers, Class<T> type) {
         Hexer<T> reader = findHexerInSubclasses(hexers, type);
