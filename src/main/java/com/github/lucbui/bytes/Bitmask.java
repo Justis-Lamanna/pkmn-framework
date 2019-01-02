@@ -34,7 +34,7 @@ public class Bitmask {
     /**
      * Creates a Bitmask when given a start and an end value.
      * For example, GBATEK specifies a data structure as "Bits 12-15"
-     * This method would automatically generate a new Bitmask(0b1111 <<< 12, 12),
+     * This method would automatically generate a new Bitmask(0b1111 &lt;&lt;&lt; 12, 12),
      * which would appropriately grab those bits
      * @param start The starting bit of the range.
      * @param end The ending bit of the range.

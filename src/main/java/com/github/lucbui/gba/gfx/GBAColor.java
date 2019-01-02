@@ -134,10 +134,10 @@ public class GBAColor implements Serializable {
      * The current red, green, and blue channels are multipled by redAmt, greenAmt,
      * and blueAmt, respectively, and combined into a new color. If any color exceeds the 0-31
      * range, it is clamped to 0 or 31, depending. The following breaks down the multipliers and their effects:
-     * * amount <= 0 - Turns the color black
-     * * 0 < amount < 1 - Darkens the color. Numbers closer to 0 result in darker colors.
+     * * amount &lt;= 0 - Turns the color black
+     * * 0 &lt; amount &lt; 1 - Darkens the color. Numbers closer to 0 result in darker colors.
      * * amount = 1 - No change occurs
-     * * amount > 1 - Lightens the color. The greater the number, the more white the color becomes.
+     * * amount &gt; 1 - Lightens the color. The greater the number, the more white the color becomes.
      * @param redAmt The amount to tint the red channel.
      * @param greenAmt The amount to tint the green channel.
      * @param blueAmt The amount to tint the blue channel.
@@ -158,10 +158,10 @@ public class GBAColor implements Serializable {
      * The red, green, and blue channels are all multipled by amount, and combined into a new color.
      * If any color exceeds the 0-31 range, it is clamped to 0 or 31, depending.
      * The following breaks down the multipliers and their effects:
-     * * amount <= 0 - Turns the color black
-     * * 0 < amount < 1 - Darkens the color. Numbers closer to 0 result in darker colors.
+     * * amount &lt;= 0 - Turns the color black
+     * * 0 &lt; amount &lt; 1 - Darkens the color. Numbers closer to 0 result in darker colors.
      * * amount = 1 - No change occurs
-     * * amount > 1 - Lightens the color. The greater the number, the more white the color becomes.
+     * * amount &gt; 1 - Lightens the color. The greater the number, the more white the color becomes.
      * @param amount The amount to tint all channels.
      * @return
      */
