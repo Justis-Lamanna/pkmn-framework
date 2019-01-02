@@ -26,7 +26,6 @@ public class Main {
         public UnsignedByte b1;
 
         @Offset("0x1")
-        @Absolute
         public UnsignedByte b2;
 
         public String ignoreMe;

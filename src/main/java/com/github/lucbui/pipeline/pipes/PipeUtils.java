@@ -1,6 +1,8 @@
 package com.github.lucbui.pipeline.pipes;
 
 import com.github.lucbui.annotations.Offset;
+import com.github.lucbui.annotations.PointerField;
+import com.github.lucbui.bytes.PointerObject;
 import com.github.lucbui.framework.FieldObject;
 import com.github.lucbui.pipeline.LinearPipeline;
 import com.github.lucbui.pipeline.Pipeline;
@@ -51,13 +53,21 @@ public class PipeUtils {
      */
     public static Pipeline<Object> getDefaultPipeline(){
         return LinearPipeline.create()
+                .write(new PrintPipe())
                 .write(new BeforeWritePipe())
-                .pipe(new PointerObjectPipe())
-                .pipe(new OffsetPipe())
-                .read(new AfterReadPipe())
                 .pipe(ForEachPipe.create(o -> PipeUtils.getAnnotatedFieldObject(o, Offset.class))
-                    .pipe(new PrintPipe()).build()
+                        .pipe(SwitchPipe.<FieldObject>create()
+                                .iff(fo -> fo.getField().isAnnotationPresent(PointerField.class))
+                                    .pipe(new PointerObjectFieldPipe())
+                                    .build()
+                                .elsee()
+                                    .pipe(new OffsetFieldPipe())
+                                    .build()
+                                .end()
+                        ).build()
                 )
+                .read(new AfterReadPipe())
+                .read(new PrintPipe())
                 .build();
     }
 }

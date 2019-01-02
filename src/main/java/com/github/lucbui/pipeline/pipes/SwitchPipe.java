@@ -2,10 +2,7 @@ package com.github.lucbui.pipeline.pipes;
 
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.framework.PkmnFramework;
-import com.github.lucbui.pipeline.DoublePipe;
-import com.github.lucbui.pipeline.Pipeline;
-import com.github.lucbui.pipeline.ReadPipe;
-import com.github.lucbui.pipeline.WritePipe;
+import com.github.lucbui.pipeline.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +51,16 @@ public class SwitchPipe<T> implements DoublePipe<T> {
     }
 
     /**
+     * Create a SwitchPipe through a Builder
+     * @param predicate The predicate to use
+     * @param <T> The type to test on
+     * @return A Builder to continue creating the SwitchPipe
+     */
+    public static <T> SwitchPipe.BuilderIf<T> iff(Predicate<? super T> predicate){
+        return new SwitchPipe.BuilderIf<>(new SwitchPipe.Builder<>(), predicate);
+    }
+
+    /**
      * A class that encapsulates a predicate and its corresponding pipeline.
      * @param <T>
      */
@@ -97,13 +104,16 @@ public class SwitchPipe<T> implements DoublePipe<T> {
             return new SwitchPipe<>(cases);
         }
 
-        public SwitchPipe<T> elsee(Pipeline<? super T> pipeline){
-            this.cases.add(new SwitchCase<>(pipeline));
-            return end();
+        public BuilderIf<T> elsee(){
+            return new BuilderIf<>(this, i -> true);
         }
     }
 
-    public static class BuilderIf<T>{
+    public static class BuilderIf<T> extends PipelineBuilder<
+            BuilderIf<T>,
+            Builder<T>,
+            ReadPipe<? super T>,
+            WritePipe<? super T>> {
         private Builder<T> baseBuilder;
         private Predicate<? super T> condition;
 
@@ -112,10 +122,25 @@ public class SwitchPipe<T> implements DoublePipe<T> {
             this.condition = condition;
         }
 
-        public Builder<T> then(Pipeline<? super T> pipeline){
-            Objects.requireNonNull(pipeline);
+        @Override
+        protected BuilderIf<T> self() {
+            return this;
+        }
+
+        @Override
+        public Builder<T> build() {
+            LinearPipeline<T> pipeline = new LinearPipeline<>(readers, writers);
             baseBuilder.cases.add(new SwitchCase<>(condition, pipeline));
             return baseBuilder;
+        }
+
+        /**
+         * Pipe a DoublePipe
+         * @param doublePipe The doublepipe to use
+         * @return
+         */
+        public BuilderIf<T> pipe(DoublePipe<T> doublePipe){
+            return pipe(doublePipe, doublePipe);
         }
     }
 }
