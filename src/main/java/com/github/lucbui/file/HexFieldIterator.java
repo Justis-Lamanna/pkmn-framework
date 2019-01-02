@@ -1,10 +1,6 @@
 package com.github.lucbui.file;
 
 import com.github.lucbui.bytes.ByteWindow;
-import com.github.lucbui.bytes.HexReader;
-import com.github.lucbui.bytes.HexWriter;
-
-import java.nio.ByteBuffer;
 
 /**
  * A custom iterator, modified to better handle fields of data.

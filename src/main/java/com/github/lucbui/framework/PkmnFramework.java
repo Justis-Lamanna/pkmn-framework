@@ -4,10 +4,17 @@ import com.github.lucbui.bytes.HexReader;
 import com.github.lucbui.bytes.HexWriter;
 import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.config.Configuration;
+import com.github.lucbui.config.MapConfig;
+import com.github.lucbui.evaluator.Evaluator;
 import com.github.lucbui.file.FileHexField;
 import com.github.lucbui.file.HexField;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
+import com.github.lucbui.strategy.CreateStrategy;
+import com.github.lucbui.pipeline.Pipeline;
+import com.github.lucbui.strategy.EmptyConstructorCreateStrategy;
+import com.github.lucbui.utility.HexerUtils;
+import com.github.lucbui.utility.PipeUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,9 +27,12 @@ import java.util.function.Function;
  */
 public class PkmnFramework {
 
+    private CreateStrategy createStrategy = null;
     private HexField hexField = null;
     private Configuration configuration = null;
     private Evaluator evaluator = null;
+    private Pipeline<Object> pipeline = null;
+    private Map<Class<?>, Hexer<?>> hexers;
 
     /**
      * Start creating the framework.
@@ -90,42 +100,23 @@ public class PkmnFramework {
      * @return The extracted object
      */
     public <T> T read(Pointer pointer, Class<T> clazz){
-        return clazz.cast(ReflectionHexReaderWriter.getHexerFor(clazz, evaluator).read(hexField.iterator(pointer)));
+        T object = createStrategy.create(clazz);
+        pipeline.modify(hexField.iterator(pointer), object, this);
+        return object;
     }
 
     /**
      * Write an object reflectively from a pointer.
+     *
+     * If a PointerObject with annotation is encountered, an exception is thrown. Please pass a repoint strategy
+     * if you need to do repointing.
      *
      * @param pointer The pointer to read.
      * @param object The object to write.
      * @param <T> The object to write
      */
     public <T> void write(Pointer pointer, T object) {
-        ReflectionHexReaderWriter.getHexerFor(object.getClass(), evaluator).writeObject(object, hexField.iterator(pointer));
-    }
-
-    /**
-     * Read an object reflectively from a pointer.
-     * @param pointer The pointer to read.
-     * @param evaluator The evaluator to use.
-     * @param clazz The reader to use.
-     * @param <T> The object to extract
-     * @return The extracted object
-     */
-    public <T> T read(Pointer pointer, Evaluator evaluator, Class<T> clazz){
-        return clazz.cast(ReflectionHexReaderWriter.getHexerFor(clazz, evaluator).read(hexField.iterator(pointer)));
-    }
-
-    /**
-     * Write an object reflectively from a pointer.
-     *
-     * @param pointer The pointer to read.
-     * @param evaluator The evaluator to use.
-     * @param object The object to write.
-     * @param <T> The object to write
-     */
-    public <T> void write(Pointer pointer, Evaluator evaluator, T object) {
-        ReflectionHexReaderWriter.getHexerFor(object.getClass(), evaluator).writeObject(object, hexField.iterator(pointer));
+        pipeline.write(hexField.iterator(pointer), object, this);
     }
 
     /**
@@ -148,6 +139,25 @@ public class PkmnFramework {
     }
 
     /**
+     * Get a hexer registered, if present
+     * @param clazz The class to search
+     * @param <T> The type to read out
+     * @return A Hexer, if present
+     */
+    public <T> Optional<Hexer<T>> getHexerFor(Class<T> clazz){
+        return HexerUtils.getHexerFor(hexers, clazz);
+    }
+
+    /**
+     * Calculate the size of an object
+     * @param obj The object to calculate
+     * @return The size, or an empty OptionalInt if the size was undetermined.
+     */
+    public OptionalInt getSize(Object obj){
+        return HexerUtils.calculateSizeOfObject(this, obj);
+    }
+
+    /**
      * Get a value from the configuration provided.
      * If no configuration was provided, the default is provided.
      * @param key The key to retrieve.
@@ -159,11 +169,45 @@ public class PkmnFramework {
         return configuration == null ? Optional.empty() : configuration.get(key, converter);
     }
 
+    /**
+     * Get the evaluator used in this framework.
+     * @return
+     */
+    public Evaluator getEvaluator() {
+        return evaluator;
+    }
+
+    /**
+     * Get the hexers registered to this framework.
+     * @return
+     */
+    public Map<Class<?>, Hexer<?>> getHexers() {
+        return hexers;
+    }
+
+    /**
+     * Get the pipeline used for this framework.
+     * @return
+     */
+    public Pipeline<Object> getPipeline() {
+        return pipeline;
+    }
+
+    /**
+     * Get the createstrategy of this framework.
+     * @return
+     */
+    public CreateStrategy getCreateStrategy() {
+        return createStrategy;
+    }
+
     public static class Builder {
         private File path;
         private HexField hexField;
         private Configuration configuration;
         private Evaluator evaluator;
+        private Pipeline<Object> pipeline;
+        private CreateStrategy createStrategy;
 
         Map<Class<?>, Hexer<?>> hexers;
 
@@ -183,6 +227,11 @@ public class PkmnFramework {
             Objects.requireNonNull(clazz);
             Objects.requireNonNull(hexer);
             hexers.put(clazz, hexer);
+            return this;
+        }
+
+        public Builder createFactory(CreateStrategy createStrategy){
+            this.createStrategy = createStrategy;
             return this;
         }
 
@@ -211,21 +260,28 @@ public class PkmnFramework {
 
         public PkmnFramework start() throws IOException {
             PkmnFramework framework = new PkmnFramework();
+            framework.hexers = Collections.unmodifiableMap(hexers);
             if(hexField == null) {
                 framework.hexField = new FileHexField(path, StandardOpenOption.READ, StandardOpenOption.WRITE);
             } else {
                 framework.hexField = hexField;
             }
-            ReflectionHexReaderWriter.resetHexers();
-            ReflectionHexReaderWriter.addHexer(this.hexers);
+            if(configuration == null){
+                configuration = new MapConfig();
+            }
             framework.configuration = configuration;
             if(evaluator == null) {
-                if(configuration == null){
-                    framework.evaluator = new IdentityEvaluator();
-                } else {
-                    framework.evaluator = new ConfigurationEvaluator(configuration);
-                }
+                evaluator = new ConfigurationEvaluator(configuration);
             }
+            framework.evaluator = evaluator;
+            if(pipeline == null) {
+                pipeline = PipeUtils.getDefaultPipeline();
+            }
+            framework.pipeline = pipeline;
+            if(createStrategy == null){
+                createStrategy = new EmptyConstructorCreateStrategy();
+            }
+            framework.createStrategy = createStrategy;
             return framework;
         }
     }

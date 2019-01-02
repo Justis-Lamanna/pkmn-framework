@@ -1,10 +1,8 @@
-package com.github.lucbui.framework;
+package com.github.lucbui.utility;
 
-import com.github.lucbui.bytes.HexWriter;
-import com.github.lucbui.bytes.Hexer;
-import com.github.lucbui.bytes.PointerObject;
-import com.github.lucbui.file.HexFieldIterator;
+import com.github.lucbui.bytes.*;
 import com.github.lucbui.file.Pointer;
+import com.github.lucbui.framework.NoRepointStrategy;
 import org.apache.commons.lang3.NotImplementedException;
 
 public class RepointUtils {
@@ -46,7 +44,7 @@ public class RepointUtils {
      */
     public static <T> HexWriter<PointerObject<T>> writeWithRepoint(Hexer<T> hexer, RepointStrategy repointStrategy){
         return (object, iterator) -> {
-            RepointStrategy.RepointMetadata repointMetadata = new RepointStrategy.RepointMetadata(object, hexer.getSize((T)object));
+            RepointMetadata repointMetadata = new RepointMetadata(object);
             Pointer ptr = repointStrategy.repoint(repointMetadata);
             hexer.write(object.getObject(), iterator.copy(ptr.getLocation()));
         };

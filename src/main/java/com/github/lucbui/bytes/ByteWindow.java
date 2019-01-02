@@ -1,17 +1,14 @@
 package com.github.lucbui.bytes;
 
-import java.nio.ByteBuffer;
-import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.function.ToLongFunction;
-
 import com.github.lucbui.file.HexField;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
 import com.github.lucbui.gba.exception.IllegalSizeException;
 import org.apache.commons.lang3.NotImplementedException;
+
+import java.nio.ByteBuffer;
+import java.util.*;
+import java.util.function.BiConsumer;
 
 /**
  * A class that represents a subset of memory.

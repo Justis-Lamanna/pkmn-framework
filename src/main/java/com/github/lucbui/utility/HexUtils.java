@@ -1,7 +1,6 @@
-package com.github.lucbui.bytes;
+package com.github.lucbui.utility;
 
-import com.github.lucbui.file.HexFieldIterator;
-import com.github.lucbui.gba.exception.IllegalSizeException;
+import com.github.lucbui.bytes.ByteWindow;
 
 import java.nio.ByteBuffer;
 
@@ -52,9 +51,7 @@ public class HexUtils {
      * Easy method for creating ByteBuffers
      * @param bitesAsInts
      * @return
-     * @deprecated Not using byteBuffers anymore
      */
-    @Deprecated
     public static ByteBuffer toByteBuffer(int... bitesAsInts){
         byte[] bites = new byte[bitesAsInts.length];
         for(int idx = 0; idx < bitesAsInts.length; idx++){
@@ -80,9 +77,7 @@ public class HexUtils {
      * Easy method for creating ByteBuffers
      * @param bitesAsLongs
      * @return
-     * @deprecated Not using Bytebuffers anymore
      */
-    @Deprecated
     public static ByteBuffer toByteBuffer(long... bitesAsLongs){
         byte[] bites = new byte[bitesAsLongs.length];
         for(int idx = 0; idx < bitesAsLongs.length; idx++){

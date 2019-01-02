@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a method to be invoked after it is constructed by a ReflectionHexReaderWriter
+ * Marks a method to be invoked after it is constructed by a pipeline
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
