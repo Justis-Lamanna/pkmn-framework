@@ -2,6 +2,7 @@ package com.github.lucbui.gba.gfx;
 
 import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.file.HexFieldIterator;
+import com.github.lucbui.utility.MathUtils;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -16,12 +17,8 @@ public class GBASprite implements GBAGraphic, Serializable {
     private SpriteSize spriteSize;
 
     private static void verifyBounds(int x, int y, SpriteSize spriteSize){
-        if(x < 0 || x >= spriteSize.getWidthInPixels()){
-            throw new IndexOutOfBoundsException("x must be between 0 and " + spriteSize.getWidthInPixels());
-        }
-        if(y < 0 || y >= spriteSize.getHeightInPixels()){
-            throw new IndexOutOfBoundsException("y must be between 0 and " + spriteSize.getHeightInPixels());
-        }
+        MathUtils.assertInRange(x, 0, spriteSize.getWidthInPixels());
+        MathUtils.assertInRange(y, 0, spriteSize.getHeightInPixels());
     }
 
     /**

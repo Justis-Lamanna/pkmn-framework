@@ -5,6 +5,7 @@ import com.github.lucbui.bytes.ByteWindow;
 import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.utility.HexUtils;
+import com.github.lucbui.utility.MathUtils;
 
 import java.io.Serializable;
 
@@ -36,10 +37,10 @@ public class GBAMapTileMetadata implements Serializable {
         public GBAMapTileMetadata read(HexFieldIterator iterator) {
             ByteWindow bb = iterator.get(2); iterator.advanceRelative(2);
             int val = HexUtils.byteToUnsignedByte(bb.get(0)) * 0x100 + HexUtils.byteToUnsignedByte(bb.get(1));
-            short tileNumber = (short)verifyInRange("tileNumber", TILE_NUMBER_MASK.apply(val), 0, HIGHEST_TILE_NUMBER);
+            short tileNumber = (short) MathUtils.assertInRange(TILE_NUMBER_MASK.apply(val), 0, HIGHEST_TILE_NUMBER);
             boolean horizontalFlip = HORIZONTAL_FLIP_MASK.apply(val) == 1;
             boolean verticalFlip = VERTICAL_FLIP_MASK.apply(val) == 1;
-            byte paletteNumber = (byte)verifyInRange("paletteNumber", PALETTE_NUMBER_MASK.apply(val), 0, HIGHEST_PALETTE_NUMBER);
+            byte paletteNumber = (byte)MathUtils.assertInRange(PALETTE_NUMBER_MASK.apply(val), 0, HIGHEST_PALETTE_NUMBER);
             return new GBAMapTileMetadata(tileNumber, horizontalFlip, verticalFlip, paletteNumber);
         }
 
@@ -59,13 +60,6 @@ public class GBAMapTileMetadata implements Serializable {
     private boolean horizontalFlip;
     private boolean verticalFlip;
     private byte paletteNumber;
-
-    private static int verifyInRange(String varName, int number, int lowBound, int highBound){
-        if(number < lowBound || number > highBound){
-            throw new IllegalArgumentException(varName + " exceeds bounds, must be between " + lowBound + " and " + highBound);
-        }
-        return number;
-    }
 
     /**
      * Constructs a GBAMapTileMetadata.
@@ -166,7 +160,7 @@ public class GBAMapTileMetadata implements Serializable {
          * @throws IllegalArgumentException tilenumber is not between 0 and HIGHEST_TILE_NUMBER
          */
         public Creator setTileNumber(int tileNumber){
-            this.tileNumber = (short)verifyInRange("tileNumber", tileNumber, 0, HIGHEST_TILE_NUMBER);
+            this.tileNumber = (short)MathUtils.assertInRange(tileNumber, 0, HIGHEST_TILE_NUMBER);
             return this;
         }
 
@@ -198,7 +192,7 @@ public class GBAMapTileMetadata implements Serializable {
          * @throws IllegalArgumentException Palette isn't between 0 and HIGHEST_PALETTE_NUMBER
          */
         public Creator setPalette(int palette){
-            this.paletteNumber = (byte)verifyInRange("palette", tileNumber, 0, HIGHEST_PALETTE_NUMBER);
+            this.paletteNumber = (byte)MathUtils.assertInRange(tileNumber, 0, HIGHEST_PALETTE_NUMBER);
             return this;
         }
 

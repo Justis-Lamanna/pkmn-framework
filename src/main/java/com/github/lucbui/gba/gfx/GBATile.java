@@ -6,6 +6,7 @@ import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.gba.exception.IllegalSizeException;
 import com.github.lucbui.utility.HexUtils;
+import com.github.lucbui.utility.MathUtils;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -52,12 +53,8 @@ public class GBATile implements GBAGraphic, Serializable {
 
     //Run validation to verify the x/y bounds are inside the tile.
     private static void verifyBounds(int x, int y){
-        if(x < 0 || x >= WIDTH_IN_PIXELS){
-            throw new IndexOutOfBoundsException("x must be between 0 and " + WIDTH_IN_PIXELS);
-        }
-        if(y < 0 || y >= HEIGHT_IN_PIXELS){
-            throw new IndexOutOfBoundsException("y must be between 0 and " + HEIGHT_IN_PIXELS);
-        }
+        MathUtils.assertInRange(x, 0, WIDTH_IN_PIXELS);
+        MathUtils.assertInRange(y, 0, HEIGHT_IN_PIXELS);
     }
 
     /**

@@ -34,10 +34,11 @@ public class MathUtils {
      * @param lower The lower bound
      * @param upper The upper bound
      */
-    public static void assertInRange(int num, int lower, int upper){
+    public static int assertInRange(int num, int lower, int upper){
         if(num > upper || num < lower){
             throw new IllegalArgumentException("Expected number to be between " + upper + " and " + lower + "; Found " + num);
         }
+        return num;
     }
 
     /**

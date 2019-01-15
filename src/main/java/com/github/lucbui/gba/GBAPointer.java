@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Comparator;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * A GBA-style pointer.
@@ -96,7 +97,7 @@ public class GBAPointer implements Pointer, Comparable<GBAPointer>, Serializable
         if(bytes.capacity() < 4){
             throw new IndexOutOfBoundsException("Bytebuffer capacity < 4");
         }
-        Type type = Type.getTypeForPrefix(HexUtils.byteToUnsignedByte(bytes.get(3)));
+        Type type = Type.getTypeForPrefix(HexUtils.byteToUnsignedByte(bytes.get(3))).orElseThrow(IllegalArgumentException::new);
         long value = HexUtils.byteToUnsignedByte(bytes.get(2)) * 0x10000L + HexUtils.byteToUnsignedByte(bytes.get(1)) * 0x100 + HexUtils.byteToUnsignedByte(bytes.get(0));
         return valueOf(type, value);
     }
@@ -107,7 +108,7 @@ public class GBAPointer implements Pointer, Comparable<GBAPointer>, Serializable
      * @return
      */
     public static GBAPointer valueOf(ByteWindow bytes){
-        Type type = Type.getTypeForPrefix(HexUtils.byteToUnsignedByte(bytes.get(3)));
+        Type type = Type.getTypeForPrefix(HexUtils.byteToUnsignedByte(bytes.get(3))).orElseThrow(IllegalArgumentException::new);
         long value = HexUtils.byteToUnsignedByte(bytes.get(2)) * 0x10000L + HexUtils.byteToUnsignedByte(bytes.get(1)) * 0x100 + HexUtils.byteToUnsignedByte(bytes.get(0));
         return valueOf(type, value);
     }
@@ -255,13 +256,13 @@ public class GBAPointer implements Pointer, Comparable<GBAPointer>, Serializable
          * @return The found prefix.
          * @throws IllegalArgumentException Prefix did not match anything registered
          */
-        public static Type getTypeForPrefix(long prefix){
+        public static Optional<Type> getTypeForPrefix(long prefix){
             for(Type type : Type.values()){
                 if(type.prefix == prefix){
-                    return type;
+                    return Optional.of(type);
                 }
             }
-            throw new IllegalArgumentException("Prefix " + prefix + " does not match a GBA Memory type");
+            return Optional.empty();
         }
     }
 }
