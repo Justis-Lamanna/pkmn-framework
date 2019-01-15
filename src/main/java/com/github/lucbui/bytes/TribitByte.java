@@ -1,7 +1,10 @@
 package com.github.lucbui.bytes;
 
+import com.github.lucbui.utility.MathUtils;
+
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
@@ -42,10 +45,6 @@ public class TribitByte {
     private TribitByte(Tribit[] value){
         this.value = value;
         this.hasDontCare = Arrays.stream(value).anyMatch(i -> i == Tribit.DONT_CARE);
-    }
-
-    private static <T> T either(T value, T def){
-        return value == null ? def : value;
     }
 
     /**
@@ -123,9 +122,7 @@ public class TribitByte {
      * @return The bit
      */
     public Tribit getBit(int bit){
-        if(bit < 0 || bit >= LENGTH){
-            throw new IllegalArgumentException("bit must be between 0 and " + (LENGTH - 1));
-        }
+        MathUtils.assertInRange(bit, 0, LENGTH - 1);
         return value[bit];
     }
 
@@ -136,9 +133,7 @@ public class TribitByte {
      * @return A new TribitByte that is a copy of this one, with the specified bit set.
      */
     public TribitByte setBit(int bitPosition, Tribit bit){
-        if(bitPosition < 0 || bitPosition >= LENGTH){
-            throw new IllegalArgumentException("bit must be between 0 and " + (LENGTH - 1));
-        }
+        MathUtils.assertInRange(bitPosition, 0, LENGTH - 1);
         Objects.requireNonNull(bit);
         Tribit[] newValues = Arrays.copyOf(this.value, this.value.length);
         newValues[bitPosition] = bit;
@@ -324,5 +319,101 @@ public class TribitByte {
     @Override
     public int hashCode() {
         return Arrays.hashCode(value);
+    }
+
+    /**
+     * Modify this TribitByte
+     * @return A builder pre-populated with this TriByte's contents
+     */
+    public Builder modify(){
+        return new Builder(this);
+    }
+
+    /**
+     * Create a TribitByte.
+     * The fillBit describes the initial bit in each position.
+     * @param fillBit The "seed" bit.
+     * @return A builder to create a TribitByte
+     */
+    public static Builder create(Tribit fillBit){
+        return new Builder(fillBit);
+    }
+
+    /**
+     * Create a TribitByte
+     * The Builder is initialized with all ZERO bits
+     * @return A builder to create a TribitByte
+     */
+    public static Builder create(){
+        return new Builder(Tribit.ZERO);
+    }
+
+    /**
+     * Builder to make or edit a TribitByte
+     */
+    public static class Builder {
+        private int cursor;
+        private Tribit[] bits;
+
+        private Builder(TribitByte bite){
+            Objects.requireNonNull(bite);
+            this.bits = Arrays.copyOf(bite.value, bite.value.length);
+            this.cursor = 0;
+        }
+
+        private Builder(Tribit initialBit){
+            Objects.requireNonNull(initialBit);
+            this.bits = new Tribit[LENGTH];
+            Arrays.fill(bits, initialBit);
+            this.cursor = 0;
+        }
+
+        /**
+         * Set the next bit to a certain value.
+         * The cursor is incremented to the next value in the set.
+         * @param bit The bit to set
+         * @return This builder
+         */
+        public Builder then(Tribit bit){
+            Objects.requireNonNull(bit);
+            MathUtils.assertInRange(this.cursor, 0, LENGTH - 1);
+            bits[this.cursor] = bit;
+            this.cursor += 1;
+            return this;
+        }
+
+        /**
+         * Move the cursor to a hard-coded position
+         * @param cursor The cursor position
+         * @return This builder
+         */
+        public Builder to(int cursor){
+            MathUtils.assertInRange(cursor, 0, LENGTH - 1);
+            this.cursor = cursor;
+            return this;
+        }
+
+        /**
+         * Set a specific position to a certain bit.
+         * The cursor is set to the next position in the bit.
+         * @param position The position
+         * @param bit The bit
+         * @return This builder
+         */
+        public Builder set(int position, Tribit bit){
+            Objects.requireNonNull(bit);
+            MathUtils.assertInRange(position, 0, LENGTH - 1);
+            bits[position] = bit;
+            this.cursor = position + 1;
+            return this;
+        }
+
+        /**
+         * Create the TribitByte
+         * @return The created TribitByte
+         */
+        public TribitByte build(){
+            return new TribitByte(bits);
+        }
     }
 }

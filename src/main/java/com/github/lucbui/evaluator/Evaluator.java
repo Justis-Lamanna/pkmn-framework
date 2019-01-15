@@ -1,6 +1,6 @@
 package com.github.lucbui.evaluator;
 
-import com.github.lucbui.utility.ParseUtils;
+import com.github.lucbui.utility.MathUtils;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -26,7 +26,7 @@ public interface Evaluator {
      * @return The value, parsed as a long, or an empty optional if it could not be parsed.
      */
     default OptionalLong evaluateLong(String evaluation){
-        return ParseUtils.parseLong(evaluate(evaluation), 10);
+        return MathUtils.parseLong(evaluate(evaluation), 10);
     }
 
     /**
@@ -35,7 +35,7 @@ public interface Evaluator {
      * @return The value, parsed as an int, or an empty optional if it could not be parsed.
      */
     default OptionalInt evaluateInt(String evaluation){
-        return ParseUtils.parseInt(evaluate(evaluation), 10);
+        return MathUtils.parseInt(evaluate(evaluation), 10);
     }
 
     /**

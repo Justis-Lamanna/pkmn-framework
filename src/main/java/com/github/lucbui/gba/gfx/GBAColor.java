@@ -5,6 +5,7 @@ import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.bytes.UnsignedShort;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.utility.HexUtils;
+import com.github.lucbui.utility.MathUtils;
 
 import java.awt.*;
 import java.io.Serializable;
@@ -85,16 +86,10 @@ public class GBAColor implements Serializable {
      * @return The converted GBAColor
      */
     public static GBAColor from(int red, int green, int blue){
-        verifyBetweenZeroAndThirtyOne(red, "red");
-        verifyBetweenZeroAndThirtyOne(green, "green");
-        verifyBetweenZeroAndThirtyOne(blue, "blue");
+        MathUtils.assertInRange(red, MIN_COLOR, MAX_COLOR);
+        MathUtils.assertInRange(green, MIN_COLOR, MAX_COLOR);
+        MathUtils.assertInRange(blue, MIN_COLOR, MAX_COLOR);
         return new GBAColor(red, green, blue);
-    }
-
-    private static void verifyBetweenZeroAndThirtyOne(int color, String colorName){
-        if(color < MIN_COLOR || color > MAX_COLOR){
-            throw new IllegalArgumentException(colorName + " needs to be between " + MIN_COLOR + " and " + MAX_COLOR + ". Found: " + color);
-        }
     }
 
     /**
@@ -148,9 +143,9 @@ public class GBAColor implements Serializable {
         int newGreen = (int)(green * greenAmt);
         int newBlue = (int)(blue * blueAmt);
         return new GBAColor(
-                clamp(newRed, 0, 31),
-                clamp(newGreen, 0, 31),
-                clamp(newBlue, 0, 31));
+                MathUtils.clamp(newRed, 0, 31),
+                MathUtils.clamp(newGreen, 0, 31),
+                MathUtils.clamp(newBlue, 0, 31));
     }
 
     /**
@@ -183,17 +178,6 @@ public class GBAColor implements Serializable {
      */
     public GBAColor lighten(){
         return tint(1.1f, 1.1f, 1.1f);
-    }
-
-    //Why doesn't this exist standardly smh.
-    private int clamp(int num, int lower, int upper){
-        if(num < lower){
-            return lower;
-        } else if(num > upper){
-            return upper;
-        } else {
-            return num;
-        }
     }
 
     @Override

@@ -2,7 +2,7 @@ package com.github.lucbui.framework;
 
 import com.github.lucbui.config.Configuration;
 import com.github.lucbui.evaluator.Evaluator;
-import com.github.lucbui.utility.ParseUtils;
+import com.github.lucbui.utility.MathUtils;
 
 import java.util.Objects;
 import java.util.OptionalInt;
@@ -55,11 +55,11 @@ public class ConfigurationEvaluator implements Evaluator {
         Objects.requireNonNull(evalString);
         String evaluated = evaluate(evalString);
         if(evaluated.startsWith("0x")){
-            return ParseUtils.parseLong(evaluated.substring(2), 16);
+            return MathUtils.parseLong(evaluated.substring(2), 16);
         } else if(evalString.startsWith("0b")){
-            return ParseUtils.parseLong(evaluated.substring(2), 2);
+            return MathUtils.parseLong(evaluated.substring(2), 2);
         }
-        return ParseUtils.parseLong(evaluated, 10);
+        return MathUtils.parseLong(evaluated, 10);
     }
 
     /**
@@ -74,10 +74,10 @@ public class ConfigurationEvaluator implements Evaluator {
         Objects.requireNonNull(evalString);
         String evaluated = evaluate(evalString);
         if(evaluated.startsWith("0x")){
-            return ParseUtils.parseInt(evaluated.substring(2), 16);
+            return MathUtils.parseInt(evaluated.substring(2), 16);
         } else if(evalString.startsWith("0b")){
-            return ParseUtils.parseInt(evaluated.substring(2), 2);
+            return MathUtils.parseInt(evaluated.substring(2), 2);
         }
-        return ParseUtils.parseInt(evaluated, 10);
+        return MathUtils.parseInt(evaluated, 10);
     }
 }

@@ -11,27 +11,27 @@ public class ParseUtilsTest {
 
     @Test
     public void testValidInteger(){
-        OptionalInt one = ParseUtils.parseInt("1", 10);
+        OptionalInt one = MathUtils.parseInt("1", 10);
         assertTrue(one.isPresent());
         assertEquals(one.getAsInt(), 1);
     }
 
     @Test
     public void testInvalidInteger(){
-        OptionalInt none = ParseUtils.parseInt("none", 10);
+        OptionalInt none = MathUtils.parseInt("none", 10);
         assertFalse(none.isPresent());
     }
 
     @Test
     public void testValidLong(){
-        OptionalLong one = ParseUtils.parseLong("1", 10);
+        OptionalLong one = MathUtils.parseLong("1", 10);
         assertTrue(one.isPresent());
         assertEquals(one.getAsLong(), 1);
     }
 
     @Test
     public void testInvalidLong(){
-        OptionalLong none = ParseUtils.parseLong("none", 10);
+        OptionalLong none = MathUtils.parseLong("none", 10);
         assertFalse(none.isPresent());
     }
 }
