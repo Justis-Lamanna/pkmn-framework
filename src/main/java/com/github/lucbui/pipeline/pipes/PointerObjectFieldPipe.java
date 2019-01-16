@@ -39,11 +39,7 @@ public class PointerObjectFieldPipe implements DoublePipe<FieldObject> {
                 .map(hexer -> hexer.read(iteratorForNestedObject))
                 .orElseThrow(ReadPipeException::new);
 
-        try {
-            FieldUtils.writeDeclaredField(o.getParent(), field.getName(), new PointerObject<>(ptr, obj), true);
-        } catch (IllegalAccessException e) {
-            throw new ReadPipeException("Error writing field", e);
-        }
+        o.set(new PointerObject<>(ptr, obj)).or(ReadPipeException::new);
     }
 
     @Override

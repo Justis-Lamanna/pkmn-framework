@@ -1,5 +1,7 @@
 package com.github.lucbui.framework;
 
+import com.github.lucbui.pipeline.exceptions.ReadPipeException;
+import com.github.lucbui.utility.Try;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.lang.reflect.Field;
@@ -57,6 +59,28 @@ public class FieldObject {
      */
     public Object getReferent() {
         return referent;
+    }
+
+    public void syncReferent(){
+        try {
+            referent = FieldUtils.readField(field, parent, true);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Set the field in the object to a new value
+     * @param value
+     */
+    public Try<Object> set(Object value){
+        try {
+            FieldUtils.writeDeclaredField(getParent(), field.getName(), value, true);
+            this.referent = value;
+            return Try.ok(value);
+        } catch (IllegalAccessException e) {
+            return Try.error("Error writing field:" + e.getMessage());
+        }
     }
 
     @Override

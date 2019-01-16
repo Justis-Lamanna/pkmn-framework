@@ -40,11 +40,7 @@ public class OffsetFieldPipe implements DoublePipe<FieldObject> {
                         return null;
                     }
                 });
-        try {
-            FieldUtils.writeDeclaredField(o.getParent(), field.getName(), readObject, true);
-        } catch (IllegalAccessException e) {
-            throw new ReadPipeException("Error writing field", e);
-        }
+        o.set(readObject).or(ReadPipeException::new);
     }
 
     @Override
