@@ -57,6 +57,14 @@ public final class PointerObject <O> {
     }
 
     /**
+     * Set the object pointed to
+     * @param object The object that should be pointed to
+     */
+    public void setObject(O object){
+        this.object = object;
+    }
+
+    /**
      * Get the RepointStrategy to be used for writing this object.
      * @return
      */

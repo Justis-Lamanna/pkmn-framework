@@ -15,15 +15,15 @@ import com.github.lucbui.pipeline.exceptions.ReadPipeException;
 public class SpriteFieldPipe implements DoublePipe<FieldObject> {
     @Override
     public void read(FieldObject object, HexFieldIterator iterator, PkmnFramework pkmnFramework) {
-        Sprite spriteAnnot = object.getField().getAnnotation(Sprite.class);
+        /*Sprite spriteAnnot = object.getField().getAnnotation(Sprite.class);
         Hexer<GBASprite> hexer = GBASprite.getHexer(spriteAnnot.bitDepth(), spriteAnnot.size());
-        object.set(hexer.read(iterator)).or(ReadPipeException::new);
+        object.set(hexer.read(iterator)).or(ReadPipeException::new);*/
     }
 
     @Override
     public void write(HexFieldIterator iterator, FieldObject object, PkmnFramework pkmnFramework) {
-        Sprite spriteAnnot = object.getField().getAnnotation(Sprite.class);
+        /*Sprite spriteAnnot = object.getField().getAnnotation(Sprite.class);
         Hexer<GBASprite> hexer = GBASprite.getHexer(spriteAnnot.bitDepth(), spriteAnnot.size());
-        hexer.writeObject(object.getReferent(), iterator);
+        hexer.writeObject(object.getReferent(), iterator);*/
     }
 }

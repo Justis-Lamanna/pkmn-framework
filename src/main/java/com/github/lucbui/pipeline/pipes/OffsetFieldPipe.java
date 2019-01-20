@@ -1,48 +1,60 @@
 package com.github.lucbui.pipeline.pipes;
 
-import com.github.lucbui.annotations.Absolute;
 import com.github.lucbui.annotations.DataStructure;
-import com.github.lucbui.annotations.Offset;
 import com.github.lucbui.bytes.Hexer;
+import com.github.lucbui.bytes.PointerObject;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.framework.FieldObject;
 import com.github.lucbui.framework.PkmnFramework;
-import com.github.lucbui.pipeline.DoublePipe;
+import com.github.lucbui.pipeline.PointerFieldFriendlyDoublePipe;
 import com.github.lucbui.pipeline.exceptions.ReadPipeException;
 import com.github.lucbui.pipeline.exceptions.WritePipeException;
 import com.github.lucbui.utility.HexerUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
 
-import java.lang.reflect.Field;
 import java.util.Optional;
 
-public class OffsetFieldPipe implements DoublePipe<FieldObject> {
+public class OffsetFieldPipe implements PointerFieldFriendlyDoublePipe {
     @Override
-    public void read(FieldObject o, HexFieldIterator iterator, PkmnFramework pkmnFramework) {
-
-        Field field = o.getField();
-
-        Offset offset = field.getAnnotation(Offset.class);
-        long offsetAsLong = pkmnFramework.getEvaluator().evaluateLong(offset.value()).orElseThrow(ReadPipeException::new);
-        HexFieldIterator iteratorForField =
-                field.isAnnotationPresent(Absolute.class) ?
-                        iterator.copy(offsetAsLong) :
-                        iterator.copyRelative(offsetAsLong);
-
-        Object readObject = HexerUtils.getHexerFor(pkmnFramework.getHexers(), field.getType())
-                .map(hexer -> (Object)hexer.read(iteratorForField))
+    public Object makeObject(FieldObject object, HexFieldIterator iterator, PkmnFramework pkmnFramework) {
+        return HexerUtils.getHexerFor(pkmnFramework.getHexers(), object.getFieldClass())
+                .map(hexer -> (Object)hexer.read(iterator))
                 .orElseGet(() -> {
-                    if(field.isAnnotationPresent(DataStructure.class)){
-                        Object obj = pkmnFramework.getCreateStrategy().create(field.getType());
-                        pkmnFramework.getPipeline().modify(iteratorForField, obj, pkmnFramework);
+                    if(object.isAnnotationPresent(DataStructure.class)){
+                        Object obj = pkmnFramework.getCreateStrategy().create(object.getFieldClass());
+                        pkmnFramework.getPipeline().modify(iterator.copy(), obj, pkmnFramework);
                         return obj;
                     } else {
-                        return null;
+                        String extraInfo;
+                        if(object.getFieldClass().equals(PointerObject.class)){
+                            extraInfo = "You must annotate this field with @PointerField";
+                        } else {
+                            extraInfo = "You need to register this type's hexer, or annotate its declaration with @DataStructure.";
+                        }
+                        throw new ReadPipeException("Unable to parse object of type: " + object.getFieldClass() + ". " + extraInfo);
                     }
                 });
-        o.set(readObject).or(ReadPipeException::new);
     }
 
+    @Override
+    public void writeObject(HexFieldIterator iterator, FieldObject object, PkmnFramework pkmnFramework) {
+        Optional<? extends Hexer<?>> hexer = HexerUtils.getHexerFor(pkmnFramework.getHexers(), object.getFieldClass());
+        if(hexer.isPresent()){
+            hexer.get().writeObject(object.getReferent(), iterator);
+        } else {
+            if(object.isAnnotationPresent(DataStructure.class)){
+                pkmnFramework.getPipeline().write(iterator.copy(), object.getReferent(), pkmnFramework);
+            } else {
+                String extraInfo;
+                if(object.getFieldClass().equals(PointerObject.class)){
+                    extraInfo = "You must annotate this field with @PointerField";
+                } else {
+                    extraInfo = "You need to register this type's hexer, or annotate its declaration with @DataStructure.";
+                }
+                throw new WritePipeException("Unable to parse object of type: " + object.getFieldClass() + ". " + extraInfo);
+            }
+        }
+    }
+/*
     @Override
     public void write(HexFieldIterator iterator, FieldObject o, PkmnFramework pkmnFramework) {
 
@@ -67,5 +79,5 @@ public class OffsetFieldPipe implements DoublePipe<FieldObject> {
                         " which does not have an associated hexer, and is not marked @DataStructure.");
             }
         }
-    }
+    }*/
 }
