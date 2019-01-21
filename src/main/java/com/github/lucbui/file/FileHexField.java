@@ -26,7 +26,7 @@ public class FileHexField implements HexField {
      * @param options The options to use when opening the file.
      * @throws IOException
      */
-    public FileHexField(File file, OpenOption... options) throws IOException {
+    private FileHexField(File file, OpenOption... options) throws IOException {
         fileChannel = FileChannel.open(file.toPath(), options);
     }
 
@@ -36,8 +36,28 @@ public class FileHexField implements HexField {
      * @param options Options to use when opening the file.
      * @throws IOException
      */
-    public FileHexField(Path path, OpenOption... options) throws IOException {
+    private FileHexField(Path path, OpenOption... options) throws IOException {
         fileChannel = FileChannel.open(path, options);
+    }
+
+    /**
+     * Create a FileHexField from a File object.
+     * @param file The file to use.
+     * @param options The options to use when opening the file.
+     * @return A Try containing the created FileHexField, or an empty Try if an IOException occured.
+     */
+    public static Try<FileHexField> get(File file, OpenOption... options){
+        return Try.running(() -> new FileHexField(file, options), "Error creating FileHexField");
+    }
+
+    /**
+     * Create a FileHexField from a Path object.
+     * @param path The path to use.
+     * @param options Options to use when opening the file.
+     * @return A Try containing the created FileHexField, or an empty Try if an IOException occured.
+     */
+    public static Try<FileHexField> get(Path path, OpenOption... options){
+        return Try.running(() -> new FileHexField(path, options), "Error creating FileHexField");
     }
 
     @Override
