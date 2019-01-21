@@ -1,9 +1,17 @@
 package com.github.lucbui.utility;
 
+import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * Class that encapsulates the success, or failure, of an operation
+ * Class that encapsulates the success, or failure, of an operation.
+ * Based on the same type in Scala. Functions similarly to an Optional, but also
+ * contains error information.
+ *
+ * The difference between the two is one of intent. While Optional is meant to replace
+ * nulls, Try is meant to encapsulate Try/Catch blocks, and omit the concept of checked exceptions.
+ * For instance, instead of throwing an IOException when writing fails, a Try could be returned instead.
  * @param <T> The type
  */
 public final class Try<T> {
@@ -121,15 +129,29 @@ public final class Try<T> {
     }
 
     /**
-     * Throw the enclosed exception if this is an error, else return the enclosed object
-     * @return
-     * @throws Exception
+     * Map the contained object into a new Try
+     * @param function The function to turn the internal object into a new one
+     * @param <R> The type of the new object
+     * @return A new Try, containing the mapped object, or the same error.
      */
-    public T orThrow() throws Exception{
-        if(isError()){
-            throw exception;
+    public <R> Try<R> map(Function<? super T, R> function){
+        Objects.requireNonNull(function);
+        if(isOk()){
+            return new Try<>(function.apply(object));
+        } else {
+            return new Try<>(errorCause, exception);
         }
-        return object;
+    }
+
+    /**
+     * Execute the supplied consumer if an object is present
+     * @param consumer The function which consumes the internal object
+     */
+    public void ifPresent(Consumer<? super T> consumer){
+        Objects.requireNonNull(consumer);
+        if(isOk()){
+            consumer.accept(object);
+        }
     }
 
     private static class TryException extends RuntimeException{
