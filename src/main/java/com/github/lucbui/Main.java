@@ -10,9 +10,6 @@ import com.github.lucbui.gba.GBAFrameworkFactory;
 import com.github.lucbui.gba.GBAPointer;
 import com.github.lucbui.gba.annotations.Palette;
 import com.github.lucbui.gba.gfx.GBAPalette;
-import com.github.lucbui.utility.RepointUtils;
-
-import java.io.IOException;
 
 public class Main {
 

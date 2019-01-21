@@ -1,12 +1,8 @@
 package com.github.lucbui.pipeline;
 
-import com.github.lucbui.pipeline.pipes.ForEachPipe;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 /**
  * Holy shit what even is this

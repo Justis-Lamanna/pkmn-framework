@@ -2,7 +2,6 @@ package com.github.lucbui.framework;
 
 import com.github.lucbui.annotations.PointerField;
 import com.github.lucbui.file.Pointer;
-import com.github.lucbui.pipeline.exceptions.ReadPipeException;
 import com.github.lucbui.utility.Try;
 import org.apache.commons.lang3.reflect.FieldUtils;
 

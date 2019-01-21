@@ -1,7 +1,5 @@
 package com.github.lucbui.bytes;
 
-import com.github.lucbui.bytes.PointerObject;
-
 /**
  * An object describing the state needed for repointing.
  */

@@ -1,7 +1,6 @@
 package com.github.lucbui.utility;
 
 import com.github.lucbui.annotations.Offset;
-import com.github.lucbui.annotations.PointerField;
 import com.github.lucbui.framework.FieldObject;
 import com.github.lucbui.pipeline.LinearPipeline;
 import com.github.lucbui.pipeline.Pipeline;
@@ -33,7 +32,6 @@ public class PipeUtils {
      */
     public static Pipeline<Object> getDefaultPipeline(){
         return LinearPipeline.create()
-                .write(new PrintPipe())
                 .write(new BeforeWritePipe())
                 .pipe(ForEachPipe.create(o -> PipeUtils.getAnnotatedFieldObject(o, Offset.class))
                         .pipe(new OffsetParsePipe()) //Populates the Offset, and moves the iterator to the correct place
@@ -42,7 +40,6 @@ public class PipeUtils {
                         .build()
                 )
                 .read(new AfterReadPipe())
-                .read(new PrintPipe())
                 .build();
     }
 }

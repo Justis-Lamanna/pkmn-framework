@@ -2,12 +2,9 @@ package com.github.lucbui.pipeline;
 
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.framework.PkmnFramework;
-import com.github.lucbui.pipeline.pipes.ForEachPipe;
 
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Encapsulates a linear read-write pipeline for populating objects.
