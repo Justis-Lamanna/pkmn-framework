@@ -1,6 +1,7 @@
 package com.github.lucbui.bytes;
 
 import com.github.lucbui.annotations.DataStructure;
+import com.github.lucbui.exception.HexerException;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.utility.HexUtils;
 
@@ -32,7 +33,7 @@ public class UnsignedByte implements ByteObject<UnsignedByte>, Comparable<Unsign
 
         @Override
         public UnsignedByte read(HexFieldIterator iterator) {
-            return UnsignedByte.valueOf(iterator.get(1));
+            return UnsignedByte.valueOf(iterator.get(1).or(HexerException::new));
         }
 
         @Override

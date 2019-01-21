@@ -4,6 +4,7 @@ import com.github.lucbui.file.HexField;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
 import com.github.lucbui.gba.exception.IllegalSizeException;
+import com.github.lucbui.utility.Try;
 import org.apache.commons.lang3.NotImplementedException;
 
 import java.nio.ByteBuffer;
@@ -236,18 +237,19 @@ public class ByteWindow implements HexField {
         }
 
         @Override
-        public ByteWindow getRelative(long distance, int numberOfBytes) {
-            return byteWindow.subWindow(current + distance, (current + distance) + numberOfBytes);
+        public Try<ByteWindow> getRelative(long distance, int numberOfBytes) {
+            return Try.ok(byteWindow.subWindow(current + distance, (current + distance) + numberOfBytes));
         }
 
         @Override
-        public void writeRelative(long distance, ByteWindow bytes) {
+        public Try<Integer> writeRelative(long distance, ByteWindow bytes) {
             byteWindow.set(current + distance, bytes);
+            return Try.ok();
         }
 
         @Override
-        public byte getByte(long distance) {
-            return byteWindow.get(current + distance);
+        public Try<Byte> getByte(long distance) {
+            return Try.ok(byteWindow.get(current + distance));
         }
 
         @Override

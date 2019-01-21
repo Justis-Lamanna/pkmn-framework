@@ -59,6 +59,15 @@ public final class Try<T> {
     }
 
     /**
+     * Create a valid Try
+     * @param <T> The type of result
+     * @return The constructed try
+     */
+    public static <T> Try<T> ok(){
+        return new Try<>(null);
+    }
+
+    /**
      * Create an invalid try
      * @param <T> The type of result
      * @return The constructed try

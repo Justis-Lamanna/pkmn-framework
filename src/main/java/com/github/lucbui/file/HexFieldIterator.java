@@ -1,6 +1,7 @@
 package com.github.lucbui.file;
 
 import com.github.lucbui.bytes.ByteWindow;
+import com.github.lucbui.utility.Try;
 
 /**
  * A custom iterator, modified to better handle fields of data.
@@ -46,7 +47,7 @@ public interface HexFieldIterator {
      * @param numberOfBytes The number of bytes to read.
      * @return The read bytes.
      */
-    ByteWindow getRelative(long distance, int numberOfBytes);
+    Try<ByteWindow> getRelative(long distance, int numberOfBytes);
 
     /**
      * Write some bytes relativeIndex away from the current position
@@ -57,21 +58,21 @@ public interface HexFieldIterator {
      * @param distance The number of bytes away where writing should begin.
      * @param bytes The bytes to write.
      */
-    void writeRelative(long distance, ByteWindow bytes);
+    Try<Integer> writeRelative(long distance, ByteWindow bytes);
 
     /**
      * Get one byte at a specified position.
      * @param distance The position to retrieve from.
      * @return The read byte.
      */
-    byte getByte(long distance);
+    Try<Byte> getByte(long distance);
 
     /**
      * Get a number of bytes, starting at the current position.
      * @param numberOfBytes The number of bytes to read.
      * @return The read bytes.
      */
-    default ByteWindow get(int numberOfBytes){
+    default Try<ByteWindow> get(int numberOfBytes){
         return getRelative(0, numberOfBytes);
     }
 
@@ -79,7 +80,7 @@ public interface HexFieldIterator {
      * Writes bytes, starting at the current position.
      * @param bytes The bytes to write.
      */
-    default void write(ByteWindow bytes){writeRelative(0, bytes);}
+    default Try<Integer> write(ByteWindow bytes){return writeRelative(0, bytes);}
 
     /**
      * Advances the iterator forward some amount.

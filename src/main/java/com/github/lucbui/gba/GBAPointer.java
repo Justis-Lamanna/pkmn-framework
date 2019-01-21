@@ -3,6 +3,7 @@ package com.github.lucbui.gba;
 import com.github.lucbui.annotations.DataStructure;
 import com.github.lucbui.bytes.ByteWindow;
 import com.github.lucbui.bytes.Hexer;
+import com.github.lucbui.exception.HexerException;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
 import com.github.lucbui.utility.HexUtils;
@@ -35,7 +36,7 @@ public class GBAPointer implements Pointer, Comparable<GBAPointer>, Serializable
 
         @Override
         public GBAPointer read(HexFieldIterator iterator) {
-            return GBAPointer.valueOf(iterator.get(4));
+            return GBAPointer.valueOf(iterator.get(4).or(HexerException::new));
         }
 
         @Override

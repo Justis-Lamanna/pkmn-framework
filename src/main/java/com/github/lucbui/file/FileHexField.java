@@ -2,6 +2,7 @@ package com.github.lucbui.file;
 
 import com.github.lucbui.bytes.ByteWindow;
 import com.github.lucbui.utility.HexUtils;
+import com.github.lucbui.utility.Try;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,42 +66,41 @@ public class FileHexField implements HexField {
         }
 
         @Override
-        public byte getByte(long distance){
-            try {
+        public Try<Byte> getByte(long distance){
+            return Try.running(() -> {
                 ByteBuffer bite = ByteBuffer.allocate(1);
                 int read = hex.fileChannel.read(bite, currentPosition + distance);
                 if (read != 1) {
                     throw new IllegalStateException("Error reading bytes, expected " + 1 + " byte, got " + read);
                 }
                 return bite.get(0);
-            } catch (IOException e) {
-                throw new IllegalStateException("Error retrieving from iterator", e);
-            }
+            }, "Error retrieving byte");
         }
 
         @Override
-        public ByteWindow getRelative(long distance, int numberOfBytes) {
-            try {
+        public Try<ByteWindow> getRelative(long distance, int numberOfBytes) {
+            return Try.running(() -> {
                 ByteBuffer bite = ByteBuffer.allocate(numberOfBytes);
                 int read = hex.fileChannel.read(bite, currentPosition + distance);
                 if(read != numberOfBytes){
                     throw new IllegalStateException("Error reading bytes, expected " + numberOfBytes + " byte, got " + read);
                 }
                 return new ByteWindow(bite);
-            } catch (IOException e) {
-                throw new IllegalStateException("Error retrieving from iterator", e);
-            }
+            }, "Error retrieving byte");
         }
 
         @Override
-        public void writeRelative(long distance, ByteWindow bytes){
-            bytes.forEach((pos, bite) -> {
-                try {
-                    hex.fileChannel.write(HexUtils.toByteBuffer(bite), currentPosition + distance + pos);
-                } catch (IOException e) {
-                    throw new RuntimeException("Error writing to iterator", e);
-                }
-            });
+        public Try<Integer> writeRelative(long distance, ByteWindow bytes){
+            return Try.running(() -> {
+                bytes.forEach((pos, bite) -> {
+                    try {
+                        hex.fileChannel.write(HexUtils.toByteBuffer(bite), currentPosition + distance + pos);
+                    } catch (IOException e) {
+                        throw new RuntimeException("Error writing to iterator", e);
+                    }
+                });
+                return 1;
+            }, "");
         }
 
         @Override
