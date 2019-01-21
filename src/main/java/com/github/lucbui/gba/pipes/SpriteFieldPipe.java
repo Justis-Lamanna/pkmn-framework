@@ -1,29 +1,26 @@
 package com.github.lucbui.gba.pipes;
 
-import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.framework.FieldObject;
 import com.github.lucbui.framework.PkmnFramework;
 import com.github.lucbui.gba.annotations.Sprite;
 import com.github.lucbui.gba.gfx.GBASprite;
-import com.github.lucbui.pipeline.DoublePipe;
-import com.github.lucbui.pipeline.exceptions.ReadPipeException;
+import com.github.lucbui.pipeline.PointerFieldFriendlyDoublePipe;
 
 /**
- * A pipe which reads a sprite
+ * A pipe which reads a sprite using @Sprite annotation
  */
-public class SpriteFieldPipe implements DoublePipe<FieldObject> {
+public class SpriteFieldPipe implements PointerFieldFriendlyDoublePipe {
+
     @Override
-    public void read(FieldObject object, HexFieldIterator iterator, PkmnFramework pkmnFramework) {
-        /*Sprite spriteAnnot = object.getField().getAnnotation(Sprite.class);
-        Hexer<GBASprite> hexer = GBASprite.getHexer(spriteAnnot.bitDepth(), spriteAnnot.size());
-        object.set(hexer.read(iterator)).or(ReadPipeException::new);*/
+    public Object makeObject(FieldObject object, HexFieldIterator iterator, PkmnFramework pkmnFramework) {
+        Sprite spriteAnnotation = object.getAnnotation(Sprite.class);
+        return GBASprite.getHexer(spriteAnnotation.bitDepth(), spriteAnnotation.size()).read(iterator);
     }
 
     @Override
-    public void write(HexFieldIterator iterator, FieldObject object, PkmnFramework pkmnFramework) {
-        /*Sprite spriteAnnot = object.getField().getAnnotation(Sprite.class);
-        Hexer<GBASprite> hexer = GBASprite.getHexer(spriteAnnot.bitDepth(), spriteAnnot.size());
-        hexer.writeObject(object.getReferent(), iterator);*/
+    public void writeObject(HexFieldIterator iterator, FieldObject object, PkmnFramework pkmnFramework) {
+        Sprite spriteAnnotation = object.getAnnotation(Sprite.class);
+        GBASprite.getHexer(spriteAnnotation.bitDepth(), spriteAnnotation.size()).writeObject(object.getReferent(), iterator);
     }
 }

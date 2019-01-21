@@ -37,7 +37,7 @@ public class PipeUtils {
                 .write(new BeforeWritePipe())
                 .pipe(ForEachPipe.create(o -> PipeUtils.getAnnotatedFieldObject(o, Offset.class))
                         .pipe(new OffsetParsePipe()) //Populates the Offset, and moves the iterator to the correct place
-                        .pipe(new OffsetFieldPipe()) //Read/write the object from the registered hexers, or reflectively
+                        .pipe(new OffsetFieldPipe())
                         .read(new SetFieldPipe()) //Set the field to the calculated value
                         .build()
                 )

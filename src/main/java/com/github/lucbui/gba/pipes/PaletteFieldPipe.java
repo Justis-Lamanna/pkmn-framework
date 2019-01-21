@@ -1,30 +1,26 @@
 package com.github.lucbui.gba.pipes;
 
-import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.framework.FieldObject;
 import com.github.lucbui.framework.PkmnFramework;
-import com.github.lucbui.gba.GBAPointer;
 import com.github.lucbui.gba.annotations.Palette;
 import com.github.lucbui.gba.gfx.GBAPalette;
-import com.github.lucbui.pipeline.DoublePipe;
-import com.github.lucbui.pipeline.exceptions.ReadPipeException;
+import com.github.lucbui.pipeline.PointerFieldFriendlyDoublePipe;
 
 /**
- * A pipe which reads a palette
+ * A pipe which reads a palette using @Palette annotation
  */
-public class PaletteFieldPipe implements DoublePipe<FieldObject> {
+public class PaletteFieldPipe implements PointerFieldFriendlyDoublePipe {
+
     @Override
-    public void read(FieldObject object, HexFieldIterator iterator, PkmnFramework pkmnFramework) {
-        /*Palette palette = object.getField().getAnnotation(Palette.class);
-        Hexer<GBAPalette> hexer = GBAPalette.getHexer(palette.value());
-        object.set(hexer.read(iterator)).or(ReadPipeException::new);*/
+    public Object makeObject(FieldObject object, HexFieldIterator iterator, PkmnFramework pkmnFramework) {
+        int numberOfColors = object.getAnnotation(Palette.class).value();
+        return GBAPalette.getHexer(numberOfColors).read(iterator);
     }
 
     @Override
-    public void write(HexFieldIterator iterator, FieldObject object, PkmnFramework pkmnFramework) {
-        /*Palette palette = object.getField().getAnnotation(Palette.class);
-        Hexer<GBAPalette> hexer = GBAPalette.getHexer(palette.value());
-        hexer.writeObject(object.getReferent(), iterator);*/
+    public void writeObject(HexFieldIterator iterator, FieldObject object, PkmnFramework pkmnFramework) {
+        int numberOfColors = object.getAnnotation(Palette.class).value();
+        GBAPalette.getHexer(numberOfColors).writeObject(object.getReferent(), iterator);
     }
 }
