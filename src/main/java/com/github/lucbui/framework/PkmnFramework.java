@@ -15,6 +15,7 @@ import com.github.lucbui.pipeline.Pipeline;
 import com.github.lucbui.strategy.EmptyConstructorCreateStrategy;
 import com.github.lucbui.utility.HexerUtils;
 import com.github.lucbui.utility.PipeUtils;
+import com.github.lucbui.utility.Try;
 
 import java.io.File;
 import java.io.IOException;
@@ -239,7 +240,7 @@ public class PkmnFramework {
          * Set the default Evaluator to use when parsing out class objects.
          * If an Evaluator is not used, but a Configuration is provided, a ConfigurationEvaluator is used.
          * @param evaluator The evaluator to use.
-         * @return
+         * @return This builder
          */
         public Builder setEvaluator(Evaluator evaluator){
             Objects.requireNonNull(evaluator);
@@ -248,9 +249,21 @@ public class PkmnFramework {
         }
 
         /**
+         * Set the Pipeline to use when reading or writing objects
+         * @param pipeline The pipeline to use
+         * @return This builder
+         */
+        public Builder setPipeline(Pipeline<Object> pipeline){
+            Objects.requireNonNull(pipeline);
+            this.pipeline = pipeline;
+            return this;
+        }
+
+        /**
          * Applies a FrameworkFactory
-         * @param frameworkFactory
-         * @return
+         * A framework factory can apply certain presets to this Builder, such as standard hexers or pipelines.
+         * @param frameworkFactory The framework factory
+         * @return This builder
          */
         public Builder frameworkFactory(FrameworkFactory frameworkFactory) {
             Objects.requireNonNull(frameworkFactory);
@@ -258,31 +271,38 @@ public class PkmnFramework {
             return this;
         }
 
-        public PkmnFramework start() throws IOException {
-            PkmnFramework framework = new PkmnFramework();
-            framework.hexers = Collections.unmodifiableMap(hexers);
-            if(hexField == null) {
-                framework.hexField = new FileHexField(path, StandardOpenOption.READ, StandardOpenOption.WRITE);
-            } else {
-                framework.hexField = hexField;
-            }
-            if(configuration == null){
-                configuration = new MapConfig();
-            }
-            framework.configuration = configuration;
-            if(evaluator == null) {
-                evaluator = new ConfigurationEvaluator(configuration);
-            }
-            framework.evaluator = evaluator;
-            if(pipeline == null) {
-                pipeline = PipeUtils.getDefaultPipeline();
-            }
-            framework.pipeline = pipeline;
-            if(createStrategy == null){
-                createStrategy = new EmptyConstructorCreateStrategy();
-            }
-            framework.createStrategy = createStrategy;
-            return framework;
+        /**
+         * Build the PkmnFramework
+         * @return
+         * @throws IOException
+         */
+        public Try<PkmnFramework> build(){
+            return Try.running(() -> {
+                PkmnFramework framework = new PkmnFramework();
+                framework.hexers = Collections.unmodifiableMap(hexers);
+                if (hexField == null) {
+                    framework.hexField = new FileHexField(path, StandardOpenOption.READ, StandardOpenOption.WRITE);
+                } else {
+                    framework.hexField = hexField;
+                }
+                if (configuration == null) {
+                    configuration = new MapConfig();
+                }
+                framework.configuration = configuration;
+                if (evaluator == null) {
+                    evaluator = new ConfigurationEvaluator(configuration);
+                }
+                framework.evaluator = evaluator;
+                if (pipeline == null) {
+                    pipeline = PipeUtils.getDefaultPipeline();
+                }
+                framework.pipeline = pipeline;
+                if (createStrategy == null) {
+                    createStrategy = new EmptyConstructorCreateStrategy();
+                }
+                framework.createStrategy = createStrategy;
+                return framework;
+            }, "Error creating PkmnFramework");
         }
     }
 }

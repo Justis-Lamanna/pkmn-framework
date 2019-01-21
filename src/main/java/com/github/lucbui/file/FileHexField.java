@@ -96,7 +96,7 @@ public class FileHexField implements HexField {
         public void writeRelative(long distance, ByteWindow bytes){
             bytes.forEach((pos, bite) -> {
                 try {
-                    hex.fileChannel.write(HexUtils.toByteBuffer(bite), distance + pos);
+                    hex.fileChannel.write(HexUtils.toByteBuffer(bite), currentPosition + distance + pos);
                 } catch (IOException e) {
                     throw new RuntimeException("Error writing to iterator", e);
                 }
