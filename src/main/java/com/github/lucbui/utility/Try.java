@@ -84,7 +84,7 @@ public final class Try<T> {
      * @return True if object is okay
      */
     public boolean isOk(){
-        return object != null;
+        return errorCause == null;
     }
 
     /**
