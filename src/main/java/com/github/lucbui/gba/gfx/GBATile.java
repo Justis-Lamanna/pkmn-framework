@@ -104,7 +104,7 @@ public class GBATile implements GBAGraphic, Serializable {
                 if(depth == BitDepth.FOUR){
                     //Each byte contains two pixels of info.
                     for(int idx = 0; idx < (AREA_IN_PIXELS / 2); idx++){
-                        byte bite = iterator.getRelative(0, 1).or(HexerException::new).get(0);
+                        byte bite = iterator.getRelative(0, 1).orThrow(HexerException::new).get(0);
                         int leftPixel = LEFT_PIXEL_MASK.apply(bite);
                         int rightPixel = RIGHT_PIXEL_MASK.apply(bite);
                         pixels[idx * 2] = HexUtils.unsignedByteToByte(leftPixel);
@@ -115,7 +115,7 @@ public class GBATile implements GBAGraphic, Serializable {
                 } else if(depth == BitDepth.EIGHT){
                     //Each bite contains only one pixel of info.
                     for(int idx = 0; idx < AREA_IN_PIXELS; idx++){
-                        pixels[idx] = iterator.getByte(0).or(HexerException::new);
+                        pixels[idx] = iterator.getByte(0).orThrow(HexerException::new);
                         iterator.advanceRelative(1);
                     }
                     return new GBATile(depth, pixels);

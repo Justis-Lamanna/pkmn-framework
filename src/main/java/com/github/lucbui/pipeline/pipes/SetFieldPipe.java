@@ -12,6 +12,6 @@ import com.github.lucbui.pipeline.exceptions.ReadPipeException;
 public class SetFieldPipe implements ReadPipe<FieldObject>  {
     @Override
     public void read(FieldObject object, HexFieldIterator iterator, PkmnFramework pkmnFramework) {
-        object.set().or(ReadPipeException::new);
+        object.set().orThrow(ReadPipeException::new);
     }
 }

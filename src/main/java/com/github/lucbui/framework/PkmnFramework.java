@@ -281,7 +281,7 @@ public class PkmnFramework {
                 PkmnFramework framework = new PkmnFramework();
                 framework.hexers = Collections.unmodifiableMap(hexers);
                 if (hexField == null) {
-                    framework.hexField = FileHexField.get(path, StandardOpenOption.READ, StandardOpenOption.WRITE).or(RuntimeException::new);
+                    framework.hexField = FileHexField.get(path, StandardOpenOption.READ, StandardOpenOption.WRITE).orThrow(RuntimeException::new);
                 } else {
                     framework.hexField = hexField;
                 }

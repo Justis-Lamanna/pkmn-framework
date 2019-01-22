@@ -36,7 +36,7 @@ public class GBAPointer implements Pointer, Comparable<GBAPointer>, Serializable
 
         @Override
         public GBAPointer read(HexFieldIterator iterator) {
-            return GBAPointer.valueOf(iterator.get(4).or(HexerException::new));
+            return GBAPointer.valueOf(iterator.get(4).orThrow(HexerException::new));
         }
 
         @Override

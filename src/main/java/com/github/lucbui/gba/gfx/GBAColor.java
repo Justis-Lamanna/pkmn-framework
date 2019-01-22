@@ -37,7 +37,7 @@ public class GBAColor implements Serializable {
 
         @Override
         public GBAColor read(HexFieldIterator iterator) {
-            int color = (int) UnsignedShort.valueOf(iterator.get(2).or(HexerException::new)).getValue();
+            int color = (int) UnsignedShort.valueOf(iterator.get(2).orThrow(HexerException::new)).getValue();
             return new GBAColor(RED_BITMASK.apply(color), GREEN_BITMASK.apply(color), BLUE_BITMASK.apply(color));
         }
 

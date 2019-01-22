@@ -26,7 +26,7 @@ public class UnsignedWord implements ByteObject<UnsignedWord>,Comparable<Unsigne
 
         @Override
         public UnsignedWord read(HexFieldIterator iterator) {
-            return UnsignedWord.valueOf(iterator.get(4).or(HexerException::new));
+            return UnsignedWord.valueOf(iterator.get(4).orThrow(HexerException::new));
         }
 
         @Override

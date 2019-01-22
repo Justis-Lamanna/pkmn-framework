@@ -30,7 +30,7 @@ public class TryTest {
     @Test
     public void thro() {
         Try<Integer> tri = Try.ok(1);
-        int value = tri.or(RuntimeException::new);
+        int value = tri.orThrow(RuntimeException::new);
         assertEquals(value, 1);
     }
 
@@ -44,6 +44,6 @@ public class TryTest {
     public void runningInvalid() {
         Try.running(() -> {
             throw new RuntimeException();
-        }, "").or(RuntimeException::new);
+        }, "").orThrow(RuntimeException::new);
     }
 }

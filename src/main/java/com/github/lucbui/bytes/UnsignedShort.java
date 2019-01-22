@@ -32,7 +32,7 @@ public class UnsignedShort implements ByteObject<UnsignedShort>, Comparable<Unsi
 
         @Override
         public UnsignedShort read(HexFieldIterator iterator) {
-            return UnsignedShort.valueOf(iterator.get(2).or(HexerException::new));
+            return UnsignedShort.valueOf(iterator.get(2).orThrow(HexerException::new));
         }
 
         @Override

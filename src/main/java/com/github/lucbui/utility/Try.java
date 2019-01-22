@@ -1,13 +1,12 @@
 package com.github.lucbui.utility;
 
 import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.*;
 
 /**
  * Class that encapsulates the success, or failure, of an operation.
  * Based on the same type in Scala. Functions similarly to an Optional, but also
- * contains error information.
+ * contains error information. Try can also contain nulls, if desired.
  *
  * The difference between the two is one of intent. While Optional is meant to replace
  * nulls, Try is meant to encapsulate Try/Catch blocks, and omit the concept of checked exceptions.
@@ -118,9 +117,23 @@ public final class Try<T> {
      */
     public T get(){
         if(isError()){
-            throw new IllegalArgumentException("Accessed error Try with get()");
+            throw new TryException("Accessed error Try with get()");
         }
         return object;
+    }
+
+    public String getCause(){
+        if(isOk()){
+            throw new TryException("Accessed OK Try with getCause()");
+        }
+        return errorCause;
+    }
+
+    public Exception getException(){
+        if(isOk()){
+            throw new TryException("Accessed OK Try with getException()");
+        }
+        return exception;
     }
 
     /**
@@ -130,9 +143,21 @@ public final class Try<T> {
      * @return The contained object, if present
      * @throws EX The exception thrown
      */
-    public <EX extends Throwable> T or(Function<String, EX> throwable) throws EX{
+    public <EX extends Throwable> T orThrow(BiFunction<String, ? super Exception, EX> throwable) throws EX{
         if(isError()){
-            throw throwable.apply(errorCause);
+            throw throwable.apply(errorCause, exception);
+        }
+        return object;
+    }
+
+    /**
+     * If this is an error Try, throw a RuntimeException wrapping the errorCause and exception
+     * @return The object contained
+     * @throws RuntimeException Thrown if this is a error Try
+     */
+    public T orThrow() throws RuntimeException {
+        if(isError()){
+            throw new RuntimeException(errorCause, exception);
         }
         return object;
     }
@@ -161,6 +186,30 @@ public final class Try<T> {
         if(isOk()){
             consumer.accept(object);
         }
+    }
+
+    /**
+     * Return the internal object, or a default if this is an error
+     * @param defaultObject The default object
+     * @return The internal object, or the default object in case of error.
+     */
+    public T or(T defaultObject){
+        if(isError()){
+            return defaultObject;
+        }
+        return object;
+    }
+
+    /**
+     * Return the internal object, or call the provided supplier if this is an error
+     * @param supplier The object supplier
+     * @return The internal object, or the result of a call to the provided supplier.
+     */
+    public T orGet(Supplier<? extends T> supplier){
+        if(isError()){
+            return supplier.get();
+        }
+        return object;
     }
 
     private static class TryException extends RuntimeException{

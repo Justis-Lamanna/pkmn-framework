@@ -33,7 +33,7 @@ public class UnsignedByte implements ByteObject<UnsignedByte>, Comparable<Unsign
 
         @Override
         public UnsignedByte read(HexFieldIterator iterator) {
-            return UnsignedByte.valueOf(iterator.get(1).or(HexerException::new));
+            return UnsignedByte.valueOf(iterator.get(1).orThrow(HexerException::new));
         }
 
         @Override

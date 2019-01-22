@@ -36,7 +36,7 @@ public class GBAMapTileMetadata implements Serializable {
 
         @Override
         public GBAMapTileMetadata read(HexFieldIterator iterator) {
-            ByteWindow bb = iterator.get(2).or(HexerException::new); iterator.advanceRelative(2);
+            ByteWindow bb = iterator.get(2).orThrow(HexerException::new); iterator.advanceRelative(2);
             int val = HexUtils.byteToUnsignedByte(bb.get(0)) * 0x100 + HexUtils.byteToUnsignedByte(bb.get(1));
             short tileNumber = (short) MathUtils.assertInRange(TILE_NUMBER_MASK.apply(val), 0, HIGHEST_TILE_NUMBER);
             boolean horizontalFlip = HORIZONTAL_FLIP_MASK.apply(val) == 1;
