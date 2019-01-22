@@ -3,6 +3,7 @@ package com.github.lucbui.gba.gfx;
 import com.github.lucbui.bytes.Bitmask;
 import com.github.lucbui.bytes.Hexer;
 import com.github.lucbui.bytes.UnsignedShort;
+import com.github.lucbui.exception.HexerException;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.utility.HexUtils;
 import com.github.lucbui.utility.MathUtils;
@@ -36,7 +37,7 @@ public class GBAColor implements Serializable {
 
         @Override
         public GBAColor read(HexFieldIterator iterator) {
-            int color = (int) UnsignedShort.valueOf(iterator.get(2)).getValue();
+            int color = (int) UnsignedShort.valueOf(iterator.get(2).orThrow(HexerException::new)).getValue();
             return new GBAColor(RED_BITMASK.apply(color), GREEN_BITMASK.apply(color), BLUE_BITMASK.apply(color));
         }
 

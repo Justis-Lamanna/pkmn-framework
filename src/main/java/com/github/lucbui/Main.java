@@ -18,7 +18,7 @@ public class Main {
                 .init("C:\\Users\\laman\\IdeaProjects\\pkmnframework\\src\\main\\resources\\test.hex")
                 .frameworkFactory(new GBAFrameworkFactory())
                 .build()
-                .or(RuntimeException::new);
+                .orThrow();
         TestStructure ts = pkmnGame.read(GBAPointer.valueOf(0x0), TestStructure.class);
         //ts.b1.setRepointStrategy(RepointUtils.identityRepointStrategy());
         //ts.b1.setObject(UnsignedByte.valueOf(0xFF));

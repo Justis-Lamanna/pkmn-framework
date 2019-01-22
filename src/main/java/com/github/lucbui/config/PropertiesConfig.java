@@ -1,5 +1,7 @@
 package com.github.lucbui.config;
 
+import com.github.lucbui.utility.Try;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,11 +28,13 @@ public class PropertiesConfig implements Configuration{
      * @param filename The file to parse
      * @throws IOException
      */
-    public static PropertiesConfig fromFile(String filename) throws IOException {
+    public static Try<PropertiesConfig> fromFile(String filename){
         Properties properties = new Properties();
         try(InputStream in = new FileInputStream(filename)) {
             properties.load(in);
-            return new PropertiesConfig(properties);
+            return Try.ok(new PropertiesConfig(properties));
+        } catch (Exception ex){
+            return Try.error(ex);
         }
     }
 
@@ -39,11 +43,13 @@ public class PropertiesConfig implements Configuration{
      * @param filename The file to parse
      * @throws IOException
      */
-    public static PropertiesConfig fromXml(String filename) throws IOException {
+    public static Try<PropertiesConfig> fromXml(String filename) {
         Properties properties = new Properties();
         try(InputStream in = new FileInputStream(filename)) {
             properties.loadFromXML(in);
-            return new PropertiesConfig(properties);
+            return Try.ok(new PropertiesConfig(properties));
+        } catch (Exception ex){
+            return Try.error(ex);
         }
     }
 

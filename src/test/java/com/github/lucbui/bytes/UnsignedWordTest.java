@@ -25,24 +25,6 @@ public class UnsignedWordTest {
     }
 
     @Test
-    public void valueOfByteBufferValid(){
-        ByteBuffer bb = ByteBuffer.wrap(new byte[]{0, 0, 0, 0});
-        UnsignedWord bite = UnsignedWord.valueOf(bb);
-        assertEquals(0, bite.value);
-    }
-
-    @Test(expected = IndexOutOfBoundsException.class)
-    public void valueOfByteBufferInvalid(){
-        ByteBuffer bb = ByteBuffer.wrap(new byte[0]);
-        UnsignedWord.valueOf(bb);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void valueOfByteBufferNull(){
-        UnsignedWord.valueOf((ByteBuffer)null);
-    }
-
-    @Test
     public void valueOfUnsignedByte(){
         UnsignedByte ub = UnsignedByte.valueOf(0);
         UnsignedWord us = UnsignedWord.valueOf(ub);

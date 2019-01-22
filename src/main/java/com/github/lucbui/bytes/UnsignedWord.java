@@ -1,6 +1,7 @@
 package com.github.lucbui.bytes;
 
 import com.github.lucbui.annotations.DataStructure;
+import com.github.lucbui.exception.HexerException;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.utility.HexUtils;
 
@@ -25,7 +26,7 @@ public class UnsignedWord implements ByteObject<UnsignedWord>,Comparable<Unsigne
 
         @Override
         public UnsignedWord read(HexFieldIterator iterator) {
-            return UnsignedWord.valueOf(iterator.get(4));
+            return UnsignedWord.valueOf(iterator.get(4).orThrow(HexerException::new));
         }
 
         @Override

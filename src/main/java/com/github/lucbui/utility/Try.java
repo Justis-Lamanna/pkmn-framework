@@ -1,9 +1,16 @@
 package com.github.lucbui.utility;
 
-import java.util.function.Function;
+import java.util.Objects;
+import java.util.function.*;
 
 /**
- * Class that encapsulates the success, or failure, of an operation
+ * Class that encapsulates the success, or failure, of an operation.
+ * Based on the same type in Scala. Functions similarly to an Optional, but also
+ * contains error information. Try can also contain nulls, if desired.
+ *
+ * The difference between the two is one of intent. While Optional is meant to replace
+ * nulls, Try is meant to encapsulate Try/Catch blocks, and omit the concept of checked exceptions.
+ * For instance, instead of throwing an IOException when writing fails, a Try could be returned instead.
  * @param <T> The type
  */
 public final class Try<T> {
@@ -48,6 +55,15 @@ public final class Try<T> {
      */
     public static <T> Try<T> ok(T object){
         return new Try<>(object);
+    }
+
+    /**
+     * Create a valid Try
+     * @param <T> The type of result
+     * @return The constructed try
+     */
+    public static <T> Try<T> ok(){
+        return new Try<>(null);
     }
 
     /**
@@ -101,9 +117,23 @@ public final class Try<T> {
      */
     public T get(){
         if(isError()){
-            throw new IllegalArgumentException("Accessed error Try with get()");
+            throw new TryException("Accessed error Try with get()");
         }
         return object;
+    }
+
+    public String getCause(){
+        if(isOk()){
+            throw new TryException("Accessed OK Try with getCause()");
+        }
+        return errorCause;
+    }
+
+    public Exception getException(){
+        if(isOk()){
+            throw new TryException("Accessed OK Try with getException()");
+        }
+        return exception;
     }
 
     /**
@@ -113,21 +143,71 @@ public final class Try<T> {
      * @return The contained object, if present
      * @throws EX The exception thrown
      */
-    public <EX extends Throwable> T or(Function<String, EX> throwable) throws EX{
+    public <EX extends Throwable> T orThrow(BiFunction<String, ? super Exception, EX> throwable) throws EX{
         if(isError()){
-            throw throwable.apply(errorCause);
+            throw throwable.apply(errorCause, exception);
         }
         return object;
     }
 
     /**
-     * Throw the enclosed exception if this is an error, else return the enclosed object
-     * @return
-     * @throws Exception
+     * If this is an error Try, throw a RuntimeException wrapping the errorCause and exception
+     * @return The object contained
+     * @throws RuntimeException Thrown if this is a error Try
      */
-    public T orThrow() throws Exception{
+    public T orThrow() throws RuntimeException {
         if(isError()){
-            throw exception;
+            throw new RuntimeException(errorCause, exception);
+        }
+        return object;
+    }
+
+    /**
+     * Map the contained object into a new Try
+     * @param function The function to turn the internal object into a new one
+     * @param <R> The type of the new object
+     * @return A new Try, containing the mapped object, or the same error.
+     */
+    public <R> Try<R> map(Function<? super T, R> function){
+        Objects.requireNonNull(function);
+        if(isOk()){
+            return new Try<>(function.apply(object));
+        } else {
+            return new Try<>(errorCause, exception);
+        }
+    }
+
+    /**
+     * Execute the supplied consumer if an object is present
+     * @param consumer The function which consumes the internal object
+     */
+    public void ifPresent(Consumer<? super T> consumer){
+        Objects.requireNonNull(consumer);
+        if(isOk()){
+            consumer.accept(object);
+        }
+    }
+
+    /**
+     * Return the internal object, or a default if this is an error
+     * @param defaultObject The default object
+     * @return The internal object, or the default object in case of error.
+     */
+    public T or(T defaultObject){
+        if(isError()){
+            return defaultObject;
+        }
+        return object;
+    }
+
+    /**
+     * Return the internal object, or call the provided supplier if this is an error
+     * @param supplier The object supplier
+     * @return The internal object, or the result of a call to the provided supplier.
+     */
+    public T orGet(Supplier<? extends T> supplier){
+        if(isError()){
+            return supplier.get();
         }
         return object;
     }

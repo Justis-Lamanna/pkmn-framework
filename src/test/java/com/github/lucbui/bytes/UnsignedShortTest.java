@@ -25,24 +25,6 @@ public class UnsignedShortTest {
     }
 
     @Test
-    public void valueOfByteBufferValid(){
-        ByteBuffer bb = ByteBuffer.wrap(new byte[]{0, 0});
-        UnsignedShort bite = UnsignedShort.valueOf(bb);
-        assertEquals(0, bite.value);
-    }
-
-    @Test(expected = IndexOutOfBoundsException.class)
-    public void valueOfByteBufferInvalid(){
-        ByteBuffer bb = ByteBuffer.wrap(new byte[0]);
-        UnsignedShort.valueOf(bb);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void valueOfByteBufferNull(){
-        UnsignedShort.valueOf((ByteBuffer)null);
-    }
-
-    @Test
     public void valueOfUnsignedByte(){
         UnsignedByte ub = UnsignedByte.valueOf(0);
         UnsignedShort us = UnsignedShort.valueOf(ub);
