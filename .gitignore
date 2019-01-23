@@ -2,3 +2,5 @@
 *.iml
 *.hex.bak
 /build
+coreframework/build
+gbaframework/build
