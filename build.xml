@@ -11,22 +11,22 @@
     <target name="test" depends="run-test, clean" />
 
     <target name="compile-src">
-        <ant antfile="${core.build.xml}" target="compile-src" />
-        <ant antfile="${gba.build.xml}" target="compile-src"/>
+        <ant antfile="${core.build.xml}" target="compile-src" usenativebasedir="true" />
+        <ant antfile="${gba.build.xml}" target="compile-src" usenativebasedir="true"/>
     </target>
 
     <target name="compile-test" depends="compile-src">
-        <ant antfile="${core.build.xml}" target="compile-test" />
-        <ant antfile="${gba.build.xml}" target="compile-test"/>
+        <ant antfile="${core.build.xml}" target="compile-test" usenativebasedir="true"/>
+        <ant antfile="${gba.build.xml}" target="compile-test" usenativebasedir="true"/>
     </target>
 
     <target name="run-test" depends="compile-test">
-        <ant antfile="${core.build.xml}" target="run-test" />
-        <ant antfile="${gba.build.xml}" target="run-test"/>
+        <ant antfile="${core.build.xml}" target="run-test" usenativebasedir="true"/>
+        <ant antfile="${gba.build.xml}" target="run-test" usenativebasedir="true"/>
     </target>
 
     <target name="clean">
-        <ant antfile="${core.build.xml}" target="clean" />
-        <ant antfile="${gba.build.xml}" target="clean"/>
+        <ant antfile="${core.build.xml}" target="clean" usenativebasedir="true"/>
+        <ant antfile="${gba.build.xml}" target="clean" usenativebasedir="true"/>
     </target>
 </project>

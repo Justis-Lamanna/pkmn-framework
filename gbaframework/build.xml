@@ -2,16 +2,16 @@
 <project name="gba-framework" default="test" basedir=".">
 
     <property name="main.build.dir" value="build/gbaframework/main" />
-    <property name="main.src.dir" value="gbaframework/src/main/java" />
+    <property name="main.src.dir" value="src/main/java" />
     <property name="test.build.dir" value="build/gbaframework/test" />
-    <property name="test.src.dir" value="gbaframework/src/test/java" />
+    <property name="test.src.dir" value="src/test/java" />
 
     <path id="classpath.base">
-        <pathelement location="lib/commons-lang3-3.8.jar" />
+        <pathelement location="../lib/commons-lang3-3.8.jar" />
     </path>
 
     <path id="classpath.test">
-        <fileset dir="lib/junit" includes="*.jar"/>
+        <fileset dir="../lib/junit" includes="*.jar"/>
         <pathelement location="${main.build.dir}"/>
         <path refid="classpath.base" />
     </path>
