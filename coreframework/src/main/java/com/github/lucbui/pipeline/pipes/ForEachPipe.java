@@ -1,7 +1,7 @@
 package com.github.lucbui.pipeline.pipes;
 
 import com.github.lucbui.file.HexFieldIterator;
-import com.github.lucbui.framework.PkmnFramework;
+import com.github.lucbui.framework.HexFramework;
 import com.github.lucbui.pipeline.*;
 
 import java.util.Objects;
@@ -34,11 +34,11 @@ public class ForEachPipe<O, S> implements DoublePipe<O> {
      * pipeline. This prevents "cross-contamination" between subpipes, which would cause hard-to-find bugs.
      * @param object The object to modify
      * @param iterator The iterator to read from
-     * @param pkmnFramework The PkmnFramework running this code
+     * @param hexFramework The HexFramework running this code
      */
     @Override
-    public void read(O object, HexFieldIterator iterator, PkmnFramework pkmnFramework) {
-        converter.apply(object).forEach(i -> subPipeline.modify(iterator.copy(), i, pkmnFramework));
+    public void read(O object, HexFieldIterator iterator, HexFramework hexFramework) {
+        converter.apply(object).forEach(i -> subPipeline.modify(iterator.copy(), i, hexFramework));
     }
 
     /**
@@ -47,11 +47,11 @@ public class ForEachPipe<O, S> implements DoublePipe<O> {
      * pipeline. This prevents "cross-contamination" between subpipes, which would cause hard-to-find bugs.
      * @param iterator The iterator to read from
      * @param object The object to modify
-     * @param pkmnFramework The PkmnFramework running this code
+     * @param hexFramework The HexFramework running this code
      */
     @Override
-    public void write(HexFieldIterator iterator, O object, PkmnFramework pkmnFramework) {
-        converter.apply(object).forEach(i -> subPipeline.write(iterator.copy(), i, pkmnFramework));
+    public void write(HexFieldIterator iterator, O object, HexFramework hexFramework) {
+        converter.apply(object).forEach(i -> subPipeline.write(iterator.copy(), i, hexFramework));
     }
 
     @Override

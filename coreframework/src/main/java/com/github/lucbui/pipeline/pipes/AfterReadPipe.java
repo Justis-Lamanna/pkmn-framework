@@ -2,7 +2,7 @@ package com.github.lucbui.pipeline.pipes;
 
 import com.github.lucbui.annotations.AfterRead;
 import com.github.lucbui.file.HexFieldIterator;
-import com.github.lucbui.framework.PkmnFramework;
+import com.github.lucbui.framework.HexFramework;
 import com.github.lucbui.pipeline.ReadPipe;
 import com.github.lucbui.pipeline.exceptions.ReadPipeException;
 import org.apache.commons.lang3.reflect.MethodUtils;
@@ -13,7 +13,7 @@ import java.util.List;
 
 public class AfterReadPipe implements ReadPipe<Object> {
     @Override
-    public void read(Object object, HexFieldIterator iterator, PkmnFramework pkmnFramework) {
+    public void read(Object object, HexFieldIterator iterator, HexFramework hexFramework) {
         List<Method> methods = MethodUtils.getMethodsListWithAnnotation(object.getClass(), AfterRead.class);
         for(Method method : methods){
             try {

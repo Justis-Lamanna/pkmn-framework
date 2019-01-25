@@ -1,7 +1,7 @@
 package com.github.lucbui.pipeline.pipes;
 
 import com.github.lucbui.file.HexFieldIterator;
-import com.github.lucbui.framework.PkmnFramework;
+import com.github.lucbui.framework.HexFramework;
 import com.github.lucbui.pipeline.*;
 
 import java.util.ArrayList;
@@ -22,20 +22,20 @@ public class SwitchPipe<T> implements DoublePipe<T> {
     }
 
     @Override
-    public void read(T object, HexFieldIterator iterator, PkmnFramework pkmnFramework) {
+    public void read(T object, HexFieldIterator iterator, HexFramework hexFramework) {
         for(SwitchCase<? super T> caze : cases){
             if(caze.predicate.test(object)){
-                caze.pipeline.modify(iterator, object, pkmnFramework);
+                caze.pipeline.modify(iterator, object, hexFramework);
                 break;
             }
         }
     }
 
     @Override
-    public void write(HexFieldIterator iterator, T object, PkmnFramework pkmnFramework) {
+    public void write(HexFieldIterator iterator, T object, HexFramework hexFramework) {
         for(SwitchCase<? super T> caze : cases){
             if(caze.predicate.test(object)){
-                caze.pipeline.write(iterator, object, pkmnFramework);
+                caze.pipeline.write(iterator, object, hexFramework);
                 break;
             }
         }

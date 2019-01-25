@@ -1,7 +1,7 @@
 package com.github.lucbui.pipeline;
 
 import com.github.lucbui.file.HexFieldIterator;
-import com.github.lucbui.framework.PkmnFramework;
+import com.github.lucbui.framework.HexFramework;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,16 +21,16 @@ public class LinearPipeline<T> implements Pipeline<T> {
     }
 
     @Override
-    public void write(HexFieldIterator iterator, T obj, PkmnFramework pkmnFramework) {
+    public void write(HexFieldIterator iterator, T obj, HexFramework hexFramework) {
         for(WritePipe<? super T> writePipe : writePipes){
-            writePipe.write(iterator, obj, pkmnFramework);
+            writePipe.write(iterator, obj, hexFramework);
         }
     }
 
     @Override
-    public void modify(HexFieldIterator iterator, T obj, PkmnFramework pkmnFramework){
+    public void modify(HexFieldIterator iterator, T obj, HexFramework hexFramework){
         for(ReadPipe<? super T> readPipe : readPipes){
-            readPipe.read(obj, iterator, pkmnFramework);
+            readPipe.read(obj, iterator, hexFramework);
         }
     }
 

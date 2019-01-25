@@ -1,7 +1,7 @@
 package com.github.lucbui.pipeline.pipes;
 
 import com.github.lucbui.file.HexFieldIterator;
-import com.github.lucbui.framework.PkmnFramework;
+import com.github.lucbui.framework.HexFramework;
 import com.github.lucbui.pipeline.DoublePipe;
 
 import java.util.function.Function;
@@ -37,12 +37,12 @@ public class PrintPipe implements DoublePipe<Object> {
     }
 
     @Override
-    public void read(Object object, HexFieldIterator iterator, PkmnFramework pkmnFramework) {
+    public void read(Object object, HexFieldIterator iterator, HexFramework hexFramework) {
         System.out.println(stringFunction.apply(object));
     }
 
     @Override
-    public void write(HexFieldIterator iterator, Object object, PkmnFramework pkmnFramework) {
+    public void write(HexFieldIterator iterator, Object object, HexFramework hexFramework) {
         System.out.println(stringFunction.apply(object));
     }
 }

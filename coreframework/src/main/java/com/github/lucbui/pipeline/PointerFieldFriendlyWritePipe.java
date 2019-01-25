@@ -7,7 +7,7 @@ import com.github.lucbui.bytes.RepointMetadata;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
 import com.github.lucbui.framework.FieldObject;
-import com.github.lucbui.framework.PkmnFramework;
+import com.github.lucbui.framework.HexFramework;
 import com.github.lucbui.pipeline.exceptions.ReadPipeException;
 import com.github.lucbui.utility.HexerUtils;
 
@@ -19,22 +19,22 @@ import com.github.lucbui.utility.HexerUtils;
  */
 public interface PointerFieldFriendlyWritePipe extends WritePipe<FieldObject> {
     @Override
-    default void write(HexFieldIterator iterator, FieldObject object, PkmnFramework pkmnFramework){
+    default void write(HexFieldIterator iterator, FieldObject object, HexFramework hexFramework){
         if(object.isAnnotationPresent(PointerField.class) && object.getReferent() instanceof PointerObject){
             PointerObject po = (PointerObject) object.getReferent();
             Pointer repoint = po.getRepointStrategy().repoint(new RepointMetadata(po));
 
             HexFieldIterator iteratorForField = iterator.copy(object.getPointer().getLocation());
-            Hexer<Pointer> pointHexer = HexerUtils.getHexerFor(pkmnFramework.getHexers(), Pointer.class)
+            Hexer<Pointer> pointHexer = HexerUtils.getHexerFor(hexFramework.getHexers(), Pointer.class)
                     .orElseThrow(ReadPipeException::new);
             pointHexer.write(repoint, iteratorForField);
             iteratorForField.advanceTo(repoint.getLocation());
 
             object.setPointer(repoint);
             object.setReferent(po.getObject());
-            writeObject(iteratorForField, object, pkmnFramework);
+            writeObject(iteratorForField, object, hexFramework);
         } else {
-            writeObject(iterator, object, pkmnFramework);
+            writeObject(iterator, object, hexFramework);
         }
     }
 
@@ -42,8 +42,8 @@ public interface PointerFieldFriendlyWritePipe extends WritePipe<FieldObject> {
      * Write the object that was be wrapped in the PointerObject, if it was.
      * @param iterator The iterator to use
      * @param object The FieldObject being used
-     * @param pkmnFramework The framework being used
+     * @param hexFramework The framework being used
      * @return The created object
      */
-    void writeObject(HexFieldIterator iterator, FieldObject object, PkmnFramework pkmnFramework);
+    void writeObject(HexFieldIterator iterator, FieldObject object, HexFramework hexFramework);
 }

@@ -5,7 +5,7 @@ import com.github.lucbui.annotations.Offset;
 import com.github.lucbui.file.HexFieldIterator;
 import com.github.lucbui.file.Pointer;
 import com.github.lucbui.framework.FieldObject;
-import com.github.lucbui.framework.PkmnFramework;
+import com.github.lucbui.framework.HexFramework;
 import com.github.lucbui.pipeline.DoublePipe;
 import com.github.lucbui.pipeline.exceptions.ReadPipeException;
 
@@ -14,21 +14,21 @@ import com.github.lucbui.pipeline.exceptions.ReadPipeException;
  */
 public class OffsetParsePipe implements DoublePipe<FieldObject> {
     @Override
-    public void read(FieldObject object, HexFieldIterator iterator, PkmnFramework pkmnFramework) {
-        object.setPointer(parseOffset(object, iterator, pkmnFramework));
+    public void read(FieldObject object, HexFieldIterator iterator, HexFramework hexFramework) {
+        object.setPointer(parseOffset(object, iterator, hexFramework));
         iterator.advanceTo(object.getPointer().getLocation());
     }
 
     @Override
-    public void write(HexFieldIterator iterator, FieldObject object, PkmnFramework pkmnFramework) {
-        object.setPointer(parseOffset(object, iterator, pkmnFramework));
+    public void write(HexFieldIterator iterator, FieldObject object, HexFramework hexFramework) {
+        object.setPointer(parseOffset(object, iterator, hexFramework));
         iterator.advanceTo(object.getPointer().getLocation());
     }
 
     //Calculate the offset of this field, given the @Offset annotation and optional @Absolute annotation
-    private Pointer parseOffset(FieldObject object, HexFieldIterator iterator, PkmnFramework pkmnFramework){
+    private Pointer parseOffset(FieldObject object, HexFieldIterator iterator, HexFramework hexFramework){
         Offset offset = object.getAnnotation(Offset.class);
-        long offsetAsLong = pkmnFramework.getEvaluator().evaluateLong(offset.value()).orElseThrow(ReadPipeException::new);
+        long offsetAsLong = hexFramework.getEvaluator().evaluateLong(offset.value()).orElseThrow(ReadPipeException::new);
 
         if(object.isAnnotationPresent(Absolute.class)){
             return Pointer.of(offsetAsLong);

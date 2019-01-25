@@ -5,7 +5,7 @@ import com.github.lucbui.annotations.DataStructure;
 import com.github.lucbui.annotations.DataStructureSize;
 import com.github.lucbui.annotations.Offset;
 import com.github.lucbui.bytes.Hexer;
-import com.github.lucbui.framework.PkmnFramework;
+import com.github.lucbui.framework.HexFramework;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
@@ -57,14 +57,14 @@ public class HexerUtils {
      * 3. Try to find a method in the object annotated by @DataStructureSize. If one is found, it is invoked, and if it is positive, this size is returned
      * 4. Try to calculate the size, by summing up the size of each field, found by recursively calling this method on each field.
      * If all methods fail, an exception is thrown.
-     * @param pkmnFramework The framework being used.
+     * @param hexFramework The framework being used.
      * @param obj The object being used.
      * @return An OptionalInt describing the object's size, or empty if the size is indeterminate
      */
-    public static OptionalInt calculateSizeOfObject(PkmnFramework pkmnFramework, Object obj){
+    public static OptionalInt calculateSizeOfObject(HexFramework hexFramework, Object obj){
         Class<?> clazz = obj.getClass();
 
-        OptionalInt result = getSizeFromHexer(pkmnFramework.getHexers(), obj);
+        OptionalInt result = getSizeFromHexer(hexFramework.getHexers(), obj);
         if(result.isPresent()){
             return result;
         }
@@ -76,7 +76,7 @@ public class HexerUtils {
         if(result.isPresent()){
             return result;
         }
-        return getSizeFromFields(pkmnFramework, obj);
+        return getSizeFromFields(hexFramework, obj);
     }
 
     private static OptionalInt getSizeFromHexer(Map<Class<?>, Hexer<?>> hexers, Object obj){
@@ -114,7 +114,7 @@ public class HexerUtils {
         }
     }
 
-    private static OptionalInt getSizeFromFields(PkmnFramework pkmnFramework, Object obj){
+    private static OptionalInt getSizeFromFields(HexFramework hexFramework, Object obj){
         if(!obj.getClass().isAnnotationPresent(DataStructure.class)){
             //Class not marked DataStructure cannot be properly sized.
             return OptionalInt.empty();

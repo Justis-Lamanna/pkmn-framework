@@ -2,7 +2,7 @@ package com.github.lucbui.pipeline.pipes;
 
 import com.github.lucbui.annotations.BeforeWrite;
 import com.github.lucbui.file.HexFieldIterator;
-import com.github.lucbui.framework.PkmnFramework;
+import com.github.lucbui.framework.HexFramework;
 import com.github.lucbui.pipeline.WritePipe;
 import com.github.lucbui.pipeline.exceptions.ReadPipeException;
 import com.github.lucbui.pipeline.exceptions.WritePipeException;
@@ -14,7 +14,7 @@ import java.util.List;
 
 public class BeforeWritePipe implements WritePipe<Object> {
     @Override
-    public void write(HexFieldIterator iterator, Object object, PkmnFramework pkmnFramework) {
+    public void write(HexFieldIterator iterator, Object object, HexFramework hexFramework) {
         List<Method> methods = MethodUtils.getMethodsListWithAnnotation(object.getClass(), BeforeWrite.class);
         for(Method method : methods){
             try {

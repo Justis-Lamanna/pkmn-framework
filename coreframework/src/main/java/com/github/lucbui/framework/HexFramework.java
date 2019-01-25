@@ -26,7 +26,7 @@ import java.util.function.Function;
 /**
  * A PKMN Framework, which facilitates easier parsing of hex files.
  */
-public class PkmnFramework {
+public class HexFramework {
 
     private CreateStrategy createStrategy = null;
     private HexField hexField = null;
@@ -40,7 +40,7 @@ public class PkmnFramework {
      * @param path The path of the hex file
      * @return A builder, for chaining.
      */
-    public static PkmnFramework.Builder init(String path){
+    public static HexFramework.Builder init(String path){
         Objects.requireNonNull(path, "Path must be specified.");
         Builder b = new Builder();
         b.path = new File(path);
@@ -52,7 +52,7 @@ public class PkmnFramework {
      * @param path The path of the hex file
      * @return A builder, for chaining.
      */
-    public static PkmnFramework.Builder init(File path){
+    public static HexFramework.Builder init(File path){
         Objects.requireNonNull(path, "Path must be specified.");
         Builder b = new Builder();
         b.path = path;
@@ -64,7 +64,7 @@ public class PkmnFramework {
      * @param hexField The hexfield to use.
      * @return A builder, to chain more configuration details.
      */
-    public static PkmnFramework.Builder init(HexField hexField){
+    public static HexFramework.Builder init(HexField hexField){
         Objects.requireNonNull(hexField, "Hex Field must be specified.");
         Builder b = new Builder();
         b.hexField = hexField;
@@ -272,13 +272,13 @@ public class PkmnFramework {
         }
 
         /**
-         * Build the PkmnFramework
+         * Build the HexFramework
          * @return
          * @throws IOException
          */
-        public Try<PkmnFramework> build(){
+        public Try<HexFramework> build(){
             return Try.running(() -> {
-                PkmnFramework framework = new PkmnFramework();
+                HexFramework framework = new HexFramework();
                 framework.hexers = Collections.unmodifiableMap(hexers);
                 if (hexField == null) {
                     framework.hexField = FileHexField.get(path, StandardOpenOption.READ, StandardOpenOption.WRITE).orThrow(RuntimeException::new);
@@ -302,7 +302,7 @@ public class PkmnFramework {
                 }
                 framework.createStrategy = createStrategy;
                 return framework;
-            }, "Error creating PkmnFramework");
+            }, "Error creating HexFramework");
         }
     }
 }
