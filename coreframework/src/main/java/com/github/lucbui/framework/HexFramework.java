@@ -24,7 +24,7 @@ import java.util.*;
 import java.util.function.Function;
 
 /**
- * A PKMN Framework, which facilitates easier parsing of hex files.
+ * A Hex Framework, which facilitates easier parsing of hex files.
  */
 public class HexFramework {
 
@@ -83,6 +83,17 @@ public class HexFramework {
     }
 
     /**
+     * Read an object from a pointer
+     * @param pointer The pointer to read.
+     * @param reader The reader to use.
+     * @param <T> The object to extract
+     * @return The extracted object.
+     */
+    public <T> T read(long pointer, HexReader<T> reader){
+        return reader.read(hexField.iterator(Pointer.of(pointer)));
+    }
+
+    /**
      * Write an object to a pointer.
      * @param pointer The pointer to write to.
      * @param writer The writer to use.
@@ -91,6 +102,17 @@ public class HexFramework {
      */
     public <T> void write(Pointer pointer, HexWriter<T> writer, T object){
         writer.write(object, hexField.iterator(pointer));
+    }
+
+    /**
+     * Write an object to a pointer.
+     * @param pointer The pointer to write to.
+     * @param writer The writer to use.
+     * @param object The object to write.
+     * @param <T> The object to write.
+     */
+    public <T> void write(long pointer, HexWriter<T> writer, T object){
+        writer.write(object, hexField.iterator(Pointer.of(pointer)));
     }
 
     /**
@@ -107,6 +129,19 @@ public class HexFramework {
     }
 
     /**
+     * Read an object reflectively from a pointer.
+     * @param pointer The pointer to read.
+     * @param clazz The reader to use.
+     * @param <T> The object to extract
+     * @return The extracted object
+     */
+    public <T> T read(long pointer, Class<T> clazz){
+        T object = createStrategy.create(clazz);
+        pipeline.modify(hexField.iterator(Pointer.of(pointer)), object, this);
+        return object;
+    }
+
+    /**
      * Write an object reflectively from a pointer.
      *
      * If a PointerObject with annotation is encountered, an exception is thrown. Please pass a repoint strategy
@@ -118,6 +153,20 @@ public class HexFramework {
      */
     public <T> void write(Pointer pointer, T object) {
         pipeline.write(hexField.iterator(pointer), object, this);
+    }
+
+    /**
+     * Write an object reflectively from a pointer.
+     *
+     * If a PointerObject with annotation is encountered, an exception is thrown. Please pass a repoint strategy
+     * if you need to do repointing.
+     *
+     * @param pointer The pointer to read.
+     * @param object The object to write.
+     * @param <T> The object to write
+     */
+    public <T> void write(long pointer, T object) {
+        pipeline.write(hexField.iterator(Pointer.of(pointer)), object, this);
     }
 
     /**

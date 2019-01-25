@@ -40,14 +40,14 @@ public class GBAFrameworkFactory implements FrameworkFactory {
                         .pipe(new OffsetParsePipe()) //Populates the Offset, and moves the iterator to the correct place
                         .pipe(SwitchPipe.<FieldObject>create()
                                 .iff(fo -> fo.isAnnotationPresent(Palette.class))
-                                .pipe(new PaletteFieldPipe())
-                                .build()
+                                    .pipe(new PaletteFieldPipe())
+                                    .build()
                                 .iff(fo -> fo.isAnnotationPresent(Sprite.class))
-                                .pipe(new SpriteFieldPipe())
-                                .build()
+                                    .pipe(new SpriteFieldPipe())
+                                    .build()
                                 .elsee()
-                                .pipe(new OffsetFieldPipe())
-                                .build()
+                                    .pipe(new OffsetFieldPipe())
+                                    .build()
                                 .end())//Read/write the object from the registered hexers, or reflectively
                         .read(new SetFieldPipe()) //Set the field to the calculated value
                         .build()
