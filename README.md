@@ -145,6 +145,8 @@ not exist in the configuration, the provided default of 0x400000 is used instead
 plans will allow the programmer to specify basic arithmetic operators in conjunction with the Configuration objects,
 to specify, for example, `testKey + 4`.
 
+Values can also be retrieved through the `getFromConfig(key)` method on the HexFramework object. 
+
 The main intention of Configurations is to allow the use of ini files. Indeed, a file-based configuration is
 the only one that currently exists out of the box, which can parse either a standard or XML Java Properties file.
 

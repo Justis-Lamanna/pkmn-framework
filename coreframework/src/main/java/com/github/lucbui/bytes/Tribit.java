@@ -61,9 +61,9 @@ public enum Tribit {
 
     /**
      * Logical not on a bit.
-     * 0 => 1
-     * 1 => 0
-     * X => X
+     * 0 =&gt; 1
+     * 1 =&gt; 0
+     * X =&gt; X
      * @param bit The bit to use
      * @return A tribit representing the logical inverse
      */

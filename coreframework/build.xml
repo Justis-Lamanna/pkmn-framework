@@ -5,6 +5,7 @@
     <property name="main.src.dir" value="src/main/java" />
     <property name="test.build.dir" value="build/coreframework/test" />
     <property name="test.src.dir" value="src/test/java" />
+    <property name="javadoc.dir" value="../docs" />
 
     <path id="classpath.base">
         <pathelement location="../lib/commons-lang3-3.8.jar" />
@@ -56,5 +57,9 @@
             <fileset dir="${basedir}" includes="**/*.class" />
         </delete>
         <echo message="clean done" />
+    </target>
+
+    <target name="javadoc">
+        <javadoc access="protected" sourcepath="${main.src.dir}" destdir="${javadoc.dir}"/>
     </target>
 </project>
