@@ -6,7 +6,7 @@ import com.github.lucbui.bytes.UnsignedShort;
 import com.github.lucbui.bytes.UnsignedWord;
 import com.github.lucbui.framework.FieldObject;
 import com.github.lucbui.framework.FrameworkFactory;
-import com.github.lucbui.framework.PkmnFramework;
+import com.github.lucbui.framework.HexFramework;
 import com.github.lucbui.gba.annotations.Palette;
 import com.github.lucbui.gba.annotations.Sprite;
 import com.github.lucbui.gba.pipes.PaletteFieldPipe;
@@ -22,7 +22,7 @@ import com.github.lucbui.utility.PipeUtils;
 public class GBAFrameworkFactory implements FrameworkFactory {
 
     @Override
-    public void configure(PkmnFramework.Builder builder) {
+    public void configure(HexFramework.Builder builder) {
         //Hexers
         builder.addHexer(UnsignedByte.class, UnsignedByte.HEXER);
         builder.addHexer(UnsignedShort.class, UnsignedShort.HEXER);
