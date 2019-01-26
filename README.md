@@ -1,6 +1,6 @@
 # Hex Framework [![Build Status](https://travis-ci.org/Justis-Lamanna/pkmn-framework.svg?branch=master)](https://travis-ci.org/Justis-Lamanna/pkmn-framework)
 
-*Javadocs can be found [here](https://justis-lamanna.github.io/pkmn-framework/).*
+*Javadocs can be found [here](https://justis-lamanna.github.io/pkmn-framework/v0).*
 
 A rudimentary framework for dealing with hex files in an easier manner. 
 
