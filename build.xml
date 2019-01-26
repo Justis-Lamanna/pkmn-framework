@@ -3,8 +3,9 @@
 
     <property name="core.build.xml" value="./coreframework/build.xml" />
     <property name="gba.build.xml" value="./gbaframework/build.xml" />
+    <property name="build.version" value="v0" />
     <!--Javadocs-->
-    <property name="javadoc.dir" value="./docs/v0" />
+    <property name="javadoc.dir" value="./docs/${build.version}" />
     <property name="core.src.dir" value="./coreframework/src/main/java" />
     <property name="gba.src.dir" value="./gbaframework/src/main/java" />
 
