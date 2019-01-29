@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import java.awt.*;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class GBAColorTest {
 
@@ -47,5 +47,10 @@ public class GBAColorTest {
         Color origColorDivBy8 = new Color(24, 24, 24);
         GBAColor color = GBAColor.from(origColor);
         assertEquals(color.getColor(), origColorDivBy8);
+    }
+
+    @Test
+    public void test(){
+        fail();
     }
 }
