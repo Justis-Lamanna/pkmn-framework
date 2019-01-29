@@ -42,6 +42,30 @@ public class MathUtils {
     }
 
     /**
+     * Assert a number is non-negative
+     * @param value The value to test
+     * @return Value, returned
+     */
+    public static long assertNonNegative(long value) {
+        if(value < 0){
+            throw new IllegalArgumentException("Expected non-negative number, found " + value);
+        }
+        return value;
+    }
+
+    /**
+     * Assert a number is positive
+     * @param value The value to test
+     * @return Value, returned
+     */
+    public static long assertPositive(long value){
+        if(value <= 0){
+            throw new IllegalArgumentException("Expected positive number, found " + value);
+        }
+        return value;
+    }
+
+    /**
      * Parse a long, without throwing an exception
      * @param value The value to parse
      * @param radix The radix to use

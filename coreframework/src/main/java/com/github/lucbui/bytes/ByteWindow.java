@@ -55,6 +55,18 @@ public class ByteWindow implements HexField {
     }
 
     /**
+     * Quickly construct a ByteWindow of one byte
+     * @param position The position to use
+     * @param bite The byte at that position
+     * @return The constructed ByteWindow
+     */
+    public static ByteWindow of(long position, byte bite){
+        ByteWindow byteWindow = new ByteWindow();
+        byteWindow.bytes.put(position, bite);
+        return byteWindow;
+    }
+
+    /**
      * Get the byte at the specified position.
      * @param position The position to use.
      * @return
