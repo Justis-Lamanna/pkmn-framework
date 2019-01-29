@@ -20,6 +20,7 @@
     <modules>
         <module>coreframework</module>
         <module>gbaframework</module>
+        <module>pkmnframework-gba</module>
     </modules>
 
     <dependencies>
