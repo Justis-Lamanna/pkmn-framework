@@ -48,9 +48,4 @@ public class GBAColorTest {
         GBAColor color = GBAColor.from(origColor);
         assertEquals(color.getColor(), origColorDivBy8);
     }
-
-    @Test
-    public void test(){
-        fail();
-    }
 }
