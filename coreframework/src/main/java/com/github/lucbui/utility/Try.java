@@ -157,7 +157,11 @@ public final class Try<T> {
      */
     public T orThrow() throws RuntimeException {
         if(isError()){
-            throw new RuntimeException(errorCause, exception);
+            if(exception instanceof RuntimeException){
+                throw (RuntimeException)exception;
+            } else {
+                throw new RuntimeException(errorCause, exception);
+            }
         }
         return object;
     }
