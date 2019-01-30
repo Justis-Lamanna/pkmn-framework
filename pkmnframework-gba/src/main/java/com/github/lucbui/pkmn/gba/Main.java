@@ -2,10 +2,13 @@ package com.github.lucbui.pkmn.gba;
 
 import com.github.lucbui.bytes.CharacterDictionary;
 
-import java.util.Arrays;
+import java.util.List;
 
 public class Main {
     public static void main(String...args){
-        System.out.println(Arrays.toString(CharacterDictionary.ASCII.parse("Hello World!").orThrow()));
+        List<Byte> um = CharacterDictionary.ASCII.parse("Hello World!").orThrow();
+        String back = CharacterDictionary.ASCII.parse(um).orThrow();
+        System.out.println(um);
+        System.out.println(back);
     }
 }

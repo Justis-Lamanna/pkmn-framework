@@ -7,16 +7,19 @@ import java.util.*;
 
 /**
  * A dictionary that converts bytes and characters.
- * Each entry in the dictionary has a table mapping bytes to their displayable characters, and back. Each byte may
+ * Each entry in the dictionary has a table mapping byte sequences to their displayable characters, and back. Each byte sequence may
  * also be associated with additional characters, for ease of parsing. As an example, imagine a CharacterDictionary
- * with 193 being mapped to both Á and [A']. When bytes are converted to a string, the main representation is displayed
- * (In this case, Á). When a string is converted into a byte, however, both Á and [A'] are parsed into the same byte, 193.
+ * with 193 being mapped to both Á and [A']. When the byte sequence is converted to a string, the main representation is displayed
+ * (In this case, Á). When a string is converted into a byte sequence, however, both Á and [A'] are parsed into the same byte, 193.
  *
- * Note that, when defining a CharacterDictionary, particularly when parsing strings into bytes, great
- * care must be taken to make sure each character is unique. Furthermore, all prefixes must be unique too. For example,
+ * In addition, each character may be associated with a number of bytes, rather than just one.
+ *
+ * Note that, when defining a CharacterDictionary, great
+ * care must be taken to make sure each character, and their prefixes, are unique. For example,
  * if you have a character "[" and a character "[NUL]", the parsing algorithm would be unable to determine if you mean
- * the string "[", "N", "U", "L", "]", or the string "[NUL]". One solution is to prefix one of the characters with
- * a "\" character (Make sure, if the "\" alone is also a viable character, to escape it with "\\").
+ * the string "[", "N", "U", "L", "]", or the character "[NUL]". One solution is to prefix one of the characters with
+ * a "\" character (Make sure, if the "\" alone is also a viable character, to escape it with "\\"). Similar care must
+ * be taken with byte sequences: You should not register a character for [0x00] and [0x00 0x01].
  */
 public class CharacterDictionary {
     /**
@@ -67,14 +70,14 @@ public class CharacterDictionary {
             .set("\\[DEL]")
             .build();
 
-    private Map<Byte, String> byteToChar;
-    private Map<String, Byte> charToByte;
+    private Map<List<Byte>, String> byteToChar;
+    private Map<String, List<Byte>> charToByte;
 
     /**
      * Create an empty map of characters to bytes
      */
-    public CharacterDictionary(){
-        byteToChar = new TreeMap<>();
+    private CharacterDictionary(){
+        byteToChar = new HashMap<>();
         charToByte = new TreeMap<>();
     }
 
@@ -106,10 +109,23 @@ public class CharacterDictionary {
         Objects.requireNonNull(mainChar);
         Arrays.stream(addlChars).forEach(Objects::requireNonNull);
 
-        byteToChar.put(bite, mainChar);
-        charToByte.put(mainChar, bite);
+        byteToChar.put(Collections.singletonList(bite), mainChar);
+        charToByte.put(mainChar, Collections.singletonList(bite));
         for(String addlChar : addlChars){
-            charToByte.put(addlChar, bite);
+            charToByte.put(addlChar, Collections.singletonList(bite));
+        }
+    }
+
+    private void set(List<Byte> bites, String mainChar, String... addlChars){
+        Objects.requireNonNull(bites);
+        Objects.requireNonNull(mainChar);
+        bites.forEach(Objects::requireNonNull);
+        Arrays.stream(addlChars).forEach(Objects::requireNonNull);
+
+        byteToChar.put(bites, mainChar);
+        charToByte.put(mainChar, bites);
+        for(String addlChar : addlChars){
+            charToByte.put(addlChar, bites);
         }
     }
 
@@ -124,10 +140,10 @@ public class CharacterDictionary {
         Arrays.stream(addlChars).forEach(Objects::requireNonNull);
         byte bite = (byte)byteAsInt;
 
-        byteToChar.put(bite, mainChar);
-        charToByte.put(mainChar, bite);
+        byteToChar.put(Collections.singletonList(bite), mainChar);
+        charToByte.put(mainChar, Collections.singletonList(bite));
         for(String addlChar : addlChars){
-            charToByte.put(addlChar, bite);
+            charToByte.put(addlChar, Collections.singletonList(bite));
         }
     }
 
@@ -137,7 +153,16 @@ public class CharacterDictionary {
      * @return An optional containing its character representation, or empty if there is no entry
      */
     public Optional<String> getChar(byte bite){
-        return Optional.ofNullable(byteToChar.get(bite));
+        return Optional.ofNullable(byteToChar.get(Collections.singletonList(bite)));
+    }
+
+    /**
+     * Get the character for the supplied byte sequence
+     * @param bites The bytes to retrieve
+     * @return An optional containing its character representation, or empty if there is no entry
+     */
+    public Optional<String> getChar(List<Byte> bites){
+        return Optional.ofNullable(byteToChar.get(bites));
     }
 
     /**
@@ -145,7 +170,7 @@ public class CharacterDictionary {
      * @param str The character to retrieve
      * @return An optional containing its byte representation, or empty if there is no entry
      */
-    public Optional<Byte> getByte(String str){
+    public Optional<List<Byte>> getByte(String str){
         return Optional.ofNullable(charToByte.get(str));
     }
 
@@ -154,17 +179,8 @@ public class CharacterDictionary {
      * @param chr The character to retrieve
      * @return An optional containing its byte representation, or empty if there is no entry
      */
-    public Optional<Byte> getByte(char chr){
+    public Optional<List<Byte>> getByte(char chr){
         return Optional.ofNullable(charToByte.get(chr + ""));
-    }
-
-    /**
-     * Test if this dictionary is complete.
-     * If all bytes have a valid conversion, the dictionary is considered complete
-     * @return True if the dictionary is complete
-     */
-    public boolean isComplete(){
-        return byteToChar.size() == 0x100;
     }
 
     /**
@@ -173,7 +189,16 @@ public class CharacterDictionary {
      * @return True if the byte has a matching char
      */
     public boolean hasChar(byte bite){
-        return byteToChar.containsKey(bite);
+        return byteToChar.containsKey(Collections.singletonList(bite));
+    }
+
+    /**
+     * Test if the byte sequence has a char representation
+     * @param bites The bytes to search
+     * @return True if the bytes have a matching char
+     */
+    public boolean hasChar(List<Byte> bites){
+        return byteToChar.containsKey(bites);
     }
 
     /**
@@ -202,7 +227,7 @@ public class CharacterDictionary {
      * @param str The string to parse
      * @return The parsed byte object
      */
-    public Try<byte[]> parse(String str){
+    public Try<List<Byte>> parse(String str){
         Objects.requireNonNull(str);
         List<Byte> bytes = new ArrayList<>();
         int cursor = 1;
@@ -210,18 +235,67 @@ public class CharacterDictionary {
         while(!workingString.isEmpty()){
             String cur = workingString.substring(0, cursor);
             if(hasByte(cur)){
-                byte bite = getByte(cur).orElseThrow(RuntimeException::new); //Should never throw an exception.
-                bytes.add(bite);
+                List<Byte> bite = getByte(cur).orElseThrow(RuntimeException::new); //Should never throw an exception.
+                bytes.addAll(bite);
                 workingString = workingString.substring(cursor);
                 cursor = 1;
             } else {
                 cursor++;
                 if(cursor > workingString.length()){
-                    return Try.error("Unable to parse string " + str);
+                    return Try.error("Unable to parse string " + workingString);
                 }
             }
         }
-        return Try.ok(bytes.stream().collect(CollectorUtils.toByteArray()));
+        return Try.ok(bytes);
+    }
+
+    /**
+     * Parse bytes into a String
+     * This is a rudimentary parsing, which performs the following steps repeated:
+     * 1. Checks the first byte of the byte sequence for a match. If no match, the next byte is included in the
+     * search, and so on.
+     * 2. Upon a match, the string is appended, and the matched portion of the byte sequence removed.
+     * @param bites The bytes to parse
+     * @return The parsed String
+     */
+    public Try<String> parse(List<Byte> bites){
+        Objects.requireNonNull(bites);
+        bites.forEach(Objects::requireNonNull);
+        StringBuilder sb = new StringBuilder();
+        int cursor = 1;
+        List<Byte> workingBytes = bites;
+        while(!workingBytes.isEmpty()){
+            List<Byte> curBites = workingBytes.subList(0, cursor);
+            if(hasChar(curBites)){
+                String str = getChar(curBites).orElseThrow(RuntimeException::new); //Should never happen
+                sb.append(str);
+                workingBytes = workingBytes.subList(cursor, workingBytes.size());
+            } else {
+                cursor++;
+                if(cursor > workingBytes.size()){
+                    return Try.error("Unable to parse bytes " + workingBytes.toString());
+                }
+            }
+        }
+        return Try.ok(sb.toString());
+    }
+
+    /**
+     * Parse bytes into a String
+     * This is a rudimentary parsing, which performs the following steps repeated:
+     * 1. Checks the first byte of the byte sequence for a match. If no match, the next byte is included in the
+     * search, and so on.
+     * 2. Upon a match, the string is appended, and the matched portion of the byte sequence removed.
+     * @param bites The bytes to parse
+     * @return The parsed String
+     */
+    public Try<String> parse(byte... bites){
+        Objects.requireNonNull(bites);
+        List<Byte> bitesAsList = new ArrayList<>();
+        for(byte bite : bites){
+            bitesAsList.add(bite);
+        }
+        return parse(bitesAsList);
     }
 
     /**
@@ -267,36 +341,11 @@ public class CharacterDictionary {
         }
 
         /**
-         * Register additional characters for use with this byte
-         * @param bite The byte to use
-         * @param addlChars The additional characters to use
-         * @return This builder, to chain
-         */
-        public Builder addAdditional(int bite, String... addlChars){
-            for(String addlChar : addlChars){
-                characterDictionary.charToByte.put(addlChar, (byte)bite);
-            }
-            return this;
-        }
-
-        /**
          * Build the CharacterDictionary
          * @return The constructed dictionary.
          */
         public CharacterDictionary build(){
             return characterDictionary;
-        }
-
-        /**
-         * Build the CharacterDictionary, only if it is complete
-         * @return A populated optional if complete, and empty if not.
-         */
-        public Optional<CharacterDictionary> buildIfFinished(){
-            if(characterDictionary.isComplete()){
-                return Optional.of(characterDictionary);
-            } else {
-                return Optional.empty();
-            }
         }
     }
 }
