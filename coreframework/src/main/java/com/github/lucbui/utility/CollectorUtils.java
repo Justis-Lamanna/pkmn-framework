@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collector;
+import java.util.stream.IntStream;
 
 /**
  * Collector-based utilities
@@ -31,18 +32,6 @@ public class CollectorUtils {
      * @return A collector that turns a List of Bytes into a primitive byte array
      */
     public static Collector<Byte, ?, byte[]> toByteArray(){
-        return new ToPrimitiveArrayCollector<byte[]>(){
-
-            @Override
-            public Function<List<Byte>, byte[]> finisher() {
-                return (list) -> {
-                    byte[] bite = new byte[list.size()];
-                    for(int idx = 0; idx < list.size(); idx++){
-                        bite[idx] = list.get(idx);
-                    }
-                    return bite;
-                };
-            }
-        };
+        return ToPrimitiveArrayCollector.BYTE;
     }
 }
