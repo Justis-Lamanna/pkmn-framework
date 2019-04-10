@@ -4,6 +4,9 @@ import com.github.lucbui.utility.CollectorUtils;
 import com.github.lucbui.utility.Try;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A dictionary that converts bytes and characters.
@@ -86,8 +89,19 @@ public class CharacterDictionary {
      * @param toCopy
      */
     public CharacterDictionary(CharacterDictionary toCopy){
-        byteToChar = new TreeMap<>(toCopy.byteToChar);
+        byteToChar = new HashMap<>(toCopy.byteToChar);
         charToByte = new TreeMap<>(toCopy.charToByte);
+    }
+
+    /**
+     * Construct a CharacterDictionary using a builder
+     * @param idx The character to start at
+     * @param addlFunctions Additional functions, applied to each set() invokation, that generate alternative
+     *                      string representations from their byte form.
+     * @return A builder to construct the instance
+     */
+    public static Builder startingAt(int idx, List<Function<List<Integer>, Optional<String>>> addlFunctions){
+        return new Builder(idx, addlFunctions);
     }
 
     /**
@@ -96,7 +110,7 @@ public class CharacterDictionary {
      * @return A builder to construct the instance
      */
     public static Builder startingAt(int idx){
-        return new Builder(idx);
+        return new Builder(idx, null);
     }
 
     /**
@@ -116,6 +130,12 @@ public class CharacterDictionary {
         }
     }
 
+    /**
+     * Add a byte sequence-character association
+     * @param bites The bytes to register
+     * @param mainChar The main character to associate with this byte
+     * @param addlChars Additional characters that convert into that byte
+     */
     private void set(List<Byte> bites, String mainChar, String... addlChars){
         Objects.requireNonNull(bites);
         Objects.requireNonNull(mainChar);
@@ -298,16 +318,26 @@ public class CharacterDictionary {
         return parse(bitesAsList);
     }
 
+    @Override
+    public String toString(){
+        return byteToChar.keySet().stream().map(bite -> {
+            List<String> additionals = charToByte.entrySet().stream().filter(i -> i.getValue().equals(bite)).map(Map.Entry::getKey).collect(Collectors.toList());
+            return bite.toString() + "->" + additionals;
+        }).collect(Collectors.joining(",", "[", "]"));
+    }
+
     /**
      * A Builder to construct CharacterDictionaries
      */
     public static class Builder {
         private CharacterDictionary characterDictionary;
         private int current;
+        private List<Function<List<Integer>, Optional<String>>> addlFuncs;
 
-        private Builder(int startAt){
+        private Builder(int startAt, List<Function<List<Integer>, Optional<String>>> addlFuncs){
             current = startAt;
             characterDictionary = new CharacterDictionary();
+            this.addlFuncs = addlFuncs;
         }
 
         private Builder(CharacterDictionary characterDictionary){
@@ -322,7 +352,17 @@ public class CharacterDictionary {
          * @return This builder, to chain
          */
         public Builder set(String main, String... addl){
-            characterDictionary.set(current, main, addl);
+            String[] addlConcated;
+            if(addlFuncs == null){
+                addlConcated = addl;
+            } else {
+                addlConcated = Stream.concat(
+                        Arrays.stream(addl),
+                        addlFuncs.stream().flatMap(
+                                i -> CollectorUtils.toStream(i.apply(Collections.singletonList(current)))))
+                        .toArray(String[]::new);
+            }
+            characterDictionary.set(current, main, addlConcated);
             current++;
             return this;
         }
@@ -335,8 +375,74 @@ public class CharacterDictionary {
          * @return This builder, to chain
          */
         public Builder set(int bite, String main, String... addl){
-            characterDictionary.set(bite, main, addl);
+            String[] addlConcated;
+            if(addlFuncs == null){
+                addlConcated = addl;
+            } else {
+                addlConcated = Stream.concat(
+                        Arrays.stream(addl),
+                        addlFuncs.stream().flatMap(
+                                i -> CollectorUtils.toStream(i.apply(Collections.singletonList(bite)))))
+                        .toArray(String[]::new);
+            }
+            characterDictionary.set(bite, main, addlConcated);
             current = bite;
+            return this;
+        }
+
+        /**
+         * Set the byte sequence to these characters
+         * @param bitesAsInt The bytes, as integers
+         * @param main The main character
+         * @param addl Additional characters to use
+         * @return This builder, to chain
+         */
+        public Builder set(List<Integer> bitesAsInt, String main, String... addl){
+            List<Byte> bites = bitesAsInt.stream().map(Integer::byteValue).collect(Collectors.toList());
+            String[] addlConcated;
+            if(addlFuncs == null){
+                addlConcated = addl;
+            } else {
+                addlConcated = Stream.concat(
+                        Arrays.stream(addl),
+                        addlFuncs.stream().flatMap(
+                                i -> CollectorUtils.toStream(i.apply(bitesAsInt))))
+                        .toArray(String[]::new);
+            }
+            characterDictionary.set(bites, main, addlConcated);
+            return this;
+        }
+
+        /**
+         * Skip the next byte definition
+         * The addlFuncs are still invoked, if they are present. The first return becomes the main string
+         * representation, and any additional become alternates.
+         * @return This builder, to chain
+         */
+        public Builder skip(){
+            if(addlFuncs != null) {
+                String[] addl =  addlFuncs.stream().flatMap(
+                        i -> CollectorUtils.toStream(i.apply(Collections.singletonList(current))))
+                        .toArray(String[]::new);
+                if (addl.length > 0) {
+                    if (addl.length > 1) {
+                        String[] addlAddls = Arrays.copyOfRange(addl, 1, addl.length);
+                        characterDictionary.set(current, addl[0], addlAddls);
+                    } else {
+                        characterDictionary.set(current, addl[0]);
+                    }
+                }
+            }
+            current++;
+            return this;
+        }
+
+        /**
+         * Skip the next byte definition, without invoking extra functions
+         * @return This builder, to chain
+         */
+        public Builder skipAndSkipFuncs(){
+            current++;
             return this;
         }
 

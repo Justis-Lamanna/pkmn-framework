@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 /**
  * Collector-based utilities
@@ -44,5 +45,9 @@ public class CollectorUtils {
                 };
             }
         };
+    }
+
+    public static <T> Stream<T> toStream(Optional<T> opt){
+        return opt.map(Stream::of).orElseGet(Stream::empty);
     }
 }
